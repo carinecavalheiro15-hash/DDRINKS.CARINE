@@ -1,0 +1,48 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, decimal, timestamp, jsonb, uuid, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+export const events = pgTable("events", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  clientName: text("client_name").notNull(),
+  clientPhone: text("client_phone").notNull(),
+  clientCity: text("client_city").notNull(),
+  eventDate: timestamp("event_date").notNull(),
+  eventDescription: text("event_description").notNull(),
+  guestCount: text("guest_count"),
+  totalValue: decimal("total_value", { precision: 10, scale: 2 }).notNull(),
+  baseValue: decimal("base_value", { precision: 10, scale: 2 }).notNull(),
+  serviceCharge: decimal("service_charge", { precision: 10, scale: 2 }).default("0"),
+  includeServiceCharge: boolean("include_service_charge").default(false),
+  status: text("status", { enum: ["pendente", "aceito", "recusado"] }).default("pendente"),
+  drinks: jsonb("drinks"),
+  additionalCosts: jsonb("additional_costs"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type Event = typeof events.$inferSelect;
