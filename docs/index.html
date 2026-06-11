@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDrinks - Sistema de Orçamentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+</head>
+<body>
+<div class="app-container">
+  <!-- Header Profissional -->
+  <header class="app-header">
+    <div class="app-header-content">
+      <div class="app-logo">
+        <a href="#" class="app-logo-link" aria-label="DDrinks - Início" onclick="showPage('home');return false;">
+          <span class="app-logo-icon" role="img" aria-hidden="true" title="DDrinks">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <div class="form-group">
+          <label for="mojito_sem_alcool" class="form-label non-alc-label">Mojito <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+          <input type="number" id="mojito_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+        </div>
+              <path d="M4 3h16" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 12v6" stroke="rgba(255,255,255,0.95)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M9 18h6" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
+        <div class="form-group">
+          <label for="sex_on_the_beach_sem_alcool" class="form-label non-alc-label">Sex on the Beach <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+          <input type="number" id="sex_on_the_beach_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+        </div>
+            </svg>
+          </span>
+          <div class="app-logo-text">DDrinks</div>
+        </a>
+        <div class="form-group">
+          <label for="moscow_mule_sem_alcool" class="form-label non-alc-label">Moscow Mule <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+          <input type="number" id="moscow_mule_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+        </div>
+      </div>
+      <nav class="app-nav">
+        <a href="/agenda" class="btn btn-secondary" aria-label="Agenda">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>Agenda</span>
+        <div class="form-group">
+          <label for="pina_colada_sem_alcool" class="form-label non-alc-label">Piña Colada <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+          <input type="number" id="pina_colada_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+        </div>
+        </a>
+        <a href="/datas" class="btn btn-secondary" aria-label="Calendário">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Calendário</span>
+        </a>
+        <div class="form-group">
+          <label for="cotton_fairy_sem_alcool" class="form-label non-alc-label">Cotton Fairy <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+          <input type="number" id="cotton_fairy_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+        </div>
+        <button onclick="logout()" class="btn btn-secondary" data-logout aria-label="Sair">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Sair</span>
+        </button>
+      </nav>
+        <div class="form-group">
+          <label for="soda_italiana_limao_siciliano_e_morango" class="form-label">Soda Italiana (Limão Siciliano / Morango)</label>
+          <input type="number" id="soda_italiana_limao_siciliano_e_morango" class="form-input" min="0" value="0" placeholder="0">
+        </div>
+    </div>
+  </header>
+
+  <!-- Formulário de Informações do Cliente -->
+  <div class="card mb-8">
+    <div class="card-header">
+      <h2 class="card-title">📋 Informações do Cliente</h2>
+      <p class="card-subtitle">Preencha os dados básicos do evento</p>
+    </div>
+    
+    <form data-validate>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="form-group">
+          <label for="clienteNome" class="form-label">Nome do Cliente *</label>
+          <input type="text" id="clienteNome" class="form-input" placeholder="Nome completo do cliente" required />
+        </div>
+        <div class="form-group">
+          <label for="clienteTelefone" class="form-label">Telefone *</label>
+          <input type="tel" id="clienteTelefone" class="form-input" placeholder="(11) 99999-9999" required />
+        </div>
+        <div class="form-group">
+          <label for="clienteCidade" class="form-label">Cidade *</label>
+          <input type="text" id="clienteCidade" class="form-input" placeholder="Cidade do evento" required />
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-3 gap-4">
+        <div class="form-group">
+          <label for="dataEvento" class="form-label">Data do Evento *</label>
+          <input type="date" id="dataEvento" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label for="quantidadeConvidados" class="form-label">Convidados *</label>
+          <input type="number" id="quantidadeConvidados" class="form-input" placeholder="Número de convidados" min="1" required />
+        </div>
+        <div class="form-group">
+          <label for="descricaoEvento" class="form-label">Descrição *</label>
+          <input type="text" id="descricaoEvento" class="form-input" placeholder="Tipo de evento" required />
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Seleção de Drinks -->
+  <div class="card mb-8">
+    <div class="card-header">
+      <h2 class="card-title">🍹 Seleção de Drinks</h2>
+      <p class="card-subtitle">Escolha a quantidade de cada drink para o evento</p>
+    </div>
+    
+    <div class="grid grid-cols-4 gap-4">
+      <div class="form-group">
+        <label for="caipirinha" class="form-label">Caipirinha de Vinho</label>
+        <input type="number" id="caipirinha" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="mojito" class="form-label">Mojito</label>
+        <input type="number" id="mojito" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="sex_on_the_beach" class="form-label">Sex on the Beach</label>
+        <input type="number" id="sex_on_the_beach" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="gin_tonica" class="form-label">Gin Tônica</label>
+        <input type="number" id="gin_tonica" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="moscow_mule" class="form-label">Moscow Mule</label>
+        <input type="number" id="moscow_mule" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="gim_tropical" class="form-label">Gim Tropical</label>
+        <input type="number" id="gim_tropical" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="negroni" class="form-label">Negroni</label>
+        <input type="number" id="negroni" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="aperol_spritz" class="form-label">Aperol Spritz</label>
+        <input type="number" id="aperol_spritz" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="whisky_sour" class="form-label">Whisky Sour</label>
+        <input type="number" id="whisky_sour" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="cosmopolitan" class="form-label">Cosmopolitan</label>
+        <input type="number" id="cosmopolitan" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="caipirinha_morango" class="form-label">Caipirinha de Morango</label>
+        <input type="number" id="caipirinha_morango" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="caipirinha_limao" class="form-label">Caipirinha de Limão</label>
+        <input type="number" id="caipirinha_limao" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="pina_colada" class="form-label">Piña Colada</label>
+        <input type="number" id="pina_colada" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="alexander" class="form-label">Alexander</label>
+        <input type="number" id="alexander" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="tequila_sour" class="form-label">Tequila Sour</label>
+        <input type="number" id="tequila_sour" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="pink_lady" class="form-label">Pink Lady</label>
+        <input type="number" id="pink_lady" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="caipirinha_kiwi" class="form-label">Caipirinha de Kiwi</label>
+        <input type="number" id="caipirinha_kiwi" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="gin_tropical" class="form-label">Gin Tropical</label>
+        <input type="number" id="gin_tropical" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="limonada_suica" class="form-label">Limonada Suíça</label>
+        <input type="number" id="limonada_suica" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="lagoa_azul" class="form-label">Lagoa Azul</label>
+        <input type="number" id="lagoa_azul" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="tequila_sunrise" class="form-label">Tequila Sunrise</label>
+        <input type="number" id="tequila_sunrise" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="caipirinha_cachaca" class="form-label">Caipirinha de Cachaça</label>
+        <input type="number" id="caipirinha_cachaca" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="caipirinha_vinho" class="form-label">Caipirinha de Vinho</label>
+        <input type="number" id="caipirinha_vinho" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="cream_pink" class="form-label">Cream Pink</label>
+        <input type="number" id="cream_pink" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="cotton_fairy" class="form-label">Cotton Fairy</label>
+        <input type="number" id="cotton_fairy" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="marguerita" class="form-label">Marguerita</label>
+        <input type="number" id="marguerita" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="amaretto_sour" class="form-label">Amaretto Sour</label>
+        <input type="number" id="amaretto_sour" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="hold_hup" class="form-label">Hold Hup</label>
+        <input type="number" id="hold_hup" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="passion" class="form-label">Passion</label>
+        <input type="number" id="passion" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="cookie_drink" class="form-label">Cookie Drink</label>
+        <input type="number" id="cookie_drink" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="mirtilo_sour" class="form-label">Mirtilo Sour</label>
+        <input type="number" id="mirtilo_sour" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="toscano" class="form-label">Toscano</label>
+        <input type="number" id="toscano" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="oreo_yin" class="form-label">Oreo Yin</label>
+        <input type="number" id="oreo_yin" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- Outros Gastos -->
+  <div class="card mb-8">
+    <div class="card-header">
+      <h2 class="card-title">💰 Outros Gastos</h2>
+      <p class="card-subtitle">Adicione custos extras para o evento</p>
+    </div>
+    
+    <div class="grid grid-cols-4 gap-4">
+      <div class="form-group">
+        <label for="gelo" class="form-label">Gelo (R$)</label>
+        <input type="number" id="gelo" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="copos" class="form-label">Copos (R$)</label>
+        <input type="number" id="copos" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="decoracao" class="form-label">Decoração (R$)</label>
+        <input type="number" id="decoracao" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="carretinha" class="form-label">Carretinha (R$)</label>
+        <input type="number" id="carretinha" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="flores" class="form-label">Flores (R$)</label>
+        <input type="number" id="flores" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="papelaria" class="form-label">Papelaria (R$)</label>
+        <input type="number" id="papelaria" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="funcionarios" class="form-label">Funcionários (R$)</label>
+        <input type="number" id="funcionarios" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="alimentacao" class="form-label">Alimentação (R$)</label>
+        <input type="number" id="alimentacao" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="canudos" class="form-label">Canudos (R$)</label>
+        <input type="number" id="canudos" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="gasolina" class="form-label">Gasolina (R$)</label>
+        <input type="number" id="gasolina" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="estrutura_bar" class="form-label">Estrutura Bar (R$)</label>
+        <input type="number" id="estrutura_bar" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+  </div>
+
+  <!-- Opções Adicionais -->
+  <div class="card mb-8">
+    <div class="card-header">
+      <h2 class="card-title">⚙️ Opções Adicionais</h2>
+      <p class="card-subtitle">Configure taxas e serviços extras</p>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-checkbox">
+        <input type="checkbox" id="incluir_40_percent" onchange="togglePercentual()">
+        Incluir Taxa de Serviço (40% do valor total)
+      </label>
+      <div id="percentual_info" style="display: none;" class="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-center gap-2 text-blue-700">
+          <span>ℹ️</span>
+          <span class="font-medium">Taxa de Serviço:</span>
+          <span>40% do valor total será adicionado ao orçamento final</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão de Ação -->
+  <div class="card">
+    <div class="flex justify-center">
+      <button onclick="calcularTodosPacotes()" class="btn btn-primary btn-lg">
+        🧮 Calcular Orçamento
+      </button>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  <div id="resultado"></div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('service-worker.js');
+    });
+  }
+</script>
+
+<script>
+function togglePercentual() {
+  const checkbox = document.getElementById('incluir_40_percent');
+  const info = document.getElementById('percentual_info');
+  
+  if (checkbox.checked) {
+    info.style.display = 'block';
+    info.classList.add('fade-in');
+  } else {
+    info.style.display = 'none';
+    info.classList.remove('fade-in');
+  }
+}
+
+// Preços dos pacotes (carregados de data/precos.json quando disponível)
+const DEFAULT_PRECOS_PACOTES = {
+  bronze: { caipirinha: 10, mojito: 3.43, sex_on_the_beach: 5.5, gin_tonica: 5.95, moscow_mule: 4.55, gin_tropical: 7.27, gim_tropical: 6, negroni: 7.58, aperol_spritz: 12, whisky_sour: 6.26, cosmopolitan: 4.8, caipirinha_morango: 5.73, caipirinha_limao: 4.83, caipirinha_kiwi: 9.5, pina_colada: 5.9, alexander: 5.74, tequila_sour: 5.75, tequila_sunrise: 5.73, pink_lady: 5, limonada_suica: 3.4, lagoa_azul: 4.82, caipirinha_cachaca: 3.5, caipirinha_vinho: 4, cream_pink: 6.5, cotton_fairy: 5.5, marguerita: 6, amaretto_sour: 8, hold_hup: 8.5, passion: 8.5, cookie_drink: 9.5, mirtilo_sour: 7.5, toscano: 8.5, oreo_yin: 8.5, cotton_fairy_sem_alcool: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 },
+  prata: { caipirinha: 14, mojito: 7.43, sex_on_the_beach: 9.5, gin_tonica: 9.95, moscow_mule: 8.55, gin_tropical: 11.27, gim_tropical: 10, negroni: 11.58, aperol_spritz: 16, whisky_sour: 10.26, cosmopolitan: 8.8, caipirinha_morango: 9.73, caipirinha_limao: 8.83, caipirinha_kiwi: 13.5, pina_colada: 9.9, alexander: 9.74, tequila_sour: 9.75, tequila_sunrise: 9.73, pink_lady: 9, limonada_suica: 7.4, lagoa_azul: 8.82, caipirinha_cachaca: 7.5, caipirinha_vinho: 8, cream_pink: 10.5, cotton_fairy: 9.5, marguerita: 10, amaretto_sour: 12, hold_hup: 12.5, passion: 12.5, cookie_drink: 13.5, mirtilo_sour: 11.5, toscano: 12.5, oreo_yin: 12.5, cotton_fairy_sem_alcool: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 },
+  ouro: { caipirinha: 18, mojito: 11.43, sex_on_the_beach: 13.5, gin_tonica: 13.95, moscow_mule: 12.55, gin_tropical: 15.27, gim_tropical: 14, negroni: 15.58, aperol_spritz: 20, whisky_sour: 14.26, cosmopolitan: 12.8, caipirinha_morango: 13.73, caipirinha_limao: 12.83, caipirinha_kiwi: 17.5, pina_colada: 13.9, alexander: 13.74, tequila_sour: 13.75, tequila_sunrise: 13.73, pink_lady: 13, limonada_suica: 11.4, lagoa_azul: 12.82, caipirinha_cachaca: 11.5, caipirinha_vinho: 12, cream_pink: 14.5, cotton_fairy: 13.5, marguerita: 14, amaretto_sour: 16, hold_hup: 16.5, passion: 16.5, cookie_drink: 17.5, mirtilo_sour: 15.5, toscano: 16.5, oreo_yin: 16.5, cotton_fairy_sem_alcool: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 }
+};
+
+let precosPacotes = DEFAULT_PRECOS_PACOTES;
+
+(async function loadPrecos(){
+  try {
+    const res = await fetch('precos/precos.json');
+    if (res.ok) {
+      const data = await res.json();
+      // Preserve any extra keys in defaults by merging
+      precosPacotes = Object.assign({}, DEFAULT_PRECOS_PACOTES, data);
+      console.log('Preços carregados de data/precos.json');
+    } else {
+      console.warn('Não foi possível carregar data/precos.json, usando padrões.');
+    }
+  } catch (e) {
+    console.warn('Erro carregando preços, usando padrões.', e);
+  }
+})();
+
+async function calcularTodosPacotes(){
+  try {
+    // Valida informações do cliente
+    const clienteNome = document.getElementById('clienteNome').value.trim();
+    const clienteTelefone = document.getElementById('clienteTelefone').value.trim();
+    const clienteCidade = document.getElementById('clienteCidade').value.trim();
+    const dataEvento = document.getElementById('dataEvento').value;
+    const quantidadeConvidados = document.getElementById('quantidadeConvidados').value;
+    const descricaoEvento = document.getElementById('descricaoEvento').value.trim();
+
+  if (!clienteNome || !clienteTelefone || !clienteCidade || !dataEvento || !quantidadeConvidados || !descricaoEvento) {
+    showNotification("Por favor, preencha todas as informações do cliente!", "warning");
+    return;
+  }
+
+    // Coleta todos os dados dos drinks
+    const dados = {};
+    const todosInputs = document.querySelectorAll('input[type="number"]');
+    todosInputs.forEach(input => {
+      const valor = parseFloat(input.value) || 0;
+      if (valor > 0) {
+        dados[input.id] = valor;
+      }
+    });
+
+  // Verifica se pelo menos um drink foi selecionado
+  if (Object.keys(dados).length === 0) {
+    showNotification("Por favor, selecione pelo menos um drink!", "warning");
+    return;
+  }
+
+    // Calcula o valor total do orçamento (usando pacote bronze como referência)
+    let valorTotal = 0;
+    Object.keys(dados).forEach(id => {
+      const quantidade = dados[id];
+      if (['caipirinha', 'mojito', 'mojito_sem_alcool', 'sex_on_the_beach', 'sex_on_the_beach_sem_alcool', 'gin_tonica', 'moscow_mule', 'moscow_mule_sem_alcool', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'pina_colada_sem_alcool', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'soda_italiana_limao_siciliano_e_morango', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'cotton_fairy_sem_alcool', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'].includes(id)) {
+        const preco = precosPacotes.bronze[id] || 0;
+        valorTotal += quantidade * preco;
+      } else {
+        valorTotal += quantidade;
+      }
+    });
+
+    // Verifica se deve incluir 40% do valor total
+    const incluir40Percent = document.getElementById('incluir_40_percent').checked;
+    const taxaServico = incluir40Percent ? valorTotal * 0.4 : 0;
+    const valorFinal = valorTotal + taxaServico;
+
+    // Cria o orçamento
+    const novoOrcamento = {
+      cliente: clienteNome,
+      telefone: clienteTelefone,
+      cidade: clienteCidade,
+      data_evento: dataEvento,
+      quantidade_convidados: parseInt(quantidadeConvidados),
+      valor: parseFloat(valorFinal.toFixed(2)),
+      valor_base: parseFloat(valorTotal.toFixed(2)),
+      taxa_servico: parseFloat(taxaServico.toFixed(2)),
+      incluir_taxa_servico: incluir40Percent,
+      descricao: descricaoEvento,
+      drinks: dados
+    };
+
+    // Envia para a API
+    const response = await fetch('/api/orcamentos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(novoOrcamento)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      showNotification('Erro ao salvar orçamento: ' + result.message, 'error');
+      return;
+    }
+
+    // Salva os dados do orçamento para a página de resultados
+    sessionStorage.setItem('orcamentoDados', JSON.stringify(dados));
+    sessionStorage.setItem('clienteInfo', JSON.stringify({
+      nome: clienteNome,
+      telefone: clienteTelefone,
+      cidade: clienteCidade,
+      data: dataEvento,
+      descricao: descricaoEvento,
+      incluirTaxaServico: incluir40Percent
+    }));
+    sessionStorage.setItem('orcamentoId', result.orcamento.id);
+
+    // Mostra notificação de sucesso
+    showNotification('Orçamento criado com sucesso!', 'success');
+
+    // Limpa os campos
+    limparCampos();
+
+    // Redireciona para a página de resultados
+    setTimeout(() => {
+      window.location.href = '/resultado';
+    }, 1500);
+
+  } catch (error) {
+    console.error('Erro ao calcular orçamento:', error);
+    showNotification('Erro ao processar orçamento. Tente novamente.', 'error');
+  }
+}
+
+function limparCampos() {
+  // Limpa informações do cliente
+  document.getElementById('clienteNome').value = '';
+  document.getElementById('clienteTelefone').value = '';
+  document.getElementById('clienteCidade').value = '';
+  document.getElementById('dataEvento').value = '';
+  document.getElementById('quantidadeConvidados').value = '';
+  document.getElementById('descricaoEvento').value = '';
+  
+  // Limpa opções adicionais
+  document.getElementById('incluir_40_percent').checked = false;
+  document.getElementById('percentual_info').style.display = 'none';
+
+  // Limpa drinks
+  const todosInputs = document.querySelectorAll('input[type="number"]');
+  todosInputs.forEach(input => {
+    input.value = '0';
+  });
+}
+
+async function logout() {
+  try {
+    await app.logout();
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error);
+    localStorage.removeItem('usuario');
+    window.location.href = '/login';
+  }
+}
+
+
+
+
+</script>
+</body>
+</html>

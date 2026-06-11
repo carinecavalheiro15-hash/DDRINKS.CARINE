@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orçamento - Resultado 🍸</title>
+<script>
+  // Protege a página: só acessa se estiver logado
+  if (!localStorage.getItem('usuario')) {
+    window.location.href = "login.html";
+  }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = 'https://mobotbmftmfbzwuagdac.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vYm90Ym1mdG1mYnp3dWFnZGFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNTM5NDAsImV4cCI6MjA3MzcyOTk0MH0.VBPWH2spWzW-iKRsCdiR5ZJhe5Aw19LmSpM26nwMqvY';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+<style>
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #ffffff;
+    margin: 0; 
+    padding: 0;
+    min-height: 100vh;
+}
+
+.container { 
+    max-width: 1000px; 
+    margin: 20px auto; 
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 30px; 
+    border-radius: 20px; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(45deg, #d4170a, #e74c3c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.resultado {
+    background: linear-gradient(145deg, #e9ffe9, #f0fff0);
+    padding: 25px;
+    border: 2px solid #d4170a;
+    border-radius: 15px;
+    margin: 20px 0;
+    box-shadow: 0 10px 30px rgba(212, 23, 10, 0.1);
+    position: relative;
+}
+
+.resultado::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(45deg, #d4170a, #e74c3c);
+    border-radius: 15px 15px 0 0;
+}
+
+.resultado h3 {
+    margin-top: 0;
+    color: #155724;
+    font-size: 1.5em;
+    text-align: center;
+    border-bottom: 2px solid #d4170a;
+    padding-bottom: 10px;
+}
+
+button {
+    display: block;
+    width: 100%;
+    background: linear-gradient(45deg, #d4170a, #e74c3c);
+    color: white;
+    padding: 15px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 20px 0;
+    box-shadow: 0 8px 25px rgba(212, 23, 10, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #272625, #2c3e50);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+}
+
+.btn-voltar {
+    background: linear-gradient(45deg, #6c757d, #495057);
+    margin-bottom: 20px;
+}
+
+.btn-voltar:hover {
+    background: linear-gradient(45deg, #495057, #343a40);
+}
+
+.navigation {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.nav-btn {
+    display: inline-block;
+    background: linear-gradient(45deg, #d4170a, #e74c3c);
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 5px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(212, 23, 10, 0.3);
+}
+
+.nav-btn:hover {
+    background: linear-gradient(45deg, #272625, #2c3e50);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.btn-logout {
+    background: linear-gradient(45deg, #6c757d, #495057);
+}
+
+.btn-logout:hover {
+    background: linear-gradient(45deg, #495057, #343a40);
+}
+
+/* Animação de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeInUp 0.8s ease-out;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <header style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:12px;">
+        <a href="#" class="app-logo-link" aria-label="DDrinks - Início" onclick="showPage('home');return false;">
+            <span class="app-logo-icon" role="img" aria-hidden="true" title="DDrinks">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M4 3h16" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 12v6" stroke="rgba(255,255,255,0.95)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M9 18h6" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <div style="font-weight:700;color:#d4170a;font-size:20px;">DDrinks</div>
+        </a>
+    </header>
+    <h1>Orçamento de Drinks</h1>
+
+    <div class="navigation">
+        <button class="btn-voltar" onclick="voltarInicio()">← Voltar ao Início</button>
+        <a href="agenda.html" class="nav-btn" aria-label="Agenda de Eventos"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>Agenda de Eventos</span></a>
+        <a href="datas.html" class="nav-btn" aria-label="Calendário"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Calendário</span></a>
+        <button onclick="logout()" class="nav-btn btn-logout" aria-label="Sair"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Sair</span></button>
+    </div>
+  <div id="orcamento"></div>
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button onclick="gerarPDF()" style="flex: 1;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><path d="M7 2h8v4H7z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M7 22h10a2 2 0 002-2V8H7v12z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M9 12h6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>Gerar PDF</button>
+        <button onclick="irParaAgenda()" style="flex: 1; background: linear-gradient(45deg, #27ae60, #2ecc71);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><path d="M6 10h4v8H6zM10 6h4v12h-4zM16 14h4v4h-4z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Ver na Agenda</button>
+	                </div>
+	            </div>
+
+<script>
+// Preços dos pacotes (carregados de data/precos.json quando disponível)
+const DEFAULT_PRECOS_PACOTES = {
+    bronze: { caipirinha: 10, mojito: 3.43, sex_on_the_beach: 5.5, gin_tonica: 5.95, moscow_mule: 4.55, gin_tropical: 7.27, gim_tropical: 6, negroni: 7.58, aperol_spritz: 12, whisky_sour: 6.26, cosmopolitan: 4.8, caipirinha_morango: 5.73, caipirinha_limao: 4.83, caipirinha_kiwi: 9.5, pina_colada: 5.9, alexander: 5.74, tequila_sour: 5.75, tequila_sunrise: 5.73, pink_lady: 5, limonada_suica: 3.4, lagoa_azul: 4.82, caipirinha_cachaca: 3.5, caipirinha_vinho: 4, cream_pink: 6.5, cotton_fairy: 5.5, marguerita: 6, amaretto_sour: 8, hold_hup: 8.5, passion: 8.5, cookie_drink: 9.5, mirtilo_sour: 7.5, toscano: 8.5, oreo_yin: 8.5, cotton_fairy_sem_alcool: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 },
+  prata: { caipirinha: 14, mojito: 7.43, sex_on_the_beach: 9.5, gin_tonica: 9.95, moscow_mule: 8.55, gin_tropical: 11.27, gim_tropical: 10, negroni: 11.58, aperol_spritz: 16, whisky_sour: 10.26, cosmopolitan: 8.8, caipirinha_morango: 9.73, caipirinha_limao: 8.83, caipirinha_kiwi: 13.5, pina_colada: 9.9, alexander: 9.74, tequila_sour: 9.75, tequila_sunrise: 9.73, pink_lady: 9, limonada_suica: 7.4, lagoa_azul: 8.82, caipirinha_cachaca: 7.5, caipirinha_vinho: 8, cream_pink: 10.5, cotton_fairy: 9.5, marguerita: 10, amaretto_sour: 12, hold_hup: 12.5, passion: 12.5, cookie_drink: 13.5, mirtilo_sour: 11.5, toscano: 12.5, oreo_yin: 12.5, cotton_fairy_sem_alcool: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 },
+  ouro: { caipirinha: 18, mojito: 11.43, sex_on_the_beach: 13.5, gin_tonica: 13.95, moscow_mule: 12.55, gin_tropical: 15.27, gim_tropical: 14, negroni: 15.58, aperol_spritz: 20, whisky_sour: 14.26, cosmopolitan: 12.8, caipirinha_morango: 13.73, caipirinha_limao: 12.83, caipirinha_kiwi: 17.5, pina_colada: 13.9, alexander: 13.74, tequila_sour: 13.75, tequila_sunrise: 13.73, pink_lady: 13, limonada_suica: 11.4, lagoa_azul: 12.82, caipirinha_cachaca: 11.5, caipirinha_vinho: 12, cream_pink: 14.5, cotton_fairy: 13.5, marguerita: 14, amaretto_sour: 16, hold_hup: 16.5, passion: 16.5, cookie_drink: 17.5, mirtilo_sour: 15.5, toscano: 16.5, oreo_yin: 16.5, cotton_fairy_sem_alcool: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 }
+};
+
+let precosPacotes = DEFAULT_PRECOS_PACOTES;
+
+(async function loadPrecos(){
+    try {
+        const res = await fetch('precos/precos.json');
+        if (res.ok) {
+            const data = await res.json();
+            precosPacotes = Object.assign({}, DEFAULT_PRECOS_PACOTES, data);
+            console.log('Preços carregados de data/precos.json');
+        } else {
+            console.warn('Não foi possível carregar data/precos.json, usando padrões.');
+        }
+    } catch (e) {
+        console.warn('Erro carregando preços, usando padrões.', e);
+    }
+})();
+
+// Buscar o orçamento mais recente do usuário logado no Supabase
+async function mostrarOrcamento() {
+  // Busca o usuário logado
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    document.getElementById('orcamento').innerHTML = '<div class="resultado"><h3>Você precisa estar logado para ver o orçamento.</h3></div>';
+    return;
+  }
+  // Busca o orçamento mais recente criado pelo usuário
+  const { data, error } = await supabase.from('orcamentos').select('*').order('dataCriacao', { ascending: false }).limit(1);
+  if (error || !data || data.length === 0) {
+    document.getElementById('orcamento').innerHTML = '<div class="resultado"><h3>Nenhum dado encontrado</h3><p>Por favor, volte ao início e preencha os dados novamente.</p></div>';
+    return;
+  }
+  const orcamento = data[0];
+  // Exibe as informações do orçamento (adaptar conforme estrutura)
+  let html = `<div class="resultado">
+    <h3>Informações do Cliente</h3>
+    <p><strong>Nome:</strong> ${orcamento.cliente}</p>
+    <p><strong>Telefone:</strong> ${orcamento.telefone}</p>
+    <p><strong>Cidade:</strong> ${orcamento.cidade}</p>
+    <p><strong>Data do Evento:</strong> ${formatarData(orcamento.data)}</p>
+    <p><strong>Quantidade de Convidados:</strong> ${orcamento.quantidadeConvidados} pessoas</p>
+    <p><strong>Descrição:</strong> ${orcamento.descricao}</p>
+    ${orcamento.incluirTaxaServico ? '<p style="color: #d4170a; font-weight: bold;">Taxa de Serviço (40%) incluída</p>' : ''}
+  </div>`;
+  // Exibir detalhes dos drinks e valores (pode adaptar para mostrar todos os pacotes)
+  html += `<div class="resultado">
+    <h3>Resumo do Orçamento</h3>
+    <p><strong>Valor Base:</strong> R$ ${Number(orcamento.valorBase).toFixed(2)}</p>
+    <p><strong>Taxa de Serviço:</strong> R$ ${Number(orcamento.taxaServico).toFixed(2)}</p>
+    <p style="font-size: 18px; font-weight: bold; color: #d4170a; margin-top: 5px;"><strong>Total:</strong> R$ ${Number(orcamento.valor).toFixed(2)}</p>
+  </div>`;
+  document.getElementById('orcamento').innerHTML = html;
+}
+
+function voltarInicio() {
+    window.location.href = 'index.html';
+}
+
+function logout() {
+    supabase.auth.signOut().then(() => {
+        window.location.href = "login.html";
+    });
+}
+
+function formatarData(dataISO) {
+    if (!dataISO) return '';
+    const [ano, mes, dia] = dataISO.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+function irParaAgenda() {
+    window.location.href = 'agenda.html';
+}
+
+function gerarPDF() {
+    const { jsPDF } = window.jspdf;
+    
+    // Coleta dados dos inputs
+    const dados = JSON.parse(sessionStorage.getItem('orcamentoDados'));
+    if (!dados) {
+        alert('Nenhum dado encontrado para gerar o PDF.');
+        return;
+    }
+
+    // Coleta informações do cliente
+    const clienteInfo = JSON.parse(sessionStorage.getItem('clienteInfo'));
+    
+    // Monta o HTML profissional do PDF
+    let htmlPDF = `
+        <div style="font-family: 'Arial', sans-serif; max-width: 800px; margin: 0 auto; background: #000000; padding: 30px; color: white;">
+            <!-- Cabeçalho -->
+            <div style="text-align: center; margin-bottom: 40px; border-bottom: 3px solid #d4170a; padding-bottom: 20px;">
+                <h1 style="color: #d4170a; margin: 0; font-size: 28px; font-weight: bold;">🍸 DDrinks</h1>
+                <h2 style="color: #ffffff; margin: 10px 0; font-size: 20px; font-weight: normal;">Orçamento para Eventos</h2>
+                <p style="color: #cccccc; margin: 5px 0; font-size: 14px;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+            </div>
+
+            <!-- Informações do Cliente -->
+            ${clienteInfo ? `
+            <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #d4170a;">
+                <h3 style="color: #d4170a; margin: 0 0 15px 0; font-size: 18px;">👤 Informações do Cliente</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    <div><strong style="color: #d4170a;">Nome:</strong> <span style="color: #ffffff;">${clienteInfo.nome}</span></div>
+                    <div><strong style="color: #d4170a;">Telefone:</strong> <span style="color: #ffffff;">${clienteInfo.telefone}</span></div>
+                    <div><strong style="color: #d4170a;">Cidade:</strong> <span style="color: #ffffff;">${clienteInfo.cidade}</span></div>
+                    <div><strong style="color: #d4170a;">Data do Evento:</strong> <span style="color: #ffffff;">${formatarData(clienteInfo.dataEvento)}</span></div>
+                    <div><strong style="color: #d4170a;">Convidados:</strong> <span style="color: #ffffff;">${clienteInfo.quantidadeConvidados} pessoas</span></div>
+                    <div><strong style="color: #d4170a;">Descrição:</strong> <span style="color: #ffffff;">${clienteInfo.descricaoEvento}</span></div>
+                </div>
+            </div>
+            ` : ''}
+
+	            <!-- Resumo dos Itens -->
+	            <div style="margin-bottom: 30px;">
+	                <h3 style="color: #ffffff; border-bottom: 2px solid #d4170a; padding-bottom: 5px; margin-bottom: 15px;">Drinks Selecionados</h3>
+	                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+	    `;
+	
+	    // Adiciona drinks selecionados
+	    const drinksSelecionados = [];
+	    
+	    Object.keys(dados).forEach(id => {
+	        const nome = id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+	        
+        if (['caipirinha', 'mojito', 'sex_on_the_beach', 'gin_tonica', 'moscow_mule', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'].includes(id)) {
+	            drinksSelecionados.push({ nome });
+	        }
+	    });
+	
+	    // Seção de Drinks
+	    if (drinksSelecionados.length > 0) {
+	        drinksSelecionados.forEach(item => {
+	            htmlPDF += `<span style="background: #1a1a1a; color: #d4170a; padding: 5px 10px; border-radius: 5px; font-size: 14px; border: 1px solid #d4170a;">${item.nome}</span>`;
+	        });
+	    }
+	
+	    htmlPDF += `
+	                </div>
+	            </div>
+
+            <!-- Comparação dos Pacotes -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #ffffff; border-bottom: 2px solid #d4170a; padding-bottom: 5px; margin-bottom: 20px; text-align: center;">Comparação de Pacotes</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+    `;
+
+    // Calcula totais para cada pacote
+    const pacotes = ['bronze', 'prata', 'ouro'];
+    const coresPacotes = {
+        bronze: '#CD7F32',
+        prata: '#C0C0C0', 
+        ouro: '#FFD700'
+    };
+
+    pacotes.forEach(pacote => {
+        let totalPacote = 0;
+	        Object.keys(dados).forEach(id => {
+            const quantidade = dados[id];
+            
+            // Se for um drink, multiplica pelo preço do pacote
+            if (['caipirinha', 'mojito', 'sex_on_the_beach', 'gin_tonica', 'moscow_mule', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'].includes(id)) {
+                const preco = precosPacotes[pacote][id] || 0;
+	                const subtotal = quantidade * preco;
+	                totalPacote += subtotal;
+	            } else {
+                // Se for outros gastos, soma o valor direto (sem multiplicar)
+                totalPacote += quantidade;
+            }
+        });
+
+        // Verifica se deve incluir taxa de serviço
+	        const incluirTaxaServico = clienteInfo && clienteInfo.incluirTaxaServico;
+	        const taxaServico = incluirTaxaServico ? totalPacote * 0.4 : 0;
+	        const totalFinal = totalPacote + taxaServico;
+	
+	        htmlPDF += `
+	            <div style="border: 2px solid ${coresPacotes[pacote]}; border-radius: 10px; padding: 15px; text-align: center; background: linear-gradient(135deg, ${coresPacotes[pacote]}20, #1a1a1a);">
+	                <h4 style="color: ${coresPacotes[pacote]}; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; font-weight: bold;">
+	                    🏆 Pacote ${pacote.charAt(0).toUpperCase() + pacote.slice(1)}
+	                </h4>
+	
+	                <div style="background: ${coresPacotes[pacote]}; color: white; padding: 10px; border-radius: 5px; margin-top: 10px;">
+	                    <strong style="font-size: 16px;">Total: R$ ${totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+	                </div>
+	            </div>
+	        `;
+	    });
+
+    htmlPDF += `
+                </div>
+            </div>
+
+            <!-- Rodapé -->
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #d4170a; color: #cccccc; font-size: 12px;">
+                <p style="color: #ffffff;"><strong>DDrinks - Sistema de Orçamento para Eventos</strong></p>
+                <p>Este orçamento é válido por 7 dias a partir da data de emissão.</p>
+                <p>Para mais informações, entre em contato conosco.</p>
+            </div>
+        </div>
+    `;
+
+    // Cria elemento temporário com estilos
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    tempDiv.style.width = '800px';
+    tempDiv.style.background = '#000000';
+    tempDiv.innerHTML = htmlPDF;
+    document.body.appendChild(tempDiv);
+
+    // Gera o PDF
+    html2canvas(tempDiv, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#000000'
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 295; // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save(`orcamento_drinks_${new Date().toISOString().split('T')[0]}.pdf`);
+        document.body.removeChild(tempDiv);
+    }).catch(error => {
+        console.error('Erro ao gerar PDF:', error);
+        document.body.removeChild(tempDiv);
+        alert('Erro ao gerar PDF. Tente novamente.');
+    });
+}
+
+// Carrega o orçamento ao abrir a página
+mostrarOrcamento();
+</script>
+</body>
+</html>

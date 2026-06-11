@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDrinks - Sistema Completo de Orçamentos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- Configuração do PDF.js Worker -->
+    <script>
+        // Configurar o worker do PDF.js quando a página carrega
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        
+        // Log para verificação
+        window.addEventListener('load', () => {
+            if (typeof pdfjsLib !== 'undefined') {
+                console.log('✓ PDF.js carregado corretamente');
+                console.log('✓ Worker configurado:', pdfjsLib.GlobalWorkerOptions.workerSrc);
+            } else {
+                console.warn('⚠ PDF.js não está disponível');
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --primary-color: #ef4444;
+            --primary-dark: #475569;
+            --primary-light: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+            border-color: var(--gray-400);
+        }
+
+        .nav-item.active,
+        .btn-primary.active,
+        .btn-secondary.active {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .app-logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--error-color), #ff7b7b);
+            border-radius: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+        /* Small section icons used in headings */
+        .section-icon svg { display: inline-block; vertical-align: middle; color: inherit; }
+        .section-icon { color: inherit; }
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 700;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .app-logo-icon svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+
+        .app-logo-icon:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.14);
+        }
+
+        .app-logo-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .app-logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .app-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Navigation icon layout */
+        .app-nav .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.9rem;
+        }
+
+        .app-nav .nav-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .app-nav .nav-icon svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+            stroke: currentColor;
+        }
+
+        .app-nav .nav-item.active,
+        .app-nav .nav-item.active svg {
+            color: #fff;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+            margin-bottom: 2rem;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+            border-color: var(--gray-400);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-4 { gap: 1rem; }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-item:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .nav-item.active,
+        .btn-primary.active,
+        .btn-secondary.active {
+            background: var(--error-color);
+            color: #fff !important;
+            border-color: var(--error-color);
+        }
+
+        .form-active {
+            display: block;
+        }
+
+        .form-hidden {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--gray-500);
+        }
+
+        .empty-state-icon {
+            width: 4rem;
+            height: 4rem;
+            margin: 0 auto 1rem;
+            opacity: 0.5;
+            font-size: 4rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-text {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            border-left: 4px solid;
+            z-index: 1001;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .notification-success { border-left-color: #10b981; }
+        .notification-error { border-left-color: #ef4444; }
+        .notification-warning { border-left-color: #f59e0b; }
+        .notification-info { border-left-color: #3b82f6; }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #6b7280;
+            margin-left: auto;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Calendário styles */
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-200);
+        }
+
+        .month-year {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--gray-200);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+        }
+
+        .calendar-header {
+            background: var(--error-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .calendar-day {
+            background: white;
+            padding: 1rem;
+            min-height: 100px;
+            border: 1px solid var(--gray-100);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .calendar-day:hover {
+            background: var(--gray-50);
+        }
+
+        .calendar-day.other-month {
+            background: var(--gray-50);
+            color: var(--gray-400);
+        }
+
+        .calendar-day.today {
+            background: linear-gradient(145deg, #fef3c7, #fde68a);
+            border: 2px solid var(--warning-color);
+        }
+
+        .calendar-day.has-event {
+            background: linear-gradient(145deg, #dbeafe, #bfdbfe);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .event-info {
+            font-size: 0.75rem;
+            color: var(--gray-700);
+            margin: 0.25rem 0;
+            padding: 0.25rem 0.5rem;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 0.25rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .event-pendente {
+            background: rgba(245, 158, 11, 0.2);
+            color: #92400e;
+        }
+
+        .event-aceito {
+            background: rgba(16, 185, 129, 0.2);
+            color: #065f46;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-200);
+            font-size: 0.875rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+        }
+
+        /* Pendente: stronger amber */
+        .legend-pendente {
+            background: #f59e0b; /* amber-500 */
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        /* Aceito: strong green */
+        .legend-aceito {
+            background: #10b981; /* green-500 */
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        /* Hoje: vivid yellow with darker border for contrast */
+        .legend-hoje {
+            background: #f59e0b; /* use amber to match pending but styled */
+            border: 2px solid #b45309; /* darker amber */
+            padding: 2px; /* give a tiny inner padding so the svg square shows */
+        }
+
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-2xl { font-size: 1.5rem; }
+
+    /* Orçamentos list improvements */
+    .orcamentos-table { width: 100%; border-collapse: collapse; background: white; border-radius: 0.5rem; overflow: hidden; box-shadow: var(--shadow); }
+    .orcamentos-table thead th { padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); border-bottom: 1px solid var(--gray-200); }
+    .orcamentos-table tbody td { padding: 0.9rem 1rem; vertical-align: middle; }
+    .orcamento-client { display:flex; flex-direction:column; gap:6px; }
+    .orcamento-client .meta { display:flex; gap:8px; align-items:center; color:var(--gray-600); font-size:0. ninerem; }
+    .orcamento-meta { font-size:0. ninerem; color:var(--gray-600); }
+    .orcamento-value { font-weight:700; color:var(--success-color); }
+    .orcamento-actions { display:flex; align-items:center; gap:0.5rem; }
+    .orcamento-row + .orcamento-row { border-top: 1px solid var(--gray-100); }
+    .orcamento-badge { display:inline-flex; align-items:center; gap:6px; padding:0.25rem 0.6rem; border-radius:0.375rem; font-size:0.75rem; font-weight:500; }
+        .text-xl { font-size: 1.25rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .font-bold { font-weight: 700; }
+
+        /* Estilos do resultado como no código antigo */
+        .resultado {
+            background: linear-gradient(145deg, #e9ffe9, #f0fff0);
+            padding: 25px;
+            border: 2px solid #d4170a;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(212, 23, 10, 0.1);
+            position: relative;
+        }
+
+        .resultado::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #d4170a, #e74c3c);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .resultado h3 {
+            margin-top: 0;
+            color: #155724;
+            font-size: 1.5em;
+            text-align: center;
+            border-bottom: 2px solid #d4170a;
+            padding-bottom: 10px;
+        }
+
+        .resultado p {
+            margin: 8px 0;
+            font-size: 1rem;
+        }
+
+        .resultado div {
+            margin: 5px 0;
+            font-size: 1rem;
+        }
+
+        .resultado b {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .resultado i {
+            color: #666;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 1rem;
+            }
+            
+            .grid-cols-2,
+            .grid-cols-3,
+            .grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-header-content {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: 2rem;
+            }
+
+            /* Calendário responsivo */
+            .calendar-controls {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 0.75rem;
+            }
+            
+            .event-info {
+                font-size: 0.625rem;
+                padding: 0.125rem 0.25rem;
+            }
+            
+            .legend {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Profissional -->
+        <header class="app-header">
+            <div class="app-header-content">
+                <a href="#" class="app-logo-link" aria-label="DDrinks - Início" onclick="showPage('home');return false;">
+                    <span class="app-logo-icon" role="img" aria-hidden="true" title="DDrinks">
+                        <!-- Professional cocktail SVG icon -->
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M4 3h16" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 12v6" stroke="rgba(255,255,255,0.95)" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M9 18h6" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                </a>
+                <nav class="app-nav">
+                                        <button class="nav-item btn btn-secondary" onclick="showPage('login')" id="nav-login" style="color: var(--error-color);" aria-label="Login">
+                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 11V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 21H8a2 2 0 01-2-2V7a2 2 0 012-2h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                    <span>Login</span>
+                                                </span>
+                                        </button>
+                                        <button class="nav-item btn btn-secondary" onclick="showPage('home')" id="nav-home" style="display: none; color: var(--error-color);" aria-label="Início">
+                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 21V12h14v9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                    <span>Início</span>
+                                                </span>
+                                        </button>
+                                        <button class="nav-item btn btn-secondary" onclick="showPage('agenda')" id="nav-agenda" style="display: none; color: var(--error-color);" aria-label="Agenda">
+                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+                                                    <span>Agenda</span>
+                                                </span>
+                                        </button>
+                                        <button class="nav-item btn btn-secondary" onclick="showPage('calendar')" id="nav-calendar" style="display: none; color: var(--error-color);" aria-label="Calendário">
+                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                                                    <span>Calendário</span>
+                                                </span>
+                                        </button>
+                                        <button class="nav-item btn btn-secondary" onclick="logout()" id="nav-logout" style="display: none; color: var(--error-color);" aria-label="Sair">
+                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                    <span>Sair</span>
+                                                </span>
+                                        </button>
+                </nav>
+                <div style="height: 32px;"></div>
+            </div>
+        </header>
+
+        <!-- Página de Login -->
+        <div id="login-page" class="page active">
+            <div class="card" style="max-width: 520px; margin: 2rem auto;">
+                <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                    <h2 class="card-title"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M7 7V5a5 5 0 0110 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    </span>Acesso ao Sistema</h2>
+                    <p class="card-subtitle">Entre com suas credenciais ou cadastre-se</p>
+                </div>
+
+                <!-- Formulário de Login -->
+                <form id="loginForm" onsubmit="fazerLogin(event)" class="form-active" style="padding:1rem 1.2rem;">
+                    <div class="form-group">
+                        <label for="usuario" class="form-label">Usuário ou Email *</label>
+                        <input type="text" id="usuario" class="form-input" placeholder="Digite seu usuário ou email" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="senha" class="form-label">Senha *</label>
+                        <input type="password" id="senha" class="form-input" placeholder="Digite sua senha" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+                        <span aria-hidden="true" style="display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M6 12h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                        </span>
+                        Entrar
+                    </button>
+                </form>
+
+                <!-- Formulário de Cadastro -->
+                <form id="registerForm" onsubmit="fazerCadastro(event)" class="form-hidden" style="padding:1rem 1.2rem;">
+                    <div class="form-group">
+                        <label for="regNome" class="form-label">Nome Completo *</label>
+                        <input type="text" id="regNome" class="form-input" placeholder="Digite seu nome completo" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="regUsuario" class="form-label">Usuário *</label>
+                        <input type="text" id="regUsuario" class="form-input" placeholder="Escolha um usuário" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="regEmail" class="form-label">Email *</label>
+                        <input type="email" id="regEmail" class="form-input" placeholder="Digite seu email" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="regSenha" class="form-label">Senha *</label>
+                        <input type="password" id="regSenha" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label for="regConfirmarSenha" class="form-label">Confirmar Senha *</label>
+                        <input type="password" id="regConfirmarSenha" class="form-input" placeholder="Confirme sua senha" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+                        <span aria-hidden="true" style="display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M5 12h14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                        </span>
+                        Cadastrar
+                    </button>
+                </form>
+
+                <div class="flex justify-center gap-4 mt-6" style="padding-bottom:1.2rem;">
+                    <a href="#" id="toggleForm" class="btn btn-secondary btn-sm">Não tem conta? Cadastre-se</a>
+                    <a href="#" id="toggleLogin" class="btn btn-secondary btn-sm hidden">Já tem conta? Faça login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página Principal (Orçamentos) -->
+        <div id="home-page" class="page">
+            <!-- Formulário de Informações do Cliente -->
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <h2 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                    <path d="M9 2h6a2 2 0 012 2v2h-2V4H9v2H7V4a2 2 0 012-2z" fill="currentColor"/>
+                                    <path d="M6 8h12v12a2 2 0 01-2 2H8a2 2 0 01-2-2V8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                    <path d="M9 12h6M9 15h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>Informações do Cliente</h2>
+                        <p class="card-subtitle" style="align-self: center;">Preencha os dados básicos do evento</p>
+                    </div>
+                </div>
+                
+                <form>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label for="clienteNome" class="form-label">Nome do Cliente *</label>
+                            <input type="text" id="clienteNome" class="form-input" placeholder="Nome completo do cliente" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteTelefone" class="form-label">Telefone *</label>
+                            <input type="tel" id="clienteTelefone" class="form-input" placeholder="(11) 99999-9999" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCidade" class="form-label">Cidade *</label>
+                            <input type="text" id="clienteCidade" class="form-input" placeholder="Cidade do evento" required />
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label for="dataEvento" class="form-label">Data do Evento *</label>
+                            <input type="date" id="dataEvento" class="form-input" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="quantidadeConvidados" class="form-label">Convidados *</label>
+                            <input type="number" id="quantidadeConvidados" class="form-input" placeholder="Número de convidados" min="1" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="descricaoEvento" class="form-label">Descrição *</label>
+                            <input type="text" id="descricaoEvento" class="form-input" placeholder="Tipo de evento" required />
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Seleção de Drinks -->
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <h2 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                    <path d="M4 3h16l-2 8a6 6 0 11-12 0L4 3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                    <path d="M8 21h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>Seleção de Drinks</h2>
+                        <p class="card-subtitle" style="align-self: center;">Escolha a quantidade de cada drink para o evento</p>
+                    </div>
+                </div>
+                
+                <!-- Seleção de Pacote -->
+                <div class="form-group">
+                    <label class="form-label">Pacote de Preços:</label>
+                    <select id="pacoteSelecionado" class="form-input" onchange="atualizarPrecos()">
+                        <option value="bronze">🥉 Pacote Bronze</option>
+                        <option value="prata">🥈 Pacote Prata</option>
+                        <option value="ouro">🥇 Pacote Ouro</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="form-group">
+                        <label for="caipirinha" class="form-label">Caipirinha de Vinho</label>
+                        <input type="number" id="caipirinha" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="mojito" class="form-label">Mojito</label>
+                        <input type="number" id="mojito" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="mojito_sem_alcool" class="form-label non-alc-label">Mojito <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+                        <input type="number" id="mojito_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="sex_on_the_beach" class="form-label">Sex on the Beach</label>
+                        <input type="number" id="sex_on_the_beach" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="sex_on_the_beach_sem_alcool" class="form-label non-alc-label">Sex on the Beach <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+                        <input type="number" id="sex_on_the_beach_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="gin_tonica" class="form-label">Gin Tônica</label>
+                        <input type="number" id="gin_tonica" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="moscow_mule" class="form-label">Moscow Mule</label>
+                        <input type="number" id="moscow_mule" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="moscow_mule_sem_alcool" class="form-label non-alc-label">Moscow Mule <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+                        <input type="number" id="moscow_mule_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="gim_tropical" class="form-label">Gim Tropical</label>
+                        <input type="number" id="gim_tropical" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="negroni" class="form-label">Negroni</label>
+                        <input type="number" id="negroni" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="aperol_spritz" class="form-label">Aperol Spritz</label>
+                        <input type="number" id="aperol_spritz" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="whisky_sour" class="form-label">Whisky Sour</label>
+                        <input type="number" id="whisky_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cosmopolitan" class="form-label">Cosmopolitan</label>
+                        <input type="number" id="cosmopolitan" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_morango" class="form-label">Caipirinha de Morango</label>
+                        <input type="number" id="caipirinha_morango" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_limao" class="form-label">Caipirinha de Limão</label>
+                        <input type="number" id="caipirinha_limao" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="pina_colada" class="form-label">Piña Colada</label>
+                        <input type="number" id="pina_colada" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="pina_colada_sem_alcool" class="form-label non-alc-label">Piña Colada <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+                        <input type="number" id="pina_colada_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="alexander" class="form-label">Alexander</label>
+                        <input type="number" id="alexander" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="tequila_sour" class="form-label">Tequila Sour</label>
+                        <input type="number" id="tequila_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="pink_lady" class="form-label">Pink Lady</label>
+                        <input type="number" id="pink_lady" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_kiwi" class="form-label">Caipirinha de Kiwi</label>
+                        <input type="number" id="caipirinha_kiwi" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="gin_tropical" class="form-label">Gin Tropical</label>
+                        <input type="number" id="gin_tropical" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="limonada_suica" class="form-label">Limonada Suíça</label>
+                        <input type="number" id="limonada_suica" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="soda_italiana_limao_siciliano_e_morango" class="form-label">Soda Italiana (Limão Siciliano / Morango)</label>
+                        <input type="number" id="soda_italiana_limao_siciliano_e_morango" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="lagoa_azul" class="form-label">Lagoa Azul</label>
+                        <input type="number" id="lagoa_azul" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="tequila_sunrise" class="form-label">Tequila Sunrise</label>
+                        <input type="number" id="tequila_sunrise" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_cachaca" class="form-label">Caipirinha de Cachaça</label>
+                        <input type="number" id="caipirinha_cachaca" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_vinho" class="form-label">Caipirinha de Vinho</label>
+                        <input type="number" id="caipirinha_vinho" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cream_pink" class="form-label">Cream Pink</label>
+                        <input type="number" id="cream_pink" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cotton_fairy" class="form-label">Cotton Fairy</label>
+                        <input type="number" id="cotton_fairy" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cotton_fairy_sem_alcool" class="form-label non-alc-label">Cotton Fairy <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+                        <input type="number" id="cotton_fairy_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="marguerita" class="form-label">Marguerita</label>
+                        <input type="number" id="marguerita" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="amaretto_sour" class="form-label">Amaretto Sour</label>
+                        <input type="number" id="amaretto_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="hold_hup" class="form-label">Hold Hup</label>
+                        <input type="number" id="hold_hup" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="passion" class="form-label">Passion</label>
+                        <input type="number" id="passion" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cookie_drink" class="form-label">Cookie Drink</label>
+                        <input type="number" id="cookie_drink" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="mirtilo_sour" class="form-label">Mirtilo Sour</label>
+                        <input type="number" id="mirtilo_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="toscano" class="form-label">Toscano</label>
+                        <input type="number" id="toscano" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="oreo_yin" class="form-label">Oreo Yin</label>
+                        <input type="number" id="oreo_yin" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Outros Gastos -->
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <h2 class="card-title" style="align-self: center;"><span style="display:inline-flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M7 7v2a5 5 0 005 5 5 5 0 005-5V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Outros Gastos</span></span></h2>
+                        <p class="card-subtitle" style="align-self: center;">Adicione custos extras para o evento</p>
+                    </div>
+                </div>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="form-group">
+                            <label for="gelo" class="form-label">Gelo (R$)</label>
+                            <input type="number" id="gelo" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="copos" class="form-label">Copos (R$)</label>
+                            <input type="number" id="copos" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="decoracao" class="form-label">Decoração (R$)</label>
+                            <input type="number" id="decoracao" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="carretinha" class="form-label">Carretinha (R$)</label>
+                            <input type="number" id="carretinha" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="funcionarios" class="form-label">Funcionários (R$)</label>
+                            <input type="number" id="funcionarios" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="alimentacao" class="form-label">Alimentação (R$)</label>
+                            <input type="number" id="alimentacao" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="estrutura_bar" class="form-label">Estrutura Bar (R$)</label>
+                            <input type="number" id="estrutura_bar" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="flores" class="form-label">Flores (R$)</label>
+                            <input type="number" id="flores" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="papelaria" class="form-label">Papelaria (R$)</label>
+                            <input type="number" id="papelaria" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="canudos" class="form-label">Canudos (R$)</label>
+                            <input type="number" id="canudos" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="gasolina" class="form-label">Gasolina (R$)</label>
+                            <input type="number" id="gasolina" class="form-input" min="0" value="0" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Botão de Ação -->
+            <div class="card">
+                <div class="flex justify-center gap-4">
+                    <button onclick="calcularOrcamento()" class="btn btn-primary btn-lg" style="background: var(--error-color); color: #fff;">
+                        🧮 Calcular Orçamento
+                    </button>
+                    <button onclick="gerarPDF()" class="btn btn-secondary btn-lg" id="btnPDF" style="display: none;">
+                        📄 Gerar PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resultado -->
+            <div id="resultado"></div>
+        </div>
+
+        <!-- Página da Agenda -->
+        <div id="agenda-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <h2 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                    <path d="M3 3h18v4H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                    <path d="M7 11h3v8H7zM12 8h3v11h-3zM17 14h3v5h-3z" fill="currentColor"/>
+                                </svg>
+                            </span>Dashboard de Eventos</h2>
+                        <p class="card-subtitle" style="align-self: center;">Gerencie seus orçamentos e eventos</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="card">
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl" aria-hidden="true" style="color: var(--primary-color);">
+                                <!-- Clipboard icon -->
+                                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M9 2h6a1 1 0 011 1v1h-8V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                    <path d="M8 11h8M8 15h8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold" style="color: var(--primary-color);" id="total-orcamentos">0</div>
+                                <div class="text-sm" style="color: var(--gray-600);">Total de Orçamentos</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl" aria-hidden="true" style="color: var(--warning-color);">
+                                <!-- Hourglass icon -->
+                                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M6 2h12M6 22h12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                    <path d="M8 6h8v2a4 4 0 01-4 4 4 4 0 01-4-4V6zM8 18h8v-2a4 4 0 00-4-4 4 4 0 00-4 4v2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold" style="color: var(--warning-color);" id="orcamentos-pendentes">0</div>
+                                <div class="text-sm" style="color: var(--gray-600);">Pendentes</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl" aria-hidden="true" style="color: var(--success-color);">
+                                <!-- Check circle icon -->
+                                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                    <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold" style="color: var(--success-color);" id="orcamentos-aceitos">0</div>
+                                <div class="text-sm" style="color: var(--gray-600);">Aceitos</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos do Dashboard -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="card">
+                        <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                            <h3 class="card-title"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:18px;height:18px;">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                            <path d="M4 19h16" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                            <rect x="6" y="10" width="3" height="9" rx="1" fill="currentColor"/>
+                                            <rect x="11" y="6" width="3" height="13" rx="1" fill="currentColor"/>
+                                            <rect x="16" y="2" width="3" height="17" rx="1" fill="currentColor"/>
+                                        </svg>
+                                    </span>Eventos por Mês</h3>
+                        </div>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="chartMeses"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                            <h3 class="card-title"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:18px;height:18px;">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                            <path d="M3 12h18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                            <circle cx="7" cy="8" r="3" fill="currentColor"/>
+                                            <circle cx="17" cy="16" r="3" fill="currentColor"/>
+                                        </svg>
+                                    </span>Status dos Eventos</h3>
+                        </div>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="chartStatus"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estatísticas Adicionais -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="card">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl" aria-hidden="true" style="color: var(--success-color);" aria-label="Ícone Valor Total">
+                                <!-- Money bag SVG -->
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M16 7c0 1.657-3 3-4 3s-4-1.343-4-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M7 7v2a5 5 0 005 5 5 5 0 005-5V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 3v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M9 18c0 1.657 3 3 3 3s3-1.343 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold" style="color: var(--success-color);" id="valor-total">R$ 0,00</div>
+                                <div class="text-xs" style="color: var(--gray-600);">Valor Total</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl" aria-hidden="true" style="color: var(--primary-color);" aria-label="Ícone Valor Aceito">
+                                <!-- Stack of bills SVG -->
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <rect x="3" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                    <path d="M7 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                    <circle cx="12" cy="12" r="1.4" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold" style="color: var(--primary-color);" id="valor-aceito">R$ 0,00</div>
+                                <div class="text-xs" style="color: var(--gray-600);">Valor Aceito</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl" aria-hidden="true" style="color: #6b21a8;">
+                                <!-- People icon SVG -->
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M16 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M8 11c1.657 0 3-1.343 3-3S9.657 5 8 5 5 6.343 5 8s1.343 3 3 3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 19c0-2 2-4 6-4s6 2 6 4v1H2v-1z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold" style="color: var(--warning-color);" id="total-convidados">0</div>
+                                <div class="text-xs" style="color: var(--gray-600);">Total Convidados</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl" aria-hidden="true" style="color: var(--primary-color);">
+                                <!-- Bar chart icon SVG -->
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M6 19V10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 19V6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M18 19v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold" style="color: var(--gray-500);" id="ticket-medio">R$ 0,00</div>
+                                <div class="text-xs" style="color: var(--gray-600);">Ticket Médio</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <h3 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:18px;height:18px;">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                    <path d="M8 2v4M16 2v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                </svg>
+                            </span>Lista de Orçamentos</h3>
+                        <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; justify-content: center;">
+                            <input type="text" id="filtroNomeCliente" class="form-input" placeholder="Pesquisar cliente..." style="max-width: 220px;">
+                            <select id="filtroMes" class="form-input" style="max-width: 160px;">
+                                <option value="">Todos os meses</option>
+                                <option value="01">Janeiro</option>
+                                <option value="02">Fevereiro</option>
+                                <option value="03">Março</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Maio</option>
+                                <option value="06">Junho</option>
+                                <option value="07">Julho</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                            <button class="btn btn-primary" style="height: 40px; background: var(--error-color); color: #fff;" id="btnBuscarOrcamento"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:16px;height:16px;">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                        <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="10.5" cy="10.5" r="5.5" stroke="currentColor" stroke-width="1.6" fill="none"/>
+                                    </svg>
+                                </span>Buscar</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="orcamentos-lista" class="empty-state">
+                    <div class="empty-state-icon"><span class="section-icon" aria-hidden="true" style="display:inline-block;width:28px;height:28px;">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                <path d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                <path d="M9 8h6M9 12h6M9 16h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span></div>
+                    <div class="empty-state-title">Nenhum orçamento encontrado</div>
+                    <div class="empty-state-text">Crie seu primeiro orçamento na página inicial</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página do Calendário -->
+        <div id="calendar-page" class="page">
+            <div class="card mb-8">
+                <div class="card-header">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <h2 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                    <path d="M16 3v4M8 3v4M3 11h18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                </svg>
+                            </span>Calendário de Eventos</h2>
+                        <p class="card-subtitle" style="align-self: center;">Visualize seus eventos em formato de calendário</p>
+                    </div>
+                </div>
+                
+                <div class="calendar-controls mb-6">
+                    <button class="btn btn-secondary" onclick="mudarMes(-1)">← Mês Anterior</button>
+                    <div class="month-year" id="monthYear"></div>
+                    <button class="btn btn-secondary" onclick="mudarMes(1)">Próximo Mês →</button>
+                </div>
+
+                <div class="legend mb-6">
+                    <div class="legend-item">
+                        <div class="legend-color legend-hoje" aria-hidden="true" title="Hoje">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;"><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor"/></svg>
+                        </div>
+                        <span>Hoje</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-pendente" aria-hidden="true" title="Evento Pendente">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;"><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor"/></svg>
+                        </div>
+                        <span>Evento Pendente</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-aceito" aria-hidden="true" title="Evento Aceito">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;"><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor"/></svg>
+                        </div>
+                        <span>Evento Aceito</span>
+                    </div>
+                </div>
+                
+                <div id="calendar" class="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de navegação SPA
+        let currentUser = null;
+        let orcamentos = [];
+
+        // Preços dos pacotes (carregados de data/precos.json quando disponível)
+        const DEFAULT_PRECOS_PACOTES = {
+            bronze: { caipirinha: 10, mojito: 3.43, sex_on_the_beach: 5.5, gin_tonica: 5.95, moscow_mule: 4.55, gin_tropical: 7.27, gim_tropical: 6, negroni: 7.58, aperol_spritz: 12, whisky_sour: 6.26, cosmopolitan: 4.8, caipirinha_morango: 5.73, caipirinha_limao: 4.83, caipirinha_kiwi: 9.5, pina_colada: 5.9, alexander: 5.74, tequila_sour: 5.75, tequila_sunrise: 5.73, pink_lady: 5, limonada_suica: 3.4, lagoa_azul: 4.82, caipirinha_cachaca: 3.5, caipirinha_vinho: 4, cream_pink: 6.5, cotton_fairy: 5.5, marguerita: 6, amaretto_sour: 8, hold_hup: 8.5, passion: 8.5, cookie_drink: 9.5, mirtilo_sour: 7.5, toscano: 8.5, oreo_yin: 8.5, cotton_fairy: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 },
+  prata: { caipirinha: 14, mojito: 7.43, sex_on_the_beach: 9.5, gin_tonica: 9.95, moscow_mule: 8.55, gin_tropical: 11.27, gim_tropical: 10, negroni: 11.58, aperol_spritz: 16, whisky_sour: 10.26, cosmopolitan: 8.8, caipirinha_morango: 9.73, caipirinha_limao: 8.83, caipirinha_kiwi: 13.5, pina_colada: 9.9, alexander: 9.74, tequila_sour: 9.75, tequila_sunrise: 9.73, pink_lady: 9, limonada_suica: 7.4, lagoa_azul: 8.82, caipirinha_cachaca: 7.5, caipirinha_vinho: 8, cream_pink: 10.5, cotton_fairy: 9.5, marguerita: 10, amaretto_sour: 12, hold_hup: 12.5, passion: 12.5, cookie_drink: 13.5, mirtilo_sour: 11.5, toscano: 12.5, oreo_yin: 12.5, cotton_fairy: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 },
+  ouro: { caipirinha: 18, mojito: 11.43, sex_on_the_beach: 13.5, gin_tonica: 13.95, moscow_mule: 12.55, gin_tropical: 15.27, gim_tropical: 14, negroni: 15.58, aperol_spritz: 20, whisky_sour: 14.26, cosmopolitan: 12.8, caipirinha_morango: 13.73, caipirinha_limao: 12.83, caipirinha_kiwi: 17.5, pina_colada: 13.9, alexander: 13.74, tequila_sour: 13.75, tequila_sunrise: 13.73, pink_lady: 13, limonada_suica: 11.4, lagoa_azul: 12.82, caipirinha_cachaca: 11.5, caipirinha_vinho: 12, cream_pink: 14.5, cotton_fairy: 13.5, marguerita: 14, amaretto_sour: 16, hold_hup: 16.5, passion: 16.5, cookie_drink: 17.5, mirtilo_sour: 15.5, toscano: 16.5, oreo_yin: 16.5, cotton_fairy: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 }
+        };
+
+        let precosPacotes = DEFAULT_PRECOS_PACOTES;
+
+        (async function loadPrecos(){
+            try {
+                const res = await fetch('precos/precos.json');
+                if (res.ok) {
+                    const data = await res.json();
+                    precosPacotes = data;
+                    console.log('Preços carregados de data/precos.json');
+                    if (typeof atualizarPrecos === 'function') atualizarPrecos();
+                } else {
+                    console.warn('Não foi possível carregar data/precos.json, usando padrões.');
+                }
+            } catch (e) {
+                console.warn('Erro carregando preços, usando padrões.', e);
+            }
+        })();
+
+        // Dados do orçamento atual
+        let orcamentoAtual = null;
+
+        function showPage(pageId) {
+            // Esconde todas as páginas
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Mostra a página selecionada
+            document.getElementById(pageId + '-page').classList.add('active');
+            
+            // Atualiza navegação
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+            });
+            document.getElementById('nav-' + pageId).classList.add('active');
+            
+            // Carrega dados específicos da página
+            if (pageId === 'agenda') {
+                carregarAgenda();
+            } else if (pageId === 'calendar') {
+                carregarCalendario();
+            } else if (pageId === 'home') {
+                // Recarrega orçamentos para manter sincronização
+                const orcamentosSalvos = localStorage.getItem('orcamentos');
+                if (orcamentosSalvos) {
+                    orcamentos = JSON.parse(orcamentosSalvos);
+                }
+            }
+        }
+
+        function updateNavigation() {
+            const isLoggedIn = currentUser !== null;
+            
+            document.getElementById('nav-login').style.display = isLoggedIn ? 'none' : 'block';
+            document.getElementById('nav-home').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('nav-agenda').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('nav-calendar').style.display = isLoggedIn ? 'block' : 'none';
+            document.getElementById('nav-logout').style.display = isLoggedIn ? 'block' : 'none';
+            
+            if (!isLoggedIn) {
+                showPage('login');
+            }
+        }
+
+        // Funções de autenticação
+        async function fazerLogin(event) {
+            event.preventDefault();
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+            
+            if (!usuario || !senha) {
+                showNotification('Preencha todos os campos!', 'warning');
+                return;
+            }
+            
+            // Simulação de login
+            currentUser = {
+                id: 1,
+                username: usuario,
+                email: 'demo@ddrinks.com'
+            };
+            
+            showNotification('Login realizado com sucesso!', 'success');
+            localStorage.setItem('usuario', JSON.stringify(currentUser));
+            updateNavigation();
+            showPage('home');
+        }
+
+        async function fazerCadastro(event) {
+            event.preventDefault();
+            const nome = document.getElementById('regNome').value.trim();
+            const usuario = document.getElementById('regUsuario').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const senha = document.getElementById('regSenha').value;
+            const confirmarSenha = document.getElementById('regConfirmarSenha').value;
+            
+            if (senha !== confirmarSenha) {
+                showNotification('As senhas não coincidem!', 'error');
+                return;
+            }
+            
+            if (senha.length < 6) {
+                showNotification('A senha deve ter pelo menos 6 caracteres!', 'error');
+                return;
+            }
+            
+            // Simulação de cadastro
+            currentUser = {
+                id: 1,
+                username: usuario,
+                email: email,
+                nome: nome
+            };
+            
+            showNotification('Cadastro realizado com sucesso!', 'success');
+            localStorage.setItem('usuario', JSON.stringify(currentUser));
+            updateNavigation();
+            showPage('home');
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('usuario');
+            showNotification('Logout realizado com sucesso!', 'success');
+            updateNavigation();
+        }
+
+        // Função para atualizar preços baseado no pacote selecionado
+        function atualizarPrecos() {
+            const pacote = document.getElementById('pacoteSelecionado').value;
+            const precos = precosPacotes[pacote];
+            
+            // Atualiza placeholders para mostrar os preços
+            Object.keys(precos).forEach(drink => {
+                const input = document.getElementById(drink);
+                if (input) {
+                    input.setAttribute('data-preco', precos[drink]);
+                    input.title = `Preço unitário: R$ ${precos[drink].toFixed(2)}`;
+                }
+            });
+        }
+
+        // Função de cálculo de orçamento
+        function calcularOrcamento() {
+            const clienteNome = document.getElementById('clienteNome').value.trim();
+            const clienteTelefone = document.getElementById('clienteTelefone').value.trim();
+            const clienteCidade = document.getElementById('clienteCidade').value.trim();
+            const dataEvento = document.getElementById('dataEvento').value;
+            const quantidadeConvidados = document.getElementById('quantidadeConvidados').value;
+            const descricaoEvento = document.getElementById('descricaoEvento').value.trim();
+            const pacote = document.getElementById('pacoteSelecionado').value;
+
+            if (!clienteNome || !clienteTelefone || !clienteCidade || !dataEvento || !quantidadeConvidados || !descricaoEvento) {
+                showNotification("Por favor, preencha todas as informações do cliente!", "warning");
+                return;
+            }
+
+            // Coleta dados dos drinks
+            const dados = {};
+            const todosInputs = document.querySelectorAll('input[type="number"]');
+            todosInputs.forEach(input => {
+                const valor = parseFloat(input.value) || 0;
+                if (valor > 0) {
+                    dados[input.id] = valor;
+                }
+            });
+
+            if (Object.keys(dados).length === 0) {
+                showNotification("Por favor, selecione pelo menos um drink!", "warning");
+                return;
+            }
+
+            // Calcula orçamento baseado no pacote selecionado
+            const precos = precosPacotes[pacote];
+            let totalDrinks = 0;
+            let totalOutros = 0;
+            let detalhes = "";
+
+            // Calcula drinks
+            Object.keys(dados).forEach(item => {
+                const quantidade = dados[item];
+                const preco = precos[item] || 0;
+                
+                if (['caipirinha', 'mojito', 'mojito_sem_alcool', 'sex_on_the_beach', 'sex_on_the_beach_sem_alcool', 'gin_tonica', 'moscow_mule', 'moscow_mule_sem_alcool', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'pina_colada_sem_alcool', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'soda_italiana_limao_siciliano_e_morango', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'cotton_fairy_sem_alcool', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'].includes(item)) {
+                    const subtotal = quantidade * preco;
+                    totalDrinks += subtotal;
+                    const nomeFormatado = item.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    detalhes += `<div><strong>${nomeFormatado}:</strong> ${quantidade} x R$ ${preco.toFixed(2)} = R$ ${subtotal.toFixed(2)}</div>`;
+                } else {
+                    totalOutros += quantidade;
+                    const nomeFormatado = item.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    detalhes += `<div><strong>${nomeFormatado}:</strong> R$ ${quantidade.toFixed(2)}</div>`;
+                }
+            });
+
+            // Verifica se há checkbox para incluir taxa de serviço;
+            const incluir40PercentEl = document.getElementById('incluir_40_percent');
+            const incluirTaxaServico = incluir40PercentEl ? incluir40PercentEl.checked : true; // default: true to preserve old behavior
+            
+            let valorFinal = 0;
+            let valorBasePacote = 0;
+            let taxaServicoPacote = 0;
+            let htmlPacotes = '';
+            const totaisPorPacote = {};
+
+            // Calcula e exibe todos os pacotes
+            for(let pacoteNome in precosPacotes){
+                let total = 0;
+                let detalhesPacote = "";
+                
+                for(let item in precosPacotes[pacoteNome]){
+                    const qtd = parseFloat(dados[item]) || 0;
+                    if(qtd > 0){
+                        // Se for um drink, multiplica pelo preço do pacote
+                        if(['caipirinha', 'mojito', 'sex_on_the_beach', 'gin_tonica', 'moscow_mule', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'].includes(item)){
+                            const preco = precosPacotes[pacoteNome][item];
+                            const subtotal = qtd * preco;
+                            total += subtotal;
+                            detalhesPacote += `<b>${item.replace(/_/g,' ')}</b>: ${qtd} x R$ ${preco.toFixed(2)} = R$ ${subtotal.toFixed(2)}<br>`;
+                        } else {
+                            // Se for outros gastos, soma o valor direto
+                            total += qtd;
+                            detalhesPacote += `<b>${item.replace(/_/g,' ')}</b>: R$ ${qtd.toFixed(2)}<br>`;
+                        }
+                    }
+                }
+                
+                // Calcula taxa de serviço
+                taxaServicoPacote = incluirTaxaServico ? total * 0.4 : 0;
+                const totalFinalPacote = total + taxaServicoPacote;
+
+                // Guarda totais por pacote (para histórico/consistência ao aceitar)
+                totaisPorPacote[pacoteNome] = {
+                    subtotal: total,
+                    taxa: taxaServicoPacote,
+                    totalFinal: totalFinalPacote
+                };
+
+                if (pacoteNome === pacote) {
+                    valorFinal = totalFinalPacote;
+                    // Define valorBase e taxaServico para salvar no orcamento
+                    valorBasePacote = total;
+                    taxaServicoPacote = taxaServicoPacote;
+                }
+                
+                htmlPacotes += `<div class="resultado">
+                    <h3>Pacote ${pacoteNome.charAt(0).toUpperCase()+pacoteNome.slice(1)}</h3>
+                    ${detalhesPacote||"<i>Nenhum item selecionado</i>"}
+                    <div style="margin-top: 10px;">
+                        <div>Subtotal: R$ ${total.toFixed(2)}</div>
+                        <div style="color: #d4170a; font-weight: bold;">Taxa de Serviço (40%): R$ ${taxaServicoPacote.toFixed(2)}</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #d4170a; margin-top: 5px;">
+                            Total: R$ ${totalFinalPacote.toFixed(2)}
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // Verifica se já existe um evento na mesma data
+            const eventoExistente = orcamentos.find(evento => evento.data === dataEvento);
+            if (eventoExistente) {
+                showNotification(`Já existe um evento cadastrado para a data ${formatarData(dataEvento)}!\n\nCliente: ${eventoExistente.cliente}\nStatus: ${eventoExistente.status}`, "warning");
+                return;
+            }
+
+            // Adiciona à lista de orçamentos
+            const novoOrcamento = {
+                id: Date.now(),
+                cliente: clienteNome,
+                telefone: clienteTelefone,
+                cidade: clienteCidade,
+                data: dataEvento,
+                quantidadeConvidados: parseInt(quantidadeConvidados),
+                descricao: descricaoEvento,
+                valor: valorFinal,
+                valorBase: valorBasePacote,
+                taxaServico: taxaServicoPacote,
+                incluirTaxaServico: incluirTaxaServico,
+                status: 'pendente',
+                pacote: pacote,
+                drinks: dados,
+                dataCriacao: new Date().toISOString(),
+                // Dados completos para exibição
+                dataFormatada: formatarData(dataEvento),
+                valorFormatado: formatarValorBR(valorFinal),
+                detalhesCompletos: {
+                    totalDrinks: totalDrinks,
+                    totalOutros: totalOutros,
+                    itensSelecionados: Object.keys(dados).filter(item => dados[item] > 0).length
+                }
+                ,
+                // Salva uma cópia dos totais por pacote no momento da criação
+                totaisPorPacote: totaisPorPacote
+            };
+
+            orcamentos.push(novoOrcamento);
+            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+
+            // Salva dados para PDF
+            let orcamentoAtual = {
+                cliente: { nome: clienteNome, telefone: clienteTelefone, cidade: clienteCidade, dataEvento, quantidadeConvidados, descricaoEvento, incluirTaxaServico },
+                dados: dados,
+                pacote: pacote,
+                totalDrinks: totalDrinks,
+                totalOutros: totalOutros,
+                valorBase: valorBasePacote,
+                taxaServico: taxaServicoPacote,
+                valorFinal: valorFinal
+            };
+
+            showNotification('Orçamento criado com sucesso!', 'success');
+            // Exibe o botão de gerar PDF
+            document.getElementById('btnPDF').style.display = 'inline-flex';
+            // Mostra resultado como no código antigo
+            let html = '';
+            
+            // Informações do cliente
+            html += `<div class="resultado">
+                <h3><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:16px;height:16px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                            <path d="M9 2h6a2 2 0 012 2v2h-2V4H9v2H7V4a2 2 0 012-2z" fill="currentColor"/>
+                            <path d="M6 8h12v12a2 2 0 01-2 2H8a2 2 0 01-2-2V8z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <path d="M9 12h6M9 15h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>Informações do Cliente</h3>
+                <p><strong>Nome:</strong> ${clienteNome}</p>
+                <p><strong>Telefone:</strong> ${clienteTelefone}</p>
+                <p><strong>Cidade:</strong> ${clienteCidade}</p>
+                <p><strong>Data do Evento:</strong> ${formatarData(dataEvento)}</p>
+                <p><strong>Quantidade de Convidados:</strong> ${quantidadeConvidados} pessoas</p>
+                <p><strong>Descrição:</strong> ${descricaoEvento}</p>
+                <p style="color: #d4170a; font-weight: bold;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="vertical-align:middle;margin-right:6px;"><path d="M7 7v2a5 5 0 005 5 5 5 0 005-5V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Taxa de Serviço (40%) incluída</p>
+            </div>`;
+
+html += htmlPacotes;
+            
+            document.getElementById('resultado').innerHTML = html;
+            
+            // Mostra botão de PDF
+            document.getElementById('btnPDF').style.display = 'inline-flex';
+            
+            limparCampos();
+            
+            // Atualiza calendário e agenda automaticamente
+            setTimeout(() => {
+                carregarAgenda();
+                carregarCalendario();
+                showPage('agenda');
+            }, 2000);
+        }
+
+        function limparCampos() {
+            document.getElementById('clienteNome').value = '';
+            document.getElementById('clienteTelefone').value = '';
+            document.getElementById('clienteCidade').value = '';
+            document.getElementById('dataEvento').value = '';
+            document.getElementById('quantidadeConvidados').value = '';
+            document.getElementById('descricaoEvento').value = '';
+            
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.value = '0';
+            });
+            
+            // Esconde botão PDF
+            document.getElementById('btnPDF').style.display = 'none';
+        }
+
+        // Função para gerar PDF
+        function gerarPDF() {
+            if (!orcamentoAtual) {
+                showNotification('Nenhum orçamento encontrado para gerar PDF!', 'error');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const pacote = orcamentoAtual.pacote;
+            const precos = precosPacotes[pacote];
+            
+            // Monta o HTML do PDF (apenas dados do cliente, totais dos pacotes e nomes dos drinks)
+            let htmlPDF = `
+                <div id="pdf-content" style="font-family: 'Arial', sans-serif; max-width: 800px; margin: 0 auto; background: #000000; padding: 30px; color: white; min-height: 1123px;">
+                    <!-- Cabeçalho -->
+                    <div style="text-align: center; margin-bottom: 40px; border-bottom: 3px solid #d4170a; padding-bottom: 20px;">
+                       <h1 style="color: #d4170a; margin: 0; font-size: 28px; font-weight: bold;">DDrinks</h1>
+                        <h2 style="color: #ffffff; margin: 10px 0; font-size: 20px; font-weight: normal;">Orçamento para Eventos</h2>
+                        <p style="color: #cccccc; margin: 5px 0; font-size: 14px;">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
+
+                    <!-- Informações do Cliente -->
+                    <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #d4170a;">
+                 <h3 style="color: #d4170a; margin: 0 0 15px 0; font-size: 18px;">INFORMAÇÕES DO CLIENTE</h3>
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; font-size: 14px;">
+<div style="width: 48%; margin-bottom: 10px;"><strong style="color: #d4170a;">Nome:</strong> <span style="color: #ffffff;">${orcamentoAtual.cliente.nome}</span></div>
+<div style="width: 48%; margin-bottom: 10px;"><strong style="color: #d4170a;">Telefone:</strong> <span style="color: #ffffff;">${orcamentoAtual.cliente.telefone}</span></div>
+<div style="width: 48%; margin-bottom: 10px;"><strong style="color: #d4170a;">Cidade:</strong> <span style="color: #ffffff;">${orcamentoAtual.cliente.cidade}</span></div>
+<div style="width: 48%; margin-bottom: 10px;"><strong style="color: #d4170a;">Data do Evento:</strong> <span style="color: #ffffff;">${new Date(orcamentoAtual.cliente.dataEvento).toLocaleDateString('pt-BR')}</span></div>
+<div style="width: 48%; margin-bottom: 10px;"><strong style="color: #d4170a;">Convidados:</strong> <span style="color: #ffffff;">${orcamentoAtual.cliente.quantidadeConvidados} pessoas</span></div>
+<div style="width: 48%; margin-bottom: 10px;"><strong style="color: #d4170a;">Descrição:</strong> <span style="color: #ffffff;">${orcamentoAtual.cliente.descricaoEvento}</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Totais dos Pacotes -->
+                    <div style="margin-bottom: 30px;">
+                       <h3 style="color: #ffffff; border-bottom: 2px solid #d4170a; padding-bottom: 5px; margin-bottom: 15px;">TOTAIS POR PACOTE</h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            `;
+
+            // Calcula total para cada pacote com base nos itens selecionados
+            const dadosOrc = orcamentoAtual.dados || {};
+            const drinksList = ['caipirinha', 'mojito', 'mojito_sem_alcool', 'sex_on_the_beach', 'sex_on_the_beach_sem_alcool', 'gin_tonica', 'moscow_mule', 'moscow_mule_sem_alcool', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'pina_colada_sem_alcool', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'soda_italiana_limao_siciliano_e_morango', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'cotton_fairy_sem_alcool', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'];
+            const pacoteTotals = {};
+            const bebidasPorPacote = {
+                bronze: 'Vodka Smirnoff, Gin Seagers, Whisky Passport, Espumante Salton Series, Rum Bacardi, Campari, Martini Vermouth, Stock Triple Sec, Tequila Tequileiros, Aperol',
+                prata: 'Vodka Absolut, Gin Gordons, Whisky Ballantines, Stock Triple Sec, Campari, Martini Vermouth, Tequila Jose Cuervo, Cointreau, Espumante Freixenet, Aperol',
+                ouro: 'Vodka Grey Goose, Gin Tanqueray, Espumante Chandon, Whisky Jack Daniels, Rum Bacardi, Martini Vermouth, Campari, Aperol, Cointreau, Tequila Jose Cuervo'
+            };
+
+            for (let pacoteNome in precosPacotes) {
+                // Se houver totais por pacote salvos no orcamento, prefira-os (mantém histórico)
+                if (orcamentoAtual.totaisPorPacote && orcamentoAtual.totaisPorPacote[pacoteNome]) {
+                    const saved = orcamentoAtual.totaisPorPacote[pacoteNome];
+                    pacoteTotals[pacoteNome] = { subtotal: saved.subtotal, taxa: saved.taxa, totalFinal: saved.totalFinal };
+                } else {
+                    let totalPacote = 0;
+                    for (let item in precosPacotes[pacoteNome]) {
+                        const qtd = parseFloat(dadosOrc[item]) || 0;
+                        if (qtd > 0) {
+                            if (drinksList.includes(item)) {
+                                const precoItem = precosPacotes[pacoteNome][item] || 0;
+                                totalPacote += qtd * precoItem;
+                            } else {
+                                totalPacote += qtd;
+                            }
+                        }
+                    }
+                    const incluirTaxaServicoPacote = orcamentoAtual?.cliente?.incluirTaxaServico;
+                    const taxa = incluirTaxaServicoPacote ? totalPacote * 0.4 : 0;
+                    pacoteTotals[pacoteNome] = { subtotal: totalPacote, taxa, totalFinal: totalPacote + taxa };
+                }
+                
+                const coresPacotes = {
+                    bronze: '#CD7F32',
+                    prata: '#C0C0C0', 
+                    ouro: '#FFD700'
+                };
+
+                // Novo estilo de card para o pacote
+                htmlPDF += `
+                    <div style="border: 2px solid ${coresPacotes[pacoteNome]}; border-radius: 10px; padding: 15px; text-align: center; background: #1a1a1a;">
+                        <h4 style="color: ${coresPacotes[pacoteNome]}; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; font-weight: bold;">
+                            Pacote ${pacoteNome.charAt(0).toUpperCase() + pacoteNome.slice(1)}
+                        </h4>
+                        <div style="background: ${coresPacotes[pacoteNome]}; color: #000000; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                            <strong style="font-size: 16px;">Total: R$ ${pacoteTotals[pacoteNome].totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong>
+                        </div>
+                        <div style="text-align: left; margin-top: 15px; font-size: 12px; color: #cccccc;">
+                            <strong style="color: #d4170a;">Bebidas:</strong> ${bebidasPorPacote[pacoteNome]}
+                        </div>
+                    </div>
+                `;
+            }
+
+            htmlPDF += `
+                        </div>
+                    </div>
+
+                    <!-- Drinks Selecionados -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #ffffff; border-bottom: 2px solid #d4170a; padding-bottom: 5px; margin-bottom: 15px;">DRINKS SELECIONADOS</h3>
+                        <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            `;
+
+            // Monta lista de nomes dos drinks escolhidos (sem quantidades)
+            const drinksEscolhidos = Object.keys(dadosOrc)
+                .filter(k => (parseFloat(dadosOrc[k]) || 0) > 0 && drinksList.includes(k))
+                .map(k => k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+
+            if (drinksEscolhidos.length) {
+                drinksEscolhidos.forEach(name => {
+                    htmlPDF += `<span style="background: #222; color: #d4170a; padding: 8px 12px; border-radius: 999px; font-weight: 600;">${name}</span>`;
+                });
+            } else {
+                htmlPDF += `<i style="color:#ffffff;">Nenhum drink selecionado</i>`;
+            }
+
+            htmlPDF += `
+                        </div>
+                    </div>
+
+                    <!-- Rodapé -->
+                    <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #d4170a; color: #cccccc; font-size: 12px;">
+                        <p style="color: #ffffff;"><strong>DDrinks - Sistema de Orçamento para Eventos</strong></p>
+                        <p>Este orçamento é válido por 7 dias a partir da data de emissão.</p>
+                        <p>Para mais informações, entre em contato conosco.</p>
+                    </div>
+                </div>
+            `;
+
+                    // Cria elemento temporário
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '800px';
+            tempDiv.style.background = '#000000';
+            tempDiv.innerHTML = htmlPDF;
+            document.body.appendChild(tempDiv);
+
+            // Gera o PDF
+            html2canvas(tempDiv, {
+                                scale: 2,
+                                useCORS: true,
+                                allowTaint: true,
+                                backgroundColor: '#000000'
+                            }).then(canvas => {
+                                // Adiciona um fundo preto para garantir que a página inteira seja preta
+                                const ctx = canvas.getContext('2d');
+                                ctx.fillStyle = '#000000';
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                ctx.drawImage(canvas, 0, 0);
+
+                                const imgData = canvas.toDataURL('image/jpeg', 1.0); // Usar JPEG para melhor compressão e qualidade
+                                const pdf = new jsPDF('p', 'mm', 'a4');
+                                
+                                const imgWidth = 210; // Largura A4 em mm
+                                const pageHeight = 297; // Altura A4 em mm
+                                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                                let heightLeft = imgHeight;
+
+                                let position = 0;
+
+                                // Adiciona a primeira página
+                                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                                heightLeft -= pageHeight;
+
+                                // Adiciona páginas subsequentes se necessário
+                                while (heightLeft >= -1) { // -1 para garantir que a última parte seja incluída
+                                    position = heightLeft - imgHeight;
+                                    pdf.addPage();
+                                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                                    heightLeft -= pageHeight;
+                                }
+
+                                // Não salvar ainda - tentar mesclar com Design PDF primeiro
+                                document.body.removeChild(tempDiv);
+                                
+                                // Tentar mesclar com Design PDF
+                                const designPdfPath = 'Design sem nome.pdf';
+                                const nomeCliente = orcamentoAtual.cliente.nome.replace(/\s+/g, '_');
+                                const dataAtual = new Date().toISOString().split('T')[0];
+                                
+                                fetch(designPdfPath)
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(`HTTP error! status: ${response.status}`);
+                                        }
+                                        return response.arrayBuffer();
+                                    })
+                                    .then(buffer => {
+                                        // Carregar PDF do Design com PDF.js
+                                        if (!window.pdfjsLib) {
+                                            throw new Error('PDF.js não carregou');
+                                        }
+                                        
+                                        window.pdfjsLib.getDocument({data: buffer}).promise.then(designPdfDoc => {
+                                            const totalPages = designPdfDoc.numPages;
+                                            let pagesProcessadas = 0;
+                                            
+                                            const processarPagina = () => {
+                                                if (pagesProcessadas < totalPages) {
+                                                    designPdfDoc.getPage(pagesProcessadas + 1).then(page => {
+                                                        const viewport = page.getViewport({scale: 2});
+                                                        const tempCanvas = document.createElement('canvas');
+                                                        const ctx = tempCanvas.getContext('2d');
+                                                        tempCanvas.width = viewport.width;
+                                                        tempCanvas.height = viewport.height;
+                                                        
+                                                        page.render({canvasContext: ctx, viewport: viewport}).promise.then(() => {
+                                                            const imagemBase64 = tempCanvas.toDataURL('image/jpeg', 0.95);
+                                                            pdf.addPage();
+                                                            pdf.addImage(imagemBase64, 'JPEG', 0, 0, 210, 297);
+                                                            pagesProcessadas++;
+                                                            processarPagina();
+                                                        });
+                                                    });
+                                                } else {
+                                                    // Salvar PDF final com design incluído
+                                                    pdf.save(`orcamento_drinks_${nomeCliente}_${dataAtual}_com_design.pdf`);
+                                                    showNotification('✅ PDF com Design gerado com sucesso!', 'success');
+                                                }
+                                            };
+                                            
+                                            processarPagina();
+                                        }).catch(err => {
+                                            console.warn('Erro ao processar Design PDF:', err);
+                                            // Salvar apenas o orçamento sem design
+                                            pdf.save(`orcamento_drinks_${nomeCliente}_${dataAtual}.pdf`);
+                                            showNotification('PDF gerado (Design não foi incluído)', 'info');
+                                        });
+                                    })
+                                    .catch(error => {
+                                        console.warn('Design PDF não encontrado:', error);
+                                        // Salvar apenas o orçamento
+                                        pdf.save(`orcamento_drinks_${nomeCliente}_${dataAtual}.pdf`);
+                                        showNotification('PDF gerado! (Design não localizado)', 'info');
+                                    });
+            }).catch(error => {
+                console.error('Erro ao gerar PDF:', error);
+                document.body.removeChild(tempDiv);
+                showNotification('Erro ao gerar PDF. Tente novamente.', 'error');
+            });
+        }
+
+        function gerarPDFOrcamento(id) {
+            const orcamento = orcamentos.find(o => o.id === id);
+            if (!orcamento) {
+                showNotification('Orçamento não encontrado!', 'error');
+                return;
+            }
+            // Prepara dados para PDF
+            orcamentoAtual = {
+                cliente: {
+                    nome: orcamento.cliente,
+                    telefone: orcamento.telefone,
+                    cidade: orcamento.cidade,
+                    dataEvento: orcamento.data,
+                    quantidadeConvidados: orcamento.quantidadeConvidados,
+                    descricaoEvento: orcamento.descricao,
+                    incluirTaxaServico: orcamento.incluirTaxaServico !== undefined ? orcamento.incluirTaxaServico : (orcamento.incluir_taxa_servico !== undefined ? orcamento.incluir_taxa_servico : true)
+                },
+                // incluirTaxaServico pode estar em diferentes nomes dependendo do código fonte; garante fallback
+                incluirTaxaServico: orcamento.incluirTaxaServico !== undefined ? orcamento.incluirTaxaServico : (orcamento.incluir_taxa_servico !== undefined ? orcamento.incluir_taxa_servico : true),
+                dados: orcamento.drinks,
+                pacote: orcamento.pacote,
+                totalDrinks: orcamento.detalhesCompletos?.totalDrinks || 0,
+                totalOutros: orcamento.detalhesCompletos?.totalOutros || 0,
+                valorBase: orcamento.valorBase,
+                taxaServico: orcamento.taxaServico,
+                valorFinal: orcamento.valor,
+                // inclui totais por pacote salvos (se houver)
+                totaisPorPacote: orcamento.totaisPorPacote
+            };
+            gerarPDF();
+        }
+
+        // ===== SISTEMA DE CALENDÁRIO =====
+        let currentDate = new Date();
+        let chartMesesInstance = null;
+        let chartStatusInstance = null;
+
+        const monthNames = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+
+        const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+        function carregarCalendario() {
+            const orcamentosSalvos = localStorage.getItem('orcamentos');
+            if (orcamentosSalvos) {
+                orcamentos = JSON.parse(orcamentosSalvos);
+            }
+            renderizarCalendario();
+        }
+
+        function mudarMes(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderizarCalendario();
+        }
+
+        function renderizarCalendario() {
+            const calendar = document.getElementById('calendar');
+            const monthYear = document.getElementById('monthYear');
+            
+            if (!calendar || !monthYear) return;
+            
+            // Atualiza o título do mês/ano
+            monthYear.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            // Limpa o calendário
+            calendar.innerHTML = '';
+            
+            // Adiciona cabeçalhos dos dias
+            dayNames.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-header';
+                header.textContent = day;
+                calendar.appendChild(header);
+            });
+            
+            // Primeiro dia do mês
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const today = new Date();
+            
+            // Ajusta para começar no domingo
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            // Gera 42 dias (6 semanas)
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // Verifica se é outro mês
+                if (date.getMonth() !== currentDate.getMonth()) {
+                    dayElement.classList.add('other-month');
+                }
+                
+                // Verifica se é hoje
+                if (date.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('today');
+                }
+                
+                // Adiciona número do dia
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = date.getDate();
+                dayElement.appendChild(dayNumber);
+                
+                // Verifica se há eventos neste dia
+                const dateString = formatarDataParaComparacao(date);
+                const eventosDoDia = orcamentos.filter(evento => {
+                    // Compara diretamente as strings de data (YYYY-MM-DD)
+                    return evento.data === dateString;
+                });
+                
+                if (eventosDoDia.length > 0) {
+                    dayElement.classList.add('has-event');
+                    
+                    eventosDoDia.forEach(evento => {
+                        const eventInfo = document.createElement('div');
+                        eventInfo.className = `event-info event-${evento.status}`;
+                        eventInfo.textContent = `${evento.cliente} - ${evento.valorFormatado || formatarValorBR(Number(evento.valor))}`;
+                        eventInfo.title = `🍸 ${evento.cliente}\n📞 ${evento.telefone}\n🏙️ ${evento.cidade}\n📅 ${evento.dataFormatada || formatarData(evento.data)}\n👥 ${evento.quantidadeConvidados} convidados\n📝 ${evento.descricao}\n💰 ${evento.valorFormatado || formatarValorBR(Number(evento.valor))}\n📦 Pacote: ${evento.pacote ? evento.pacote.charAt(0).toUpperCase() + evento.pacote.slice(1) : 'N/A'}\n📊 Status: ${evento.status}\n🕒 Criado: ${new Date(evento.dataCriacao).toLocaleDateString('pt-BR')}`;
+                        dayElement.appendChild(eventInfo);
+                    });
+                }
+                
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        function formatarDataParaComparacao(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatarValorBR(valor) {
+            return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatarData(dataISO) {
+            if (!dataISO) return '';
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        // ===== GRÁFICOS DO DASHBOARD =====
+        function atualizarGraficoMeses() {
+            const ctx = document.getElementById('chartMeses');
+            if (!ctx) return;
+
+            const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            let eventosPorMes = new Array(12).fill(0);
+            
+            // Calcula eventos por mês
+            orcamentos.forEach(evento => {
+                if (evento.data) {
+                    const eventoDate = new Date(evento.data);
+                    const mesIndex = eventoDate.getMonth();
+                    if (mesIndex >= 0 && mesIndex < 12) {
+                        eventosPorMes[mesIndex]++;
+                    }
+                }
+            });
+            
+            if(chartMesesInstance) chartMesesInstance.destroy();
+            chartMesesInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { 
+                    labels: meses, 
+                    datasets: [{ 
+                        label: 'Eventos por Mês', 
+                        data: eventosPorMes, 
+                        backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 1
+                    }] 
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarGraficoStatus() {
+            const ctx = document.getElementById('chartStatus');
+            if (!ctx) return;
+
+            const eventosAceitos = orcamentos.filter(evento => evento.status === 'aceito').length;
+            const eventosPendentes = orcamentos.filter(evento => evento.status === 'pendente').length;
+            
+            if(chartStatusInstance) chartStatusInstance.destroy();
+            chartStatusInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aceitos', 'Pendentes'],
+                    datasets: [{
+                        data: [eventosAceitos, eventosPendentes],
+                        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+                        borderColor: ['rgba(16, 185, 129, 1)', 'rgba(245, 158, 11, 1)'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#374151',
+                                font: { size: 14 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarEstatisticasAdicionais() {
+            const valorTotal = orcamentos.reduce((total, evento) => total + Number(evento.valor), 0);
+            const valorAceito = orcamentos.filter(evento => evento.status === 'aceito').reduce((total, evento) => total + Number(evento.valor), 0);
+            const totalConvidados = orcamentos.reduce((total, evento) => total + (evento.quantidadeConvidados || 0), 0);
+            const ticketMedio = orcamentos.length > 0 ? valorTotal / orcamentos.length : 0;
+
+            document.getElementById('valor-total').textContent = formatarValorBR(valorTotal);
+            document.getElementById('valor-aceito').textContent = formatarValorBR(valorAceito);
+            document.getElementById('total-convidados').textContent = totalConvidados.toLocaleString('pt-BR');
+            document.getElementById('ticket-medio').textContent = formatarValorBR(ticketMedio);
+        }
+
+        function carregarAgenda() {
+            const orcamentosSalvos = localStorage.getItem('orcamentos');
+            if (orcamentosSalvos) {
+                orcamentos = JSON.parse(orcamentosSalvos);
+            }
+
+            // Atualiza estatísticas básicas
+            const total = orcamentos.length;
+            const pendentes = orcamentos.filter(o => o.status === 'pendente').length;
+            const aceitos = orcamentos.filter(o => o.status === 'aceito').length;
+
+            document.getElementById('total-orcamentos').textContent = total;
+            document.getElementById('orcamentos-pendentes').textContent = pendentes;
+            document.getElementById('orcamentos-aceitos').textContent = aceitos;
+
+            // Atualiza estatísticas adicionais
+            atualizarEstatisticasAdicionais();
+
+            // Atualiza gráficos
+            setTimeout(() => {
+                atualizarGraficoMeses();
+                atualizarGraficoStatus();
+            }, 100);
+
+            // Atualiza lista
+            filtrarOrcamentos();
+        // Função para filtrar orçamentos por nome e mês
+        function filtrarOrcamentos() {
+            const lista = document.getElementById('orcamentos-lista');
+            const nomeFiltro = (document.getElementById('filtroNomeCliente')?.value || '').toLowerCase();
+            const mesFiltro = document.getElementById('filtroMes')?.value || '';
+            let orcamentosFiltrados = [...orcamentos];
+            if (nomeFiltro) {
+                orcamentosFiltrados = orcamentosFiltrados.filter(o => o.cliente.toLowerCase().includes(nomeFiltro));
+            }
+            if (mesFiltro) {
+                orcamentosFiltrados = orcamentosFiltrados.filter(o => {
+                    const data = o.data || '';
+                    // data formato YYYY-MM-DD
+                    const mes = data.split('-')[1];
+                    return mes === mesFiltro;
+                });
+            }
+            if (orcamentosFiltrados.length === 0) {
+                lista.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-title">Nenhum orçamento encontrado</div>
+                        <div class="empty-state-text">Crie seu primeiro orçamento na página inicial</div>
+                    </div>
+                `;
+            } else {
+                lista.innerHTML = `
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 0.5rem; overflow: hidden; box-shadow: var(--shadow);">
+                            <thead style="background: var(--gray-50);">
+                                <tr>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); border-bottom: 1px solid var(--gray-200);">Cliente</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); border-bottom: 1px solid var(--gray-200);">Data</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); border-bottom: 1px solid var(--gray-200);">Valor</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); border-bottom: 1px solid var(--gray-200);">Status</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); border-bottom: 1px solid var(--gray-200);">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${orcamentosFiltrados.map(orcamento => `
+                                    <tr style="border-bottom: 1px solid var(--gray-200);">
+                                        <td style="padding: 1rem;">
+                                            <div style="font-weight: 600; color: var(--gray-900);">${orcamento.cliente}</div>
+                                            <div style="font-size: 0.875rem; color: var(--gray-600);">📞 ${orcamento.telefone}</div>
+                                            <div style="font-size: 0.875rem; color: var(--gray-600);">🏙️ ${orcamento.cidade}</div>
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            <div style="font-weight: 600;">${orcamento.dataFormatada || formatarData(orcamento.data)}</div>
+                                            <div style="font-size: 0.875rem; color: var(--gray-600);">👥 ${orcamento.quantidadeConvidados} convidados</div>
+                                            <div style="font-size: 0.875rem; color: var(--error-color);">📝 ${orcamento.descricao}</div>
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            <div style="font-weight: 600; color: var(--success-color);">${orcamento.valorFormatado || formatarValorBR(Number(orcamento.valor))}</div>
+                                            ${orcamento.pacote ? `<div style="font-size: 0.875rem; color: var(--gray-600);">📦 Pacote Sugerido: ${orcamento.pacote.charAt(0).toUpperCase() + orcamento.pacote.slice(1)}</div>` : ''}
+                                            ${orcamento.detalhesCompletos ? `<div style="font-size: 0.875rem; color: var(--gray-600);">📊 ${orcamento.detalhesCompletos.itensSelecionados} itens</div>` : ''}
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            <span style="display: inline-flex; align-items: center; gap:6px; padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; background: ${orcamento.status === 'pendente' ? 'rgb(245 158 11 / 0.1)' : 'rgb(16 185 129 / 0.1)'}; color: ${orcamento.status === 'pendente' ? '#f59e0b' : '#10b981'};">
+                                                ${orcamento.status === 'pendente'
+                                                    ? `
+                                                        <span aria-hidden="true" style="display:inline-flex;align-items:center;vertical-align:middle;width:14px;height:14px;margin-right:4px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 2v6a6 6 0 0012 0V2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                                                        Pendente
+                                                    `
+                                                    : `
+                                                        <span aria-hidden="true" style="display:inline-flex;align-items:center;vertical-align:middle;width:14px;height:14px;margin-right:4px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                                                        Aceito
+                                                    `}
+                                            </span>
+                                            <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem; display:flex; align-items:center; gap:6px;">
+                                                <span aria-hidden="true" style="display:inline-flex;align-items:center;vertical-align:middle;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                                                ${new Date(orcamento.dataCriacao).toLocaleDateString('pt-BR')}
+                                            </div>
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            ${orcamento.status === 'pendente' ? `
+                                                <div style="margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: var(--gray-700);">Aceitar Pacote:</div>
+                                                <button class="btn btn-sm btn-success" onclick="aceitarPacote(${orcamento.id}, 'bronze')" style="margin-right: 0.5rem; background: #CD7F32; border-color: #CD7F32;">Bronze</button>
+                                                <button class="btn btn-sm btn-success" onclick="aceitarPacote(${orcamento.id}, 'prata')" style="margin-right: 0.5rem; background: #C0C0C0; border-color: #C0C0C0;">Prata</button>
+                                                <button class="btn btn-sm btn-success" onclick="aceitarPacote(${orcamento.id}, 'ouro')" style="margin-right: 0.5rem; background: #FFD700; border-color: #FFD700;">Ouro</button>
+                                            ` : `<div style="font-weight: 600; color: var(--success-color);">Pacote Aceito: ${orcamento.pacoteAceito ? orcamento.pacoteAceito.charAt(0).toUpperCase() + orcamento.pacoteAceito.slice(1) : 'N/A'}</div>`}
+                                            <div style="margin-top: 1rem;">
+                                                <button class="btn btn-sm btn-secondary" onclick="verDetalhes(${orcamento.id})" style="margin-right: 0.5rem;"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8S2 12 2 12z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>Ver</button>
+                                                <button class="btn btn-sm btn-primary" style="background: var(--error-color); color: #fff; margin-right: 0.5rem;" onclick="gerarPDFOrcamento(${orcamento.id})"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M7 10h10M7 6h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>PDF</button>
+                                                <button class="btn btn-sm btn-danger" onclick="excluirOrcamento(${orcamento.id})"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Excluir</button>
+                                            </div>
+                                        </td>
+
+
+
+
+
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        }
+        // Atualiza a lista ao carregar a agenda
+        setTimeout(() => {
+            filtrarOrcamentos();
+            document.getElementById('btnBuscarOrcamento')?.addEventListener('click', filtrarOrcamentos);
+        }, 100);
+        }
+
+        function aceitarPacote(id, pacoteAceito) {
+            const orcamento = orcamentos.find(o => o.id === id);
+            if (orcamento) {
+                orcamento.status = 'aceito';
+                orcamento.pacoteAceito = pacoteAceito;
+                // Usa totais por pacote salvos no momento da criação, se disponíveis,
+                // para evitar recalcular com preços possivelmente atualizados depois
+                let valorBase, taxaServico, valorFinal;
+                if (orcamento.totaisPorPacote && orcamento.totaisPorPacote[pacoteAceito]) {
+                    const t = orcamento.totaisPorPacote[pacoteAceito];
+                    valorBase = t.subtotal;
+                    taxaServico = t.taxa;
+                    valorFinal = t.totalFinal;
+                } else {
+                    // Fallback: recalcula com preços atuais (compatibilidade retroativa)
+                    const precos = precosPacotes[pacoteAceito];
+                    let totalDrinks = 0;
+                    let totalOutros = 0;
+                    Object.keys(orcamento.drinks).forEach(item => {
+                        const quantidade = orcamento.drinks[item];
+                        const preco = precos[item] || 0;
+                        if (['caipirinha', 'mojito', 'mojito_sem_alcool', 'sex_on_the_beach', 'sex_on_the_beach_sem_alcool', 'gin_tonica', 'moscow_mule', 'moscow_mule_sem_alcool', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'pina_colada_sem_alcool', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'soda_italiana_limao_siciliano_e_morango', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'cotton_fairy_sem_alcool', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'].includes(item)) {
+                            totalDrinks += quantidade * preco;
+                        } else {
+                            totalOutros += quantidade;
+                        }
+                    });
+
+                    valorBase = totalDrinks + totalOutros;
+                    const incluirTaxaServico = orcamento.incluirTaxaServico !== undefined ? orcamento.incluirTaxaServico : true;
+                    taxaServico = incluirTaxaServico ? valorBase * 0.4 : 0;
+                    valorFinal = valorBase + taxaServico;
+                }
+
+                orcamento.valor = valorFinal;
+                orcamento.valorFormatado = formatarValorBR(valorFinal);
+                orcamento.valorBase = valorBase;
+                orcamento.taxaServico = taxaServico;
+                
+                localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+                carregarAgenda();
+                showNotification(`Orçamento aceito com sucesso! Pacote: ${pacoteAceito.charAt(0).toUpperCase() + pacoteAceito.slice(1)}`, 'success');
+            }
+        }
+
+        function excluirOrcamento(id) {
+            if (confirm('Tem certeza que deseja excluir este orçamento?')) {
+                orcamentos = orcamentos.filter(o => o.id !== id);
+                localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+                carregarAgenda();
+                carregarCalendario(); // Atualiza calendário também
+                showNotification('Orçamento excluído com sucesso!', 'success');
+            }
+        }
+
+        function verDetalhes(id) {
+            const orcamento = orcamentos.find(o => o.id === id);
+            if (!orcamento) return;
+
+            const precos = precosPacotes[orcamento.pacote] || {};
+            let detalhes = '';
+
+            // Monta detalhes dos itens
+            Object.keys(orcamento.drinks || {}).forEach(item => {
+                const quantidade = orcamento.drinks[item];
+                if (quantidade > 0) {
+                    const preco = precos[item] || 0;
+                    const nomeFormatado = item.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    
+                    if (['caipirinha', 'mojito', 'sex_on_the_beach', 'gin_tonica', 'moscow_mule', 'gim_tropical', 'gin_tropical', 'negroni', 'aperol_spritz', 'whisky_sour', 'cosmopolitan', 'caipirinha_morango', 'caipirinha_limao', 'caipirinha_kiwi', 'pina_colada', 'alexander', 'tequila_sour', 'tequila_sunrise', 'pink_lady', 'limonada_suica', 'lagoa_azul', 'caipirinha_cachaca', 'caipirinha_vinho', 'cream_pink', 'cotton_fairy', 'marguerita', 'amaretto_sour', 'hold_hup', 'passion', 'cookie_drink', 'mirtilo_sour', 'toscano', 'oreo_yin'].includes(item)) {
+                        const subtotal = quantidade * preco;
+                        detalhes += `• ${nomeFormatado}: ${quantidade} x R$ ${preco.toFixed(2)} = R$ ${subtotal.toFixed(2)}\n`;
+                    } else {
+                        detalhes += `• ${nomeFormatado}: R$ ${quantidade.toFixed(2)}\n`;
+                    }
+                }
+            });
+
+            const mensagem = `🍸 DETALHES DO ORÇAMENTO\n\n` +
+                `👤 Cliente: ${orcamento.cliente}\n` +
+                `📞 Telefone: ${orcamento.telefone}\n` +
+                `🏙️ Cidade: ${orcamento.cidade}\n` +
+                `📅 Data: ${orcamento.dataFormatada || formatarData(orcamento.data)}\n` +
+                `👥 Convidados: ${orcamento.quantidadeConvidados}\n` +
+                `📝 Descrição: ${orcamento.descricao}\n` +
+                `📦 Pacote: ${orcamento.pacote ? orcamento.pacote.charAt(0).toUpperCase() + orcamento.pacote.slice(1) : 'N/A'}\n` +
+                `📊 Status: ${orcamento.status}\n` +
+                `🕒 Criado: ${new Date(orcamento.dataCriacao).toLocaleDateString('pt-BR')}\n\n` +
+                `📋 ITENS SELECIONADOS:\n${detalhes}\n` +
+                `💰 Subtotal: R$ ${orcamento.valorBase.toFixed(2)}\n` +
+                `💸 Taxa de Serviço (40%): R$ ${orcamento.taxaServico.toFixed(2)}\n` +
+                `🎯 TOTAL: ${orcamento.valorFormatado || formatarValorBR(orcamento.valor)}`;
+
+            alert(mensagem);
+        }
+
+        // Sistema de notificações
+        function showNotification(message, type = 'info', duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type} fade-in`;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div>${getNotificationIcon(type)}</div>
+                    <span>${message}</span>
+                    <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, duration);
+            }
+        }
+
+        function getNotificationIcon(type) {
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // Toggle de formulários
+        function toggleForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const toggleFormLink = document.getElementById('toggleForm');
+            const toggleLoginLink = document.getElementById('toggleLogin');
+
+            if (loginForm.classList.contains('form-active')) {
+                loginForm.classList.remove('form-active');
+                loginForm.classList.add('form-hidden');
+                registerForm.classList.remove('form-hidden');
+                registerForm.classList.add('form-active');
+                toggleFormLink.classList.add('hidden');
+                toggleLoginLink.classList.remove('hidden');
+            } else {
+                registerForm.classList.remove('form-active');
+                registerForm.classList.add('form-hidden');
+                loginForm.classList.remove('form-hidden');
+                loginForm.classList.add('form-active');
+                toggleLoginLink.classList.add('hidden');
+                toggleFormLink.classList.remove('hidden');
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verifica se há usuário logado
+            const usuarioSalvo = localStorage.getItem('usuario');
+            if (usuarioSalvo) {
+                currentUser = JSON.parse(usuarioSalvo);
+            }
+            
+            updateNavigation();
+            
+            // Event listeners
+            document.getElementById('toggleForm').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('loginForm').classList.remove('form-active');
+                    document.getElementById('loginForm').classList.add('form-hidden');
+                    document.getElementById('registerForm').classList.remove('form-hidden');
+                    document.getElementById('registerForm').classList.add('form-active');
+                    document.getElementById('toggleForm').classList.add('hidden');
+                    document.getElementById('toggleLogin').classList.remove('hidden');
+                });
+                document.getElementById('toggleLogin').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('registerForm').classList.remove('form-active');
+                    document.getElementById('registerForm').classList.add('form-hidden');
+                    document.getElementById('loginForm').classList.remove('form-hidden');
+                    document.getElementById('loginForm').classList.add('form-active');
+                    document.getElementById('toggleLogin').classList.add('hidden');
+                    document.getElementById('toggleForm').classList.remove('hidden');
+                });
+            
+            document.getElementById('toggleLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleForm();
+            });
+
+            // Inicializa preços
+            atualizarPrecos();
+        });
+    </script>
+</body>
+</html>

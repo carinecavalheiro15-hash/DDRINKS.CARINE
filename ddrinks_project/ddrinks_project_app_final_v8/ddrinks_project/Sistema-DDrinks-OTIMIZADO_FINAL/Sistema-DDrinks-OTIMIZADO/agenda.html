@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda de Eventos - DDrinks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css" />
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Verifica se o usuário está logado
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/auth/check');
+        const data = await response.json();
+        
+        if (!data.authenticated) {
+          window.location.href = '/login';
+          return;
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        window.location.href = '/login';
+      }
+    }
+    
+    // Verifica autenticação ao carregar a página
+    checkAuth();
+  </script>
+  <style>
+    /* ...seu CSS existente... */
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: #ffffff;
+      margin: 0; 
+      padding: 0;
+      min-height: 100vh;
+    }
+    .container { 
+      max-width: 1200px; 
+      margin: 20px auto; 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px; 
+      border-radius: 20px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      animation: fadeInUp 0.8s ease-out;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      background: linear-gradient(45deg, #d4170a, #e74c3c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    /* ...restante do CSS igual ao seu arquivo... */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Adiciona a logo no topo da tela de cadastro -->
+    <img src="logo.png" alt="Logo DDrinks" style="width:150px; display:block; margin:20px auto;">
+    <h1>Agenda de Eventos - DDrinks 🍸</h1>
+    
+    <div class="navigation">
+      <a href="index.html" class="nav-btn">📋 Orçamentos</a>
+      <a href="datas.html" class="nav-btn">📅 Calendário</a>
+      <button onclick="logout()" class="nav-btn btn-logout">🚪 Sair</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard">
+      <h2>Dashboard</h2>
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <div class="card-content">
+            <h3>Valor Total dos Orçamentos</h3>
+            <p class="card-value" id="valorTotalOrcamentos">R$ 0,00</p>
+          </div>
+        </div>
+        <div class="dashboard-card">
+          <div class="card-content">
+            <h3>Valor Total Aceito</h3>
+            <p class="card-value" id="valorTotalAceito">R$ 0,00</p>
+          </div>
+        </div>
+        <div class="dashboard-card">
+          <div class="card-content">
+            <h3>Total de Eventos</h3>
+            <p class="card-value" id="totalEventos">0</p>
+          </div>
+        </div>
+        <div class="dashboard-card">
+          <div class="card-content">
+            <h3>Eventos Aceitos</h3>
+            <p class="card-value" id="eventosAceitos">0</p>
+          </div>
+        </div>
+        <div class="dashboard-card">
+          <div class="card-content">
+            <h3>Eventos Pendentes</h3>
+            <p class="card-value" id="eventosPendentes">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="dashboard-charts">
+        <div class="chart-container">
+          <h3>Eventos por Mês</h3>
+          <canvas id="chartMeses"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Status dos Eventos</h3>
+          <canvas id="chartStatus"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <h2>Lista de Eventos</h2>
+      <p style="text-align: center; color: #666; margin-top: 10px;">
+        Para criar novos eventos, use a página de <a href="index.html" style="color: #d4170a; text-decoration: none; font-weight: bold;">Orçamentos</a>
+      </p>
+    </div>
+
+    <div id="listaOrcamentos"></div>
+  </div>
+
+  <!-- Modal de Edição -->
+  <div id="modalEdicao" class="modal">
+    <div class="modal-content">
+      <h3>Editar Evento</h3>
+      <form id="formEdicao" onsubmit="salvarEdicao(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editCliente">Nome do Cliente:</label>
+            <input type="text" id="editCliente" placeholder="Nome do Cliente" required />
+          </div>
+          <div class="form-group">
+            <label for="editTelefone">Telefone:</label>
+            <input type="text" id="editTelefone" placeholder="Telefone do Cliente" required />
+          </div>
+          <div class="form-group">
+            <label for="editCidade">Cidade:</label>
+            <input type="text" id="editCidade" placeholder="Cidade" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editData">Data do Evento:</label>
+            <input type="date" id="editData" placeholder="Data do evento" required />
+          </div>
+          <div class="form-group">
+            <label for="editValor">Valor (R$):</label>
+            <input type="number" id="editValor" placeholder="Valor" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label for="editDescricao">Descrição:</label>
+            <input type="text" id="editDescricao" placeholder="Descrição do evento" required />
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="submit">Salvar</button>
+          <button type="button" onclick="fecharModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    async function logout() {
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        
+        localStorage.removeItem('usuario');
+        window.location.href = '/login';
+      } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+        localStorage.removeItem('usuario');
+        window.location.href = '/login';
+      }
+    }
+
+    // Variáveis globais
+    let orcamentos = [];
+    const listaOrcamentos = document.getElementById("listaOrcamentos");
+    let eventoEmEdicao = null;
+
+    async function carregarOrcamentos() {
+      try {
+        const response = await fetch('/api/orcamentos', {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Erro ao carregar orçamentos');
+        }
+        
+        const data = await response.json();
+        orcamentos = data.orcamentos;
+        renderizarLista();
+        atualizarDashboard();
+      } catch (error) {
+        console.error('Erro ao carregar orçamentos:', error);
+        listaOrcamentos.innerHTML = `<p style='text-align: center; color: #e74c3c;'>Erro ao carregar eventos: ${error.message}</p>`;
+      }
+    }
+
+    function formatarValorBR(valor) {
+      return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    async function aceitarEvento(id) {
+      await atualizarStatusEvento(id, 'aceito');
+    }
+
+    function editarEvento(id) {
+      eventoEmEdicao = id;
+      const evento = orcamentos.find(e => e.id === id);
+      document.getElementById("editCliente").value = evento.cliente;
+      document.getElementById("editTelefone").value = evento.telefone;
+      document.getElementById("editCidade").value = evento.cidade;
+      document.getElementById("editData").value = evento.data_evento;
+      document.getElementById("editValor").value = evento.valor;
+      document.getElementById("editDescricao").value = evento.descricao;
+      document.getElementById("modalEdicao").style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modalEdicao").style.display = "none";
+    }
+
+    async function salvarEdicao(event) {
+      event.preventDefault();
+      try {
+        const cliente = document.getElementById("editCliente").value.trim();
+        const telefone = document.getElementById("editTelefone").value.trim();
+        const cidade = document.getElementById("editCidade").value.trim();
+        const data = document.getElementById("editData").value;
+        const valor = document.getElementById("editValor").value.trim();
+        const descricao = document.getElementById("editDescricao").value.trim();
+        
+        const response = await fetch(`/api/orcamentos/${eventoEmEdicao}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            cliente,
+            telefone,
+            cidade,
+            data_evento: data,
+            valor: parseFloat(valor),
+            descricao
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert('Erro ao salvar edição: ' + result.message);
+          return;
+        }
+
+        fecharModal();
+        carregarOrcamentos();
+      } catch (error) {
+        console.error('Erro ao salvar edição:', error);
+        alert('Erro ao salvar edição. Tente novamente.');
+      }
+    }
+
+    async function excluirEvento(id) {
+      if (confirm("Tem certeza que deseja excluir este evento?")) {
+        try {
+          const response = await fetch(`/api/orcamentos/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            alert('Erro ao excluir: ' + result.message);
+            return;
+          }
+
+          carregarOrcamentos();
+        } catch (error) {
+          console.error('Erro ao excluir evento:', error);
+          alert('Erro ao excluir evento. Tente novamente.');
+        }
+      }
+    }
+
+    async function atualizarStatusEvento(id, status) {
+      try {
+        const response = await fetch(`/api/orcamentos/${id}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ status })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert('Erro ao atualizar status: ' + result.message);
+          return;
+        }
+
+        carregarOrcamentos();
+      } catch (error) {
+        console.error('Erro ao atualizar status:', error);
+        alert('Erro ao atualizar status. Tente novamente.');
+      }
+    }
+
+    function renderizarLista() {
+      if (!listaOrcamentos) return;
+      if (orcamentos.length === 0) {
+        listaOrcamentos.innerHTML = "<p style='text-align: center; color: #666; margin: 20px 0;'>Nenhum evento cadastrado.</p>";
+        return;
+      }
+      let html = `<table><thead><tr><th>Cliente</th><th>Telefone</th><th>Cidade</th><th>Data</th><th>Valor (R$)</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead><tbody>`;
+      orcamentos.forEach(evento => {
+        html += `<tr>
+          <td>${evento.cliente}</td>
+          <td>${evento.telefone}</td>
+          <td>${evento.cidade}</td>
+          <td>${formatarData(evento.data_evento)}</td>
+          <td>${formatarValorBR(evento.valor)}</td>
+          <td>${evento.descricao}</td>
+          <td class="status-${evento.status}">${evento.status.charAt(0).toUpperCase() + evento.status.slice(1)}</td>
+          <td>
+            ${evento.status === "pendente" ? `<button class="btn btn-aceitar" onclick="aceitarEvento(${evento.id})">Aceitar</button>` : ""}
+            <button class="btn btn-editar" onclick="editarEvento(${evento.id})">Editar</button>
+            <button class="btn btn-excluir" onclick="excluirEvento(${evento.id})">Excluir</button>
+          </td>
+        </tr>`;
+      });
+      html += "</tbody></table>";
+      listaOrcamentos.innerHTML = html;
+    }
+
+    async function atualizarDashboard() {
+      try {
+        const response = await fetch('/api/orcamentos/dashboard/stats', {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Erro ao carregar estatísticas');
+        }
+        
+        const data = await response.json();
+        atualizarCards(data);
+        atualizarGraficoMeses(data.eventosPorMes);
+        atualizarGraficoStatus(data);
+      } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+        // Fallback para cálculo local
+        atualizarCardsLocal();
+        atualizarGraficoMeses();
+        atualizarGraficoStatus();
+      }
+    }
+
+    function atualizarCards(stats) {
+      if (stats) {
+        document.getElementById('valorTotalOrcamentos').textContent = formatarValorBR(stats.valorTotal);
+        document.getElementById('valorTotalAceito').textContent = formatarValorBR(stats.valorTotalAceito);
+        document.getElementById('totalEventos').textContent = stats.totalOrcamentos;
+        document.getElementById('eventosAceitos').textContent = stats.orcamentosAceitos;
+        document.getElementById('eventosPendentes').textContent = stats.orcamentosPendentes;
+      } else {
+        atualizarCardsLocal();
+      }
+    }
+
+    function atualizarCardsLocal() {
+      const valorTotalOrcamentos = orcamentos.reduce((total, evento) => total + Number(evento.valor), 0);
+      const valorTotalAceito = orcamentos.filter(evento => evento.status === 'aceito').reduce((total, evento) => total + Number(evento.valor), 0);
+      const totalEventos = orcamentos.length;
+      const eventosAceitos = orcamentos.filter(evento => evento.status === 'aceito').length;
+      const eventosPendentes = orcamentos.filter(evento => evento.status === 'pendente').length;
+      document.getElementById('valorTotalOrcamentos').textContent = formatarValorBR(valorTotalOrcamentos);
+      document.getElementById('valorTotalAceito').textContent = formatarValorBR(valorTotalAceito);
+      document.getElementById('totalEventos').textContent = totalEventos;
+      document.getElementById('eventosAceitos').textContent = eventosAceitos;
+      document.getElementById('eventosPendentes').textContent = eventosPendentes;
+    }
+
+    let chartMesesInstance = null;
+    function atualizarGraficoMeses(eventosPorMesAPI = null) {
+      const ctx = document.getElementById('chartMeses').getContext('2d');
+      const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      let eventosPorMes = new Array(12).fill(0);
+      
+      if (eventosPorMesAPI) {
+        // Usa dados da API
+        eventosPorMesAPI.forEach(item => {
+          if (item.mes >= 1 && item.mes <= 12) {
+            eventosPorMes[item.mes - 1] = item.quantidade;
+          }
+        });
+      } else {
+        // Calcula localmente
+        orcamentos.forEach(evento => {
+          if (evento.data_evento) {
+            const [ano, mes] = evento.data_evento.split('-');
+            const mesIndex = parseInt(mes, 10) - 1;
+            if (mesIndex >= 0 && mesIndex < 12) {
+              eventosPorMes[mesIndex]++;
+            }
+          }
+        });
+      }
+      
+      if(chartMesesInstance) chartMesesInstance.destroy();
+      chartMesesInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: meses, datasets: [{ label: 'Eventos por Mês', data: eventosPorMes, backgroundColor: '#d4170a' }] },
+        options: { responsive: true }
+      });
+    }
+
+    let chartStatusInstance = null;
+    function atualizarGraficoStatus(stats = null) {
+      const ctx = document.getElementById('chartStatus').getContext('2d');
+      let eventosAceitos, eventosPendentes;
+      
+      if (stats) {
+        eventosAceitos = stats.orcamentosAceitos;
+        eventosPendentes = stats.orcamentosPendentes;
+      } else {
+        eventosAceitos = orcamentos.filter(evento => evento.status === 'aceito').length;
+        eventosPendentes = orcamentos.filter(evento => evento.status === 'pendente').length;
+      }
+      
+      const total = eventosAceitos + eventosPendentes;
+      
+      if (chartStatusInstance) chartStatusInstance.destroy();
+      chartStatusInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Aceitos', 'Pendentes'],
+          datasets: [{
+            data: [eventosAceitos, eventosPendentes],
+            backgroundColor: ['#27ae60', '#f1c40f'],
+            borderColor: ['#fff', '#fff'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                color: '#333',
+                font: { size: 16 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed;
+                  const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  return `${context.label}: ${value} (${percent}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function formatarData(dataISO) {
+      if (!dataISO) return '';
+      const [ano, mes, dia] = dataISO.split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    // Inicialização
+    carregarOrcamentos();
+    window.onclick = function(event) {
+      const modal = document.getElementById("modalEdicao");
+      if (event.target === modal) {
+        fecharModal();
+      }
+    }
