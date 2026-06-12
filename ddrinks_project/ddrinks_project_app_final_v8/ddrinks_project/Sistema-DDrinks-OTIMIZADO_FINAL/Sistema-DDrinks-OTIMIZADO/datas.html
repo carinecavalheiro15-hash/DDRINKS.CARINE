@@ -234,31 +234,54 @@
       animation: fadeInUp 0.8s ease-out;
     }
 
+    .navigation {
+      text-align: center;
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .calendar-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     @media (max-width: 768px) {
       .container {
         margin: 10px;
-        padding: 20px;
+        padding: 16px;
       }
-      
+      h1 { font-size: 1.6em; }
       .calendar-controls {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         text-align: center;
       }
-      
       .calendar-day {
         min-height: 60px;
-        padding: 10px;
+        padding: 8px;
       }
-      
       .event-info {
         font-size: 10px;
       }
-      
       .legend {
         flex-direction: column;
         align-items: center;
       }
+      .nav-btn {
+        font-size: 14px;
+        padding: 10px 14px;
+      }
+    }
+    @media (max-width: 480px) {
+      .container { margin: 8px; padding: 12px; }
+      h1 { font-size: 1.4em; }
+      .calendar { min-width: 320px; }
+      .calendar-day { min-height: 50px; padding: 4px; }
+      .day-number { font-size: 0.75rem; }
+      .event-info { font-size: 9px; }
+      .month-year { font-size: 18px; }
+      .nav-month { padding: 8px 10px; font-size: 14px; }
     }
   </style>
 </head>
@@ -269,6 +292,7 @@
     <div class="navigation">
       <a href="index.html" class="nav-btn">📋 Orçamentos</a>
       <a href="agenda.html" class="nav-btn">📊 Agenda</a>
+      <a href="/estoque" class="nav-btn">📦 Estoque</a>
       <button onclick="logout()" class="nav-btn btn-logout">🚪 Sair</button>
     </div>
 
@@ -293,7 +317,9 @@
       </div>
     </div>
 
-    <div id="calendar" class="calendar"></div>
+    <div class="calendar-wrapper">
+      <div id="calendar" class="calendar"></div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>

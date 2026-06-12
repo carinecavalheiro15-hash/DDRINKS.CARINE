@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Controle de Estoque - DDrinks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      min-height: 100vh;
+      color: #1e293b;
+    }
+
+    /* ===== CONTAINER ===== */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    /* ===== HEADER ===== */
+    .page-header {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+      border: 1px solid #e2e8f0;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #d4170a, #e74c3c);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 22px; height: 22px; }
+    .logo-text {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .logo-text span { color: #d4170a; }
+    .page-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #475569;
+    }
+    .navigation {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(45deg, #d4170a, #e74c3c);
+      color: white;
+      padding: 9px 15px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      min-height: 40px;
+      box-shadow: 0 3px 10px rgba(212,23,10,0.25);
+    }
+    .nav-btn:hover {
+      background: linear-gradient(45deg, #272625, #2c3e50);
+      transform: translateY(-1px);
+    }
+    .nav-btn.secondary {
+      background: linear-gradient(45deg, #6c757d, #495057);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+    .nav-btn.secondary:hover { background: linear-gradient(45deg, #495057, #343a40); }
+
+    /* ===== ALERTA DE ESTOQUE BAIXO ===== */
+    #alertaBaixo {
+      display: none;
+      background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+      border: 1px solid #f59e0b;
+      border-left: 5px solid #f59e0b;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      color: #92400e;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    #alertaBaixo.critico {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      border-color: #ef4444;
+      color: #7f1d1d;
+    }
+    #alertaBaixo .alert-title { font-weight: 700; margin-bottom: 4px; font-size: 1rem; }
+
+    /* ===== CARDS DE RESUMO ===== */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 16px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s;
+    }
+    .summary-card:hover { transform: translateY(-2px); }
+    .summary-card .s-icon {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .summary-card .s-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+    }
+    .summary-card .s-label {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .summary-card.ok .s-value { color: #10b981; }
+    .summary-card.warn .s-value { color: #f59e0b; }
+    .summary-card.danger .s-value { color: #ef4444; }
+
+    /* ===== SEÇÕES ===== */
+    .section {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-body { padding: 20px; }
+
+    /* ===== BOTÕES ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      min-height: 40px;
+      transition: all 0.2s ease;
+    }
+    .btn-primary { background: #d4170a; color: white; }
+    .btn-primary:hover { background: #b01208; transform: translateY(-1px); }
+    .btn-success { background: #10b981; color: white; }
+    .btn-success:hover { background: #059669; }
+    .btn-warning { background: #f59e0b; color: white; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; min-height: 34px; }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #d4170a;
+      color: #d4170a;
+    }
+    .btn-outline:hover { background: #d4170a; color: white; }
+
+    /* ===== TABELA DE ESTOQUE ===== */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 560px;
+    }
+    table th {
+      background: #f8fafc;
+      padding: 11px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: #475569;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    table tbody tr:last-child td { border-bottom: none; }
+    table tbody tr:hover { background: #f8fafc; }
+
+    /* Status badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-ok { background: rgba(16,185,129,0.12); color: #065f46; }
+    .badge-baixo { background: rgba(245,158,11,0.15); color: #92400e; }
+    .badge-critico { background: rgba(239,68,68,0.12); color: #7f1d1d; }
+
+    /* Progress bar */
+    .prog-wrap {
+      width: 100%;
+      min-width: 80px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .prog-bar {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+    .prog-ok { background: linear-gradient(90deg, #10b981, #34d399); }
+    .prog-baixo { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .prog-critico { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    /* Quantidade em destaque */
+    .qty-display {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .qty-unit { font-size: 0.75rem; color: #64748b; font-weight: 400; margin-left: 2px; }
+
+    /* Ações da linha */
+    .row-actions { display: flex; gap: 6px; flex-wrap: nowrap; }
+
+    /* ===== BAIXA AUTOMÁTICA ===== */
+    .baixa-box {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      border-radius: 14px;
+      padding: 22px 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .baixa-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .baixa-info p { font-size: 0.85rem; color: #94a3b8; }
+    .btn-baixa {
+      background: linear-gradient(45deg, #d4170a, #e74c3c);
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 46px;
+      transition: all 0.25s;
+      display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+      box-shadow: 0 4px 15px rgba(212,23,10,0.4);
+    }
+    .btn-baixa:hover { background: linear-gradient(45deg, #b01208, #c0392b); transform: translateY(-2px); }
+    .btn-baixa:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    #ultimaBaixa {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* ===== HISTÓRICO ===== */
+    .hist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .hist-item:last-child { border-bottom: none; }
+    .hist-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .hist-icon.entrada { background: rgba(16,185,129,0.12); }
+    .hist-icon.saida { background: rgba(239,68,68,0.1); }
+    .hist-icon.baixa { background: rgba(245,158,11,0.12); }
+    .hist-info { flex: 1; }
+    .hist-desc { font-size: 0.88rem; font-weight: 500; color: #1e293b; }
+    .hist-meta { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+    .hist-qty {
+      font-weight: 700;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+    .hist-qty.pos { color: #10b981; }
+    .hist-qty.neg { color: #ef4444; }
+
+    /* ===== MODAIS ===== */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(2px);
+    }
+    .modal-bg.open { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 460px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      animation: popIn 0.25s ease;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: #94a3b8;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .modal-close:hover { color: #1e293b; }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      min-height: 42px;
+      transition: border-color 0.2s;
+      font-family: inherit;
+      color: #1e293b;
+      background: white;
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: #d4170a;
+      box-shadow: 0 0 0 3px rgba(212,23,10,0.1);
+    }
+    .form-hint { font-size: 0.78rem; color: #94a3b8; margin-top: 4px; }
+
+    /* Chip de ingrediente no modal de baixa */
+    .ingrediente-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .ingrediente-chip .chip-nome { font-weight: 600; font-size: 0.9rem; }
+    .ingrediente-chip .chip-qty { color: #ef4444; font-weight: 700; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-msg {
+      background: #1e293b;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+      pointer-events: auto;
+    }
+    .toast-msg.success { background: #10b981; }
+    .toast-msg.error { background: #ef4444; }
+    .toast-msg.warning { background: #f59e0b; color: #1e293b; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .container { animation: fadeInUp 0.4s ease; }
+
+    /* ===== RESPONSIVO ===== */
+    @media (max-width: 768px) {
+      .container { padding: 12px 10px 30px; }
+      .header-row { flex-direction: column; align-items: flex-start; }
+      .navigation { width: 100%; }
+      .nav-btn { flex: 1; justify-content: center; font-size: 13px; padding: 8px 10px; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .section-header { flex-direction: column; align-items: flex-start; }
+      .baixa-box { flex-direction: column; }
+      .btn-baixa { width: 100%; justify-content: center; }
+      table th, table td { padding: 10px; font-size: 0.83rem; }
+    }
+    @media (max-width: 480px) {
+      .summary-card .s-value { font-size: 1.3rem; }
+      .page-title { font-size: 0.85rem; }
+      .modal { border-radius: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-row">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 3h16" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 12v6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M9 18h6" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">DD<span>drinks</span></div>
+          <div class="page-title">📦 Controle de Estoque</div>
+        </div>
+      </div>
+      <nav class="navigation">
+        <a href="/" class="nav-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 12h6M12 9v6" stroke="white" stroke-width="2" stroke-linecap="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="1.5" fill="none"/></svg>
+          Orçamentos
+        </a>
+        <a href="/agenda" class="nav-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 7h18M8 3v4M16 3v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="white" stroke-width="1.2" fill="none"/></svg>
+          Agenda
+        </a>
+        <a href="/datas" class="nav-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="white" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Calendário
+        </a>
+        <button onclick="logout()" class="nav-btn secondary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M16 17l5-5-5-5M21 12H9" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Sair
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ALERTA -->
+  <div id="alertaBaixo"></div>
+
+  <!-- CARDS RESUMO -->
+  <div class="summary-grid" id="summaryCards"></div>
+
+  <!-- ESTOQUE ATUAL -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="#d4170a" stroke-width="1.5" fill="none"/><path d="M8 21h8M12 17v4" stroke="#d4170a" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Itens em Estoque
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-success btn-sm" onclick="abrirModalAdicionar()">
+          ＋ Adicionar Estoque
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="abrirModalConfigurar()">
+          ⚙ Configurar Mínimos
+        </button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table id="tabelaEstoque">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Quantidade Atual</th>
+            <th>Mínimo</th>
+            <th>Nível</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyEstoque"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BAIXA AUTOMÁTICA -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#d4170a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        Baixa Automática por Evento
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="baixa-box">
+        <div class="baixa-info">
+          <h3>⚡ Descontar automaticamente após eventos aceitos</h3>
+          <p>Busca eventos com status "Aceito" que ainda não foram processados e desconta os ingredientes do estoque conforme os drinks do orçamento.</p>
+          <div id="ultimaBaixa"></div>
+        </div>
+        <button class="btn-baixa" id="btnBaixa" onclick="realizarBaixaAutomatica()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Processar Baixa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#d4170a" stroke-width="1.5" fill="none"/><path d="M12 7v5l3 3" stroke="#d4170a" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Histórico de Movimentações
+      </div>
+      <button class="btn btn-sm" style="background:#f1f5f9;color:#475569;" onclick="limparHistorico()">🗑 Limpar</button>
+    </div>
+    <div class="section-body">
+      <div id="historicoLista"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL ADICIONAR/RETIRAR ===== -->
+<div class="modal-bg" id="modalAdicionar">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalAdicionarTitulo">Adicionar ao Estoque</h3>
+      <button class="modal-close" onclick="fecharModal('modalAdicionar')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Item</label>
+        <select class="form-select" id="modalItem">
+          <option value="gin">Gin</option>
+          <option value="vodka">Vodka</option>
+          <option value="whisky">Whisky</option>
+          <option value="xaropes">Xaropes</option>
+          <option value="frutas">Frutas</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="modalQtyLabel">Quantidade (garrafas)</label>
+        <input type="number" class="form-input" id="modalQty" min="0.1" step="0.1" placeholder="0" />
+        <div class="form-hint" id="modalQtyHint">Ex: 2 garrafas de gin 750ml</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observação (opcional)</label>
+        <input type="text" class="form-input" id="modalObs" placeholder="Ex: Compra no mercado X" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:#f1f5f9;color:#475569;" onclick="fecharModal('modalAdicionar')">Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmarAdicionar" onclick="confirmarMovimentacao()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CONFIGURAR MÍNIMOS ===== -->
+<div class="modal-bg" id="modalConfigurar">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>⚙ Configurar Estoque Mínimo</h3>
+      <button class="modal-close" onclick="fecharModal('modalConfigurar')">×</button>
+    </div>
+    <div class="modal-body" id="modalConfigurarBody"></div>
+    <div class="modal-footer">
+      <button class="btn" style="background:#f1f5f9;color:#475569;" onclick="fecharModal('modalConfigurar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarMinimos()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL BAIXA MANUAL ===== -->
+<div class="modal-bg" id="modalBaixaManual">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalBaixaManuaTitulo">Retirar do Estoque</h3>
+      <button class="modal-close" onclick="fecharModal('modalBaixaManual')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" id="labelBaixaItem">Item</label>
+        <div id="infoItemBaixa" style="font-weight:700;font-size:1.1rem;margin-bottom:4px;color:#1e293b;"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="labelBaixaQty">Quantidade a retirar</label>
+        <input type="number" class="form-input" id="baixaQty" min="0.1" step="0.1" placeholder="0" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motivo (opcional)</label>
+        <input type="text" class="form-input" id="baixaMotivo" placeholder="Ex: Uso em evento, perda..." />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:#f1f5f9;color:#475569;" onclick="fecharModal('modalBaixaManual')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarBaixaManual()">Confirmar Retirada</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ========================================
+// DADOS BASE
+// ========================================
+const ITENS_BASE = [
+  { id: 'gin',     nome: 'Gin',     unidade: 'garrafas', icone: '🍸', cor: '#6366f1' },
+  { id: 'vodka',   nome: 'Vodka',   unidade: 'garrafas', icone: '🥃', cor: '#8b5cf6' },
+  { id: 'whisky',  nome: 'Whisky',  unidade: 'garrafas', icone: '🥃', cor: '#d97706' },
+  { id: 'xaropes', nome: 'Xaropes', unidade: 'litros',   icone: '🍯', cor: '#ec4899' },
+  { id: 'frutas',  nome: 'Frutas',  unidade: 'kg',       icone: '🍋', cor: '#10b981' },
+];
+
+// Consumo aproximado por unidade de drink (0 = não usa este ingrediente)
+const CONSUMO_POR_DRINK = {
+  gin_tonica:      { gin: 0.07 },
+  negroni:         { gin: 0.07, xaropes: 0.02 },
+  gin_tropical:    { gin: 0.07, frutas: 0.05 },
+  gim_tropical:    { gin: 0.07, frutas: 0.05 },
+  lagoa_azul:      { gin: 0.05, xaropes: 0.03 },
+
+  moscow_mule:     { vodka: 0.06, xaropes: 0.02 },
+  cosmopolitan:    { vodka: 0.06, xaropes: 0.03 },
+  sex_on_the_beach:{ vodka: 0.05, frutas: 0.05, xaropes: 0.02 },
+  limonada_suica:  { vodka: 0.05, frutas: 0.08 },
+  pink_lady:       { vodka: 0.06, frutas: 0.04, xaropes: 0.02 },
+
+  whisky_sour:     { whisky: 0.07, xaropes: 0.03 },
+
+  caipirinha:            { frutas: 0.12, xaropes: 0.02 },
+  caipirinha_morango:    { frutas: 0.12, xaropes: 0.03 },
+  caipirinha_limao:      { frutas: 0.12, xaropes: 0.02 },
+  caipirinha_kiwi:       { frutas: 0.15, xaropes: 0.03 },
+  caipirinha_cachaca:    { frutas: 0.12, xaropes: 0.02 },
+  caipirinha_vinho:      { frutas: 0.12, xaropes: 0.03 },
+
+  mojito:                { frutas: 0.06, xaropes: 0.03 },
+  mojito_sem_alcool:     { frutas: 0.06, xaropes: 0.03 },
+
+  aperol_spritz:         { xaropes: 0.04 },
+  tequila_sour:          { xaropes: 0.03 },
+  tequila_sunrise:       { frutas: 0.05, xaropes: 0.04 },
+  amaretto_sour:         { xaropes: 0.04 },
+  pina_colada:           { frutas: 0.10, xaropes: 0.04 },
+  pina_colada_sem_alcool:{ frutas: 0.10, xaropes: 0.04 },
+  alexander:             { xaropes: 0.03 },
+  cream_pink:            { xaropes: 0.04 },
+  cotton_fairy:          { frutas: 0.04, xaropes: 0.04 },
+  cotton_fairy_sem_alcool:{ frutas: 0.04, xaropes: 0.04 },
+  marguerita:            { frutas: 0.05, xaropes: 0.03 },
+  hold_hup:              { xaropes: 0.05 },
+  passion:               { frutas: 0.08, xaropes: 0.04 },
+  cookie_drink:          { xaropes: 0.05 },
+  mirtilo_sour:          { frutas: 0.10, xaropes: 0.04 },
+  toscano:               { xaropes: 0.04 },
+  oreo_yin:              { xaropes: 0.05 },
+  sex_on_the_beach_sem_alcool:   { frutas: 0.05, xaropes: 0.02 },
+  moscow_mule_sem_alcool:        { xaropes: 0.02 },
+  soda_italiana_limao_siciliano_e_morango: { frutas: 0.06, xaropes: 0.03 },
+};
+
+// ========================================
+// STORAGE
+// ========================================
+function loadEstoque() {
+  const raw = localStorage.getItem('ddrinks_estoque');
+  if (raw) return JSON.parse(raw);
+  return ITENS_BASE.map(i => ({
+    ...i,
+    quantidade: i.id === 'gin' ? 5 : i.id === 'vodka' ? 4 : i.id === 'whisky' ? 3 : i.id === 'xaropes' ? 2 : 2,
+    minimo: i.id === 'frutas' || i.id === 'xaropes' ? 1 : 2,
+  }));
+}
+
+function saveEstoque(estoque) {
+  localStorage.setItem('ddrinks_estoque', JSON.stringify(estoque));
+}
+
+function loadHistorico() {
+  const raw = localStorage.getItem('ddrinks_hist');
+  return raw ? JSON.parse(raw) : [];
+}
+
+function saveHistorico(hist) {
+  localStorage.setItem('ddrinks_hist', JSON.stringify(hist.slice(0, 100)));
+}
+
+function loadEventosProcessados() {
+  const raw = localStorage.getItem('ddrinks_ev_proc');
+  return raw ? JSON.parse(raw) : [];
+}
+
+function saveEventosProcessados(ids) {
+  localStorage.setItem('ddrinks_ev_proc', JSON.stringify(ids));
+}
+
+function adicionarHistorico(tipo, itemId, itemNome, delta, obs) {
+  const hist = loadHistorico();
+  hist.unshift({
+    tipo,
+    itemId,
+    itemNome,
+    delta,
+    obs: obs || '',
+    data: new Date().toISOString(),
+  });
+  saveHistorico(hist);
+}
+
+// ========================================
+// RENDER RESUMO
+// ========================================
+function renderSummary() {
+  const estoque = loadEstoque();
+  const total = estoque.length;
+  const baixos = estoque.filter(i => i.quantidade <= i.minimo && i.quantidade > 0).length;
+  const criticos = estoque.filter(i => i.quantidade === 0).length;
+  const ok = total - baixos - criticos;
+
+  document.getElementById('summaryCards').innerHTML = `
+    <div class="summary-card ok">
+      <span class="s-icon">✅</span>
+      <div class="s-value">${ok}</div>
+      <div class="s-label">Itens OK</div>
+    </div>
+    <div class="summary-card warn">
+      <span class="s-icon">⚠️</span>
+      <div class="s-value">${baixos}</div>
+      <div class="s-label">Estoque Baixo</div>
+    </div>
+    <div class="summary-card danger">
+      <span class="s-icon">🚨</span>
+      <div class="s-value">${criticos}</div>
+      <div class="s-label">Sem Estoque</div>
+    </div>
+    <div class="summary-card">
+      <span class="s-icon">📦</span>
+      <div class="s-value">${total}</div>
+      <div class="s-label">Total de Itens</div>
+    </div>
+  `;
+
+  // Alerta
+  const alertaEl = document.getElementById('alertaBaixo');
+  const problemáticos = estoque.filter(i => i.quantidade <= i.minimo);
+  if (criticos > 0) {
+    alertaEl.className = 'critico';
+    alertaEl.style.display = 'block';
+    alertaEl.innerHTML = `<div class="alert-title">🚨 Atenção! Itens sem estoque</div>
+      ${problemáticos.map(i => `<span>• <strong>${i.nome}</strong>: ${fmt(i.quantidade, i.unidade)}</span><br>`).join('')}`;
+  } else if (baixos > 0) {
+    alertaEl.className = '';
+    alertaEl.style.display = 'block';
+    alertaEl.innerHTML = `<div class="alert-title">⚠️ Estoque baixo nos itens abaixo</div>
+      ${problemáticos.map(i => `<span>• <strong>${i.nome}</strong>: ${fmt(i.quantidade, i.unidade)} (mínimo: ${fmt(i.minimo, i.unidade)})</span><br>`).join('')}`;
+  } else {
+    alertaEl.style.display = 'none';
+  }
+}
+
+// ========================================
+// RENDER TABELA
+// ========================================
+function getStatus(item) {
+  if (item.quantidade === 0) return { label: '🚨 Crítico', cls: 'badge-critico', prog: 'prog-critico' };
+  if (item.quantidade <= item.minimo) return { label: '⚠️ Baixo', cls: 'badge-baixo', prog: 'prog-baixo' };
+  return { label: '✅ OK', cls: 'badge-ok', prog: 'prog-ok' };
+}
+
+function fmt(qty, unidade) {
+  return `${Number(qty).toLocaleString('pt-BR', { minimumFractionDigits: qty % 1 !== 0 ? 1 : 0 })} ${unidade}`;
+}
+
+function renderTabela() {
+  const estoque = loadEstoque();
+  const tbody = document.getElementById('tbodyEstoque');
+  if (!estoque.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;">Nenhum item cadastrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = estoque.map(item => {
+    const st = getStatus(item);
+    const pct = item.minimo > 0 ? Math.min(100, (item.quantidade / (item.minimo * 3)) * 100) : 100;
+    return `
+      <tr>
+        <td><span style="font-size:1.2rem;margin-right:8px;">${item.icone}</span><strong>${item.nome}</strong></td>
+        <td>
+          <span class="qty-display">${Number(item.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: item.quantidade % 1 !== 0 ? 1 : 0 })}</span>
+          <span class="qty-unit">${item.unidade}</span>
+        </td>
+        <td style="color:#64748b;">${fmt(item.minimo, item.unidade)}</td>
+        <td style="min-width:90px;">
+          <div class="prog-wrap"><div class="prog-bar ${st.prog}" style="width:${pct}%"></div></div>
+        </td>
+        <td><span class="badge ${st.cls}">${st.label}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="btn btn-success btn-sm" onclick="abrirModalAdicionarItem('${item.id}')">＋</button>
+            <button class="btn btn-primary btn-sm" onclick="abrirBaixaManual('${item.id}')">－</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ========================================
+// RENDER HISTÓRICO
+// ========================================
+function renderHistorico() {
+  const hist = loadHistorico();
+  const el = document.getElementById('historicoLista');
+  if (!hist.length) {
+    el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px 0;">Nenhuma movimentação registrada ainda.</p>';
+    return;
+  }
+  const icones = { entrada: '📥', saida: '📤', baixa: '⚡' };
+  const tipos  = { entrada: 'Entrada', saida: 'Retirada manual', baixa: 'Baixa automática' };
+  el.innerHTML = hist.slice(0, 30).map(h => {
+    const d = new Date(h.data);
+    const dtStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const sinal = h.delta > 0 ? '+' : '';
+    const cls   = h.delta > 0 ? 'pos' : 'neg';
+    const tipoCls = h.tipo === 'entrada' ? 'entrada' : h.tipo === 'baixa' ? 'baixa' : 'saida';
+    const item = ITENS_BASE.find(i => i.id === h.itemId) || { unidade: '' };
+    return `
+      <div class="hist-item">
+        <div class="hist-icon ${tipoCls}">${icones[h.tipo] || '📋'}</div>
+        <div class="hist-info">
+          <div class="hist-desc"><strong>${h.itemNome}</strong> — ${tipos[h.tipo] || h.tipo}${h.obs ? ': ' + h.obs : ''}</div>
+          <div class="hist-meta">${dtStr}</div>
+        </div>
+        <div class="hist-qty ${cls}">${sinal}${Math.abs(h.delta).toLocaleString('pt-BR', { minimumFractionDigits: Math.abs(h.delta) % 1 !== 0 ? 1 : 0 })} ${item.unidade}</div>
+      </div>`;
+  }).join('');
+}
+
+// ========================================
+// MODAIS
+// ========================================
+let modalModoAdicionar = true;
+
+function abrirModalAdicionar() {
+  modalModoAdicionar = true;
+  document.getElementById('modalAdicionarTitulo').textContent = '📥 Adicionar ao Estoque';
+  document.getElementById('btnConfirmarAdicionar').textContent = 'Adicionar';
+  document.getElementById('btnConfirmarAdicionar').className = 'btn btn-success';
+  document.getElementById('modalItem').value = 'gin';
+  document.getElementById('modalQty').value = '';
+  document.getElementById('modalObs').value = '';
+  atualizarUnidadeModal();
+  abrirModal('modalAdicionar');
+}
+
+function abrirModalAdicionarItem(itemId) {
+  abrirModalAdicionar();
+  document.getElementById('modalItem').value = itemId;
+  atualizarUnidadeModal();
+}
+
+function atualizarUnidadeModal() {
+  const itemId = document.getElementById('modalItem').value;
+  const item = ITENS_BASE.find(i => i.id === itemId);
+  if (item) {
+    document.getElementById('modalQtyLabel').textContent = `Quantidade (${item.unidade})`;
+    const hints = {
+      gin: 'Ex: 2 (garrafas 750ml)',
+      vodka: 'Ex: 3 (garrafas 750ml)',
+      whisky: 'Ex: 1 (garrafa 750ml)',
+      xaropes: 'Ex: 1.5 (litros)',
+      frutas: 'Ex: 2 (kg)',
+    };
+    document.getElementById('modalQtyHint').textContent = hints[itemId] || '';
+  }
+}
+
+document.getElementById('modalItem').addEventListener('change', atualizarUnidadeModal);
+
+function confirmarMovimentacao() {
+  const itemId = document.getElementById('modalItem').value;
+  const qty = parseFloat(document.getElementById('modalQty').value);
+  const obs = document.getElementById('modalObs').value.trim();
+
+  if (!qty || qty <= 0) { showToast('Informe uma quantidade válida', 'error'); return; }
+
+  const estoque = loadEstoque();
+  const idx = estoque.findIndex(i => i.id === itemId);
+  if (idx < 0) return;
+
+  if (modalModoAdicionar) {
+    estoque[idx].quantidade = round2(estoque[idx].quantidade + qty);
+    adicionarHistorico('entrada', itemId, estoque[idx].nome, qty, obs);
+    showToast(`✅ ${qty} ${estoque[idx].unidade} de ${estoque[idx].nome} adicionados`, 'success');
+  } else {
+    if (qty > estoque[idx].quantidade) {
+      showToast('Quantidade maior que o estoque atual!', 'error'); return;
+    }
+    estoque[idx].quantidade = round2(estoque[idx].quantidade - qty);
+    adicionarHistorico('saida', itemId, estoque[idx].nome, -qty, obs);
+    showToast(`📤 ${qty} ${estoque[idx].unidade} de ${estoque[idx].nome} retirados`, 'warning');
+  }
+
+  saveEstoque(estoque);
+  fecharModal('modalAdicionar');
+  renderAll();
+}
+
+// Baixa manual por item
+let baixaManualItemId = null;
+function abrirBaixaManual(itemId) {
+  baixaManualItemId = itemId;
+  const estoque = loadEstoque();
+  const item = estoque.find(i => i.id === itemId);
+  document.getElementById('infoItemBaixa').textContent = `${item.icone} ${item.nome}`;
+  document.getElementById('labelBaixaQty').textContent = `Quantidade a retirar (${item.unidade}) — Atual: ${fmt(item.quantidade, item.unidade)}`;
+  document.getElementById('baixaQty').value = '';
+  document.getElementById('baixaMotivo').value = '';
+  abrirModal('modalBaixaManual');
+}
+
+function confirmarBaixaManual() {
+  const qty = parseFloat(document.getElementById('baixaQty').value);
+  const motivo = document.getElementById('baixaMotivo').value.trim();
+  if (!qty || qty <= 0) { showToast('Informe uma quantidade válida', 'error'); return; }
+
+  const estoque = loadEstoque();
+  const idx = estoque.findIndex(i => i.id === baixaManualItemId);
+  if (idx < 0) return;
+
+  if (qty > estoque[idx].quantidade) {
+    showToast('Quantidade maior que o estoque atual!', 'error'); return;
+  }
+  estoque[idx].quantidade = round2(estoque[idx].quantidade - qty);
+  adicionarHistorico('saida', baixaManualItemId, estoque[idx].nome, -qty, motivo || 'Retirada manual');
+  saveEstoque(estoque);
+  fecharModal('modalBaixaManual');
+  showToast(`📤 ${qty} ${estoque[idx].unidade} de ${estoque[idx].nome} retirados`, 'warning');
+  renderAll();
+}
+
+// Configurar mínimos
+function abrirModalConfigurar() {
+  const estoque = loadEstoque();
+  document.getElementById('modalConfigurarBody').innerHTML = estoque.map(item => `
+    <div class="form-group">
+      <label class="form-label">${item.icone} ${item.nome} — Mínimo (${item.unidade})</label>
+      <input type="number" class="form-input" id="min_${item.id}" value="${item.minimo}" min="0" step="0.1" />
+    </div>
+  `).join('');
+  abrirModal('modalConfigurar');
+}
+
+function salvarMinimos() {
+  const estoque = loadEstoque();
+  estoque.forEach(item => {
+    const el = document.getElementById('min_' + item.id);
+    if (el) item.minimo = round2(parseFloat(el.value) || 0);
+  });
+  saveEstoque(estoque);
+  fecharModal('modalConfigurar');
+  showToast('✅ Mínimos salvos com sucesso', 'success');
+  renderAll();
+}
+
+function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); });
+});
+
+// ========================================
+// BAIXA AUTOMÁTICA
+// ========================================
+async function realizarBaixaAutomatica() {
+  const btn = document.getElementById('btnBaixa');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="2" stroke-dasharray="30 60" fill="none"/></svg> Processando...`;
+
+  try {
+    let eventos = [];
+
+    // Tenta buscar da API local
+    try {
+      const res = await fetch('/api/orcamentos', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        eventos = (data.orcamentos || []).filter(e => e.status === 'aceito');
+      }
+    } catch (_) {}
+
+    // Fallback: tenta Supabase se configurado no contexto da página
+    if (!eventos.length) {
+      showToast('Nenhum evento encontrado via API. Verifique se o servidor está rodando.', 'warning');
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Processar Baixa`;
+      return;
+    }
+
+    const processados = loadEventosProcessados();
+    const novos = eventos.filter(e => !processados.includes(String(e.id)));
+
+    if (!novos.length) {
+      showToast('Todos os eventos aceitos já foram processados ✅', 'success');
+      document.getElementById('ultimaBaixa').textContent = 'Última verificação: ' + new Date().toLocaleString('pt-BR');
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Processar Baixa`;
+      return;
+    }
+
+    const estoque = loadEstoque();
+    const descontos = {}; // itemId -> total descontado
+
+    novos.forEach(evento => {
+      const drinks = evento.drinks || {};
+      Object.entries(drinks).forEach(([drinkId, qtd]) => {
+        const consumo = CONSUMO_POR_DRINK[drinkId];
+        if (!consumo) return;
+        Object.entries(consumo).forEach(([ingrediente, porUnidade]) => {
+          descontos[ingrediente] = round2((descontos[ingrediente] || 0) + porUnidade * qtd);
+        });
+      });
+      processados.push(String(evento.id));
+    });
+
+    // Aplica descontos
+    Object.entries(descontos).forEach(([itemId, qtd]) => {
+      const idx = estoque.findIndex(i => i.id === itemId);
+      if (idx < 0) return;
+      const anterior = estoque[idx].quantidade;
+      estoque[idx].quantidade = round2(Math.max(0, anterior - qtd));
+      adicionarHistorico('baixa', itemId, estoque[idx].nome, -(anterior - estoque[idx].quantidade),
+        `${novos.length} evento(s) processado(s)`);
+    });
+
+    saveEstoque(estoque);
+    saveEventosProcessados(processados);
+
+    const dataStr = new Date().toLocaleString('pt-BR');
+    document.getElementById('ultimaBaixa').textContent = `Última baixa: ${dataStr} — ${novos.length} evento(s) processado(s)`;
+    showToast(`⚡ Baixa realizada! ${novos.length} evento(s) descontados do estoque`, 'success');
+    renderAll();
+
+  } catch (err) {
+    showToast('Erro ao processar baixa: ' + err.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Processar Baixa`;
+}
+
+// ========================================
+// UTILITÁRIOS
+// ========================================
+function round2(n) { return Math.round(n * 100) / 100; }
+
+function limparHistorico() {
+  if (!confirm('Limpar todo o histórico de movimentações?')) return;
+  localStorage.removeItem('ddrinks_hist');
+  renderHistorico();
+  showToast('Histórico limpo', 'warning');
+}
+
+function showToast(msg, tipo = '') {
+  const container = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = 'toast-msg ' + tipo;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.4s'; setTimeout(() => el.remove(), 400); }, 3500);
+}
+
+function renderAll() {
+  renderSummary();
+  renderTabela();
+  renderHistorico();
+}
+
+function logout() {
+  fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    .catch(() => {})
+    .finally(() => {
+      localStorage.removeItem('usuario');
+      window.location.href = '/login';
+    });
+}
+
+// CSS animation for spinner
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
+
+// ========================================
+// INIT
+// ========================================
+renderAll();
+</script>
+
+</body>
+</html>

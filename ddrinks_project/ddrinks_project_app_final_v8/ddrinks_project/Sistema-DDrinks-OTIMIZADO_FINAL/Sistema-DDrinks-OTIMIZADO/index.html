@@ -22,50 +22,29 @@
         <a href="#" class="app-logo-link" aria-label="DDrinks - Início" onclick="showPage('home');return false;">
           <span class="app-logo-icon" role="img" aria-hidden="true" title="DDrinks">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <div class="form-group">
-          <label for="mojito_sem_alcool" class="form-label non-alc-label">Mojito <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
-          <input type="number" id="mojito_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-        </div>
               <path d="M4 3h16" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
               <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M12 12v6" stroke="rgba(255,255,255,0.95)" stroke-width="1.5" stroke-linecap="round"/>
               <path d="M9 18h6" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
-        <div class="form-group">
-          <label for="sex_on_the_beach_sem_alcool" class="form-label non-alc-label">Sex on the Beach <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
-          <input type="number" id="sex_on_the_beach_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-        </div>
             </svg>
           </span>
           <div class="app-logo-text">DDrinks</div>
         </a>
-        <div class="form-group">
-          <label for="moscow_mule_sem_alcool" class="form-label non-alc-label">Moscow Mule <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
-          <input type="number" id="moscow_mule_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-        </div>
       </div>
       <nav class="app-nav">
         <a href="/agenda" class="btn btn-secondary" aria-label="Agenda">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>Agenda</span>
-        <div class="form-group">
-          <label for="pina_colada_sem_alcool" class="form-label non-alc-label">Piña Colada <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
-          <input type="number" id="pina_colada_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-        </div>
         </a>
         <a href="/datas" class="btn btn-secondary" aria-label="Calendário">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Calendário</span>
         </a>
-        <div class="form-group">
-          <label for="cotton_fairy_sem_alcool" class="form-label non-alc-label">Cotton Fairy <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
-          <input type="number" id="cotton_fairy_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-        </div>
+        <button onclick="abrirEstoque()" class="btn btn-secondary" aria-label="Estoque">
+          <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M12 12v4M10 14h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Estoque</span>
+        </button>
         <button onclick="logout()" class="btn btn-secondary" data-logout aria-label="Sair">
           <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Sair</span>
         </button>
       </nav>
-        <div class="form-group">
-          <label for="soda_italiana_limao_siciliano_e_morango" class="form-label">Soda Italiana (Limão Siciliano / Morango)</label>
-          <input type="number" id="soda_italiana_limao_siciliano_e_morango" class="form-input" min="0" value="0" placeholder="0">
-        </div>
     </div>
   </header>
 
@@ -252,6 +231,40 @@
     </div>
   </div>
 
+  <!-- Bebidas Sem Álcool -->
+  <div class="card mb-8">
+    <div class="card-header">
+      <h2 class="card-title">🥤 Bebidas Sem Álcool</h2>
+      <p class="card-subtitle">Opções sem álcool para o evento</p>
+    </div>
+    <div class="grid grid-cols-4 gap-4">
+      <div class="form-group">
+        <label for="mojito_sem_alcool" class="form-label">Mojito <span class="non-alc-badge">Sem álcool</span></label>
+        <input type="number" id="mojito_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="sex_on_the_beach_sem_alcool" class="form-label">Sex on the Beach <span class="non-alc-badge">Sem álcool</span></label>
+        <input type="number" id="sex_on_the_beach_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="moscow_mule_sem_alcool" class="form-label">Moscow Mule <span class="non-alc-badge">Sem álcool</span></label>
+        <input type="number" id="moscow_mule_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="pina_colada_sem_alcool" class="form-label">Piña Colada <span class="non-alc-badge">Sem álcool</span></label>
+        <input type="number" id="pina_colada_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="cotton_fairy_sem_alcool" class="form-label">Cotton Fairy <span class="non-alc-badge">Sem álcool</span></label>
+        <input type="number" id="cotton_fairy_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="soda_italiana_limao_siciliano_e_morango" class="form-label">Soda Italiana (Limão Siciliano / Morango)</label>
+        <input type="number" id="soda_italiana_limao_siciliano_e_morango" class="form-input" min="0" value="0" placeholder="0">
+      </div>
+    </div>
+  </div>
+
   <!-- Outros Gastos -->
   <div class="card mb-8">
     <div class="card-header">
@@ -341,6 +354,358 @@
   <!-- Resultado -->
   <div id="resultado"></div>
 </div>
+
+<!-- ===== DRAWER DE ESTOQUE ===== -->
+<style>
+/* Overlay */
+#estoqueOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 900;
+  backdrop-filter: blur(2px);
+  animation: fadeOverlay .25s ease;
+}
+@keyframes fadeOverlay { from{opacity:0} to{opacity:1} }
+
+/* Drawer */
+#estoqueDrawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 480px;
+  max-width: 100vw;
+  background: #f8fafc;
+  z-index: 910;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 40px rgba(0,0,0,0.18);
+  transform: translateX(100%);
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
+}
+#estoqueDrawer.open { transform: translateX(0); }
+
+/* Drawer header */
+.est-header {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.est-header-left { display: flex; align-items: center; gap: 10px; }
+.est-header-icon {
+  width: 36px; height: 36px;
+  background: rgba(212,23,10,0.85);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+}
+.est-header-title { color: white; font-weight: 700; font-size: 1rem; }
+.est-header-sub { color: #94a3b8; font-size: 0.75rem; margin-top: 1px; }
+.est-close {
+  background: rgba(255,255,255,0.1);
+  border: none; color: white; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 8px;
+  font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.est-close:hover { background: rgba(255,255,255,0.2); }
+
+/* Tabs */
+.est-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 2px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.est-tab {
+  flex: 1; padding: 11px 8px;
+  font-size: 0.8rem; font-weight: 600;
+  border: none; background: none; cursor: pointer;
+  color: #64748b; border-bottom: 2px solid transparent;
+  margin-bottom: -2px; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.est-tab.active { color: #d4170a; border-bottom-color: #d4170a; }
+.est-tab:hover:not(.active) { color: #1e293b; background: #f8fafc; }
+
+/* Scroll body */
+.est-body {
+  flex: 1; overflow-y: auto;
+  padding: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+.est-panel { display: none; }
+.est-panel.active { display: block; }
+
+/* Alerta */
+.est-alerta {
+  display: none;
+  background: #fff3cd; border: 1px solid #f59e0b;
+  border-left: 4px solid #f59e0b;
+  border-radius: 10px; padding: 10px 14px;
+  color: #92400e; font-size: 0.82rem; font-weight: 500; margin-bottom: 14px;
+}
+.est-alerta.critico { background: #fee2e2; border-color: #ef4444; color: #7f1d1d; }
+
+/* Cards resumo */
+.est-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
+}
+.est-card {
+  background: white; border-radius: 12px; padding: 12px 10px;
+  text-align: center; border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.est-card .ec-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+.est-card .ec-val { font-size: 1.3rem; font-weight: 700; }
+.est-card .ec-lbl { font-size: 0.7rem; color: #64748b; margin-top: 2px; }
+.est-card.ok .ec-val { color: #10b981; }
+.est-card.warn .ec-val { color: #f59e0b; }
+.est-card.danger .ec-val { color: #ef4444; }
+
+/* Lista de itens */
+.est-item {
+  background: white; border-radius: 12px; padding: 14px;
+  margin-bottom: 10px; border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.est-item-top {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.est-item-info { display: flex; align-items: center; gap: 10px; }
+.est-item-emoji { font-size: 1.5rem; }
+.est-item-nome { font-weight: 700; font-size: 0.95rem; color: #1e293b; }
+.est-item-sub { font-size: 0.75rem; color: #64748b; margin-top: 1px; }
+.est-item-qty { font-size: 1.2rem; font-weight: 700; text-align: right; line-height: 1; }
+.est-item-unit { font-size: 0.7rem; color: #64748b; font-weight: 400; }
+.est-prog-wrap { background: #e2e8f0; border-radius: 99px; height: 6px; margin-bottom: 10px; overflow: hidden; }
+.est-prog-bar { height: 100%; border-radius: 99px; transition: width .5s ease; }
+.est-prog-ok { background: linear-gradient(90deg,#10b981,#34d399); }
+.est-prog-warn { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+.est-prog-danger { background: linear-gradient(90deg,#ef4444,#f87171); }
+.est-item-actions { display: flex; gap: 6px; }
+.est-btn {
+  flex: 1; padding: 7px 10px; border: none; border-radius: 8px;
+  font-size: 0.8rem; font-weight: 600; cursor: pointer; min-height: 34px;
+  transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.est-btn-add { background: #10b981; color: white; }
+.est-btn-add:hover { background: #059669; }
+.est-btn-rem { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
+.est-btn-rem:hover { background: #ef4444; color: white; }
+.est-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+}
+.est-badge-ok { background: rgba(16,185,129,.12); color: #065f46; }
+.est-badge-warn { background: rgba(245,158,11,.15); color: #92400e; }
+.est-badge-danger { background: rgba(239,68,68,.12); color: #7f1d1d; }
+
+/* Mini formulário inline */
+.est-inline-form {
+  display: none; margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+  animation: fadeInUp .2s ease;
+}
+.est-inline-form.open { display: block; }
+.est-form-row { display: flex; gap: 8px; align-items: flex-end; }
+.est-form-row input {
+  flex: 1; padding: 8px 10px; border: 1.5px solid #e2e8f0;
+  border-radius: 8px; font-size: 0.85rem; min-height: 38px;
+  font-family: inherit;
+}
+.est-form-row input:focus { outline: none; border-color: #d4170a; }
+.est-form-confirm {
+  padding: 8px 14px; border: none; border-radius: 8px;
+  font-weight: 700; font-size: 0.85rem; cursor: pointer; min-height: 38px;
+  white-space: nowrap;
+}
+.est-form-confirm.add { background: #10b981; color: white; }
+.est-form-confirm.rem { background: #ef4444; color: white; }
+
+/* Baixa automática */
+.est-baixa-box {
+  background: linear-gradient(135deg,#1e293b,#334155);
+  border-radius: 14px; padding: 18px; color: white; margin-bottom: 14px;
+}
+.est-baixa-box h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+.est-baixa-box p { font-size: 0.8rem; color: #94a3b8; margin-bottom: 14px; }
+.est-btn-baixa {
+  width: 100%; padding: 11px; border: none; border-radius: 10px;
+  background: linear-gradient(45deg,#d4170a,#e74c3c);
+  color: white; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+  min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all .25s; box-shadow: 0 4px 15px rgba(212,23,10,.35);
+}
+.est-btn-baixa:hover:not(:disabled) { background: linear-gradient(45deg,#b01208,#c0392b); transform: translateY(-1px); }
+.est-btn-baixa:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+#estUltimaBaixa { font-size: 0.75rem; color: #64748b; margin-top: 8px; }
+
+/* Histórico */
+.est-hist-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid #f1f5f9;
+}
+.est-hist-item:last-child { border-bottom: none; }
+.est-hist-icon {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; flex-shrink: 0;
+}
+.est-hist-icon.entrada { background: rgba(16,185,129,.12); }
+.est-hist-icon.saida { background: rgba(239,68,68,.1); }
+.est-hist-icon.baixa { background: rgba(245,158,11,.12); }
+.est-hist-desc { flex: 1; font-size: 0.83rem; font-weight: 500; color: #1e293b; }
+.est-hist-meta { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+.est-hist-qty { font-weight: 700; font-size: 0.88rem; white-space: nowrap; }
+.est-hist-qty.pos { color: #10b981; }
+.est-hist-qty.neg { color: #ef4444; }
+
+/* Seção */
+.est-section-title {
+  font-size: 0.78rem; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .06em;
+  margin: 0 0 10px;
+}
+.est-action-row {
+  display: flex; gap: 8px; margin-bottom: 14px;
+}
+.est-action-btn {
+  flex: 1; padding: 9px 12px; border-radius: 9px; border: 1.5px solid #e2e8f0;
+  background: white; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  color: #475569; min-height: 38px; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.est-action-btn:hover { border-color: #d4170a; color: #d4170a; }
+
+/* Toast */
+#estToast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none; min-width: 240px; max-width: 90vw;
+}
+.est-toast {
+  background: #1e293b; color: white; padding: 11px 18px;
+  border-radius: 10px; font-size: 0.85rem; font-weight: 500;
+  box-shadow: 0 8px 25px rgba(0,0,0,.2);
+  animation: slideUp .3s ease; text-align: center; pointer-events: auto;
+}
+.est-toast.success { background: #10b981; }
+.est-toast.error { background: #ef4444; }
+.est-toast.warning { background: #f59e0b; color: #1e293b; }
+@keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes estSpin { to{transform:rotate(360deg)} }
+
+/* Mobile */
+@media(max-width:520px){
+  #estoqueDrawer { width: 100vw; }
+  .est-summary { grid-template-columns: repeat(3,1fr); gap: 6px; }
+}
+</style>
+
+<!-- Overlay -->
+<div id="estoqueOverlay" onclick="fecharEstoque()"></div>
+
+<!-- Drawer -->
+<div id="estoqueDrawer">
+  <!-- Header -->
+  <div class="est-header">
+    <div class="est-header-left">
+      <div class="est-header-icon">📦</div>
+      <div>
+        <div class="est-header-title">Controle de Estoque</div>
+        <div class="est-header-sub">Gin · Vodka · Whisky · Xaropes · Frutas</div>
+      </div>
+    </div>
+    <button class="est-close" onclick="fecharEstoque()" aria-label="Fechar">✕</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="est-tabs">
+    <button class="est-tab active" onclick="trocarTab('itens', this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M16 7V5a2 2 0 00-4 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Estoque
+    </button>
+    <button class="est-tab" onclick="trocarTab('baixa', this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Baixa Auto
+    </button>
+    <button class="est-tab" onclick="trocarTab('historico', this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Histórico
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="est-body">
+
+    <!-- TAB: ITENS -->
+    <div class="est-panel active" id="tab-itens">
+      <div id="estAlerta" class="est-alerta"></div>
+      <div class="est-summary" id="estSummary"></div>
+      <div class="est-action-row">
+        <button class="est-action-btn" onclick="abrirMiniForm('all','add')">＋ Entrada</button>
+        <button class="est-action-btn" onclick="abrirMiniForm('all','rem')">－ Retirada</button>
+        <button class="est-action-btn" onclick="abrirConfigMin()">⚙ Mínimos</button>
+      </div>
+      <div id="estItens"></div>
+    </div>
+
+    <!-- TAB: BAIXA AUTOMÁTICA -->
+    <div class="est-panel" id="tab-baixa">
+      <div class="est-baixa-box">
+        <h3>⚡ Baixa automática por evento</h3>
+        <p>Busca eventos com status "Aceito" ainda não processados e desconta os ingredientes automaticamente conforme os drinks do orçamento.</p>
+        <button class="est-btn-baixa" id="estBtnBaixa" onclick="realizarBaixaAuto()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Processar Baixa Agora
+        </button>
+        <div id="estUltimaBaixa"></div>
+      </div>
+      <p class="est-section-title">Como funciona</p>
+      <div style="background:white;border-radius:12px;padding:14px;border:1px solid #e2e8f0;font-size:0.83rem;color:#475569;line-height:1.6;">
+        🍸 <strong>Drinks com gin</strong> → desconta do estoque de Gin<br>
+        🥃 <strong>Drinks com vodka</strong> → desconta Vodka<br>
+        🥃 <strong>Whisky Sour</strong> → desconta Whisky<br>
+        🍯 <strong>Todos os drinks</strong> → desconta Xaropes proporcionalmente<br>
+        🍋 <strong>Caipirinhas, Mojitos, etc.</strong> → desconta Frutas<br>
+        <br>
+        Cada evento aceito é processado <strong>uma única vez</strong>.
+      </div>
+    </div>
+
+    <!-- TAB: HISTÓRICO -->
+    <div class="est-panel" id="tab-historico">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <p class="est-section-title" style="margin:0;">Últimas movimentações</p>
+        <button onclick="estLimparHistorico()" style="background:none;border:none;font-size:0.78rem;color:#94a3b8;cursor:pointer;">🗑 Limpar</button>
+      </div>
+      <div id="estHistorico"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal mínimos -->
+<div id="estModalMin" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:white;border-radius:16px;width:100%;max-width:380px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.2);">
+    <div style="padding:18px 20px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+      <strong style="font-size:1rem;">⚙ Estoque Mínimo</strong>
+      <button onclick="document.getElementById('estModalMin').style.display='none'" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;">✕</button>
+    </div>
+    <div style="padding:20px;" id="estModalMinBody"></div>
+    <div style="padding:14px 20px;border-top:1px solid #f1f5f9;display:flex;gap:10px;">
+      <button onclick="document.getElementById('estModalMin').style.display='none'" style="flex:1;padding:10px;border-radius:8px;border:none;background:#f1f5f9;color:#475569;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="estSalvarMin()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#d4170a;color:white;font-weight:600;cursor:pointer;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="estToast"></div>
 
 <script src="app.js"></script>
 <script>
@@ -531,6 +896,321 @@ async function logout() {
 
 
 
+</script>
+
+<script>
+// ============================================================
+// ESTOQUE — DRAWER LATERAL
+// ============================================================
+const EST_ITENS_BASE = [
+  { id:'gin',     nome:'Gin',     unidade:'garrafas', icone:'🍸' },
+  { id:'vodka',   nome:'Vodka',   unidade:'garrafas', icone:'🥃' },
+  { id:'whisky',  nome:'Whisky',  unidade:'garrafas', icone:'🥃' },
+  { id:'xaropes', nome:'Xaropes', unidade:'litros',   icone:'🍯' },
+  { id:'frutas',  nome:'Frutas',  unidade:'kg',       icone:'🍋' },
+];
+
+const EST_CONSUMO = {
+  gin_tonica:{gin:.07}, negroni:{gin:.07,xaropes:.02},
+  gin_tropical:{gin:.07,frutas:.05}, gim_tropical:{gin:.07,frutas:.05}, lagoa_azul:{gin:.05,xaropes:.03},
+  moscow_mule:{vodka:.06,xaropes:.02}, moscow_mule_sem_alcool:{xaropes:.02},
+  cosmopolitan:{vodka:.06,xaropes:.03}, sex_on_the_beach:{vodka:.05,frutas:.05,xaropes:.02},
+  sex_on_the_beach_sem_alcool:{frutas:.05,xaropes:.02}, limonada_suica:{vodka:.05,frutas:.08},
+  pink_lady:{vodka:.06,frutas:.04,xaropes:.02},
+  whisky_sour:{whisky:.07,xaropes:.03},
+  caipirinha:{frutas:.12,xaropes:.02}, caipirinha_morango:{frutas:.12,xaropes:.03},
+  caipirinha_limao:{frutas:.12,xaropes:.02}, caipirinha_kiwi:{frutas:.15,xaropes:.03},
+  caipirinha_cachaca:{frutas:.12,xaropes:.02}, caipirinha_vinho:{frutas:.12,xaropes:.03},
+  mojito:{frutas:.06,xaropes:.03}, mojito_sem_alcool:{frutas:.06,xaropes:.03},
+  aperol_spritz:{xaropes:.04}, tequila_sour:{xaropes:.03}, tequila_sunrise:{frutas:.05,xaropes:.04},
+  amaretto_sour:{xaropes:.04}, pina_colada:{frutas:.10,xaropes:.04},
+  pina_colada_sem_alcool:{frutas:.10,xaropes:.04}, alexander:{xaropes:.03},
+  cream_pink:{xaropes:.04}, cotton_fairy:{frutas:.04,xaropes:.04},
+  cotton_fairy_sem_alcool:{frutas:.04,xaropes:.04}, marguerita:{frutas:.05,xaropes:.03},
+  hold_hup:{xaropes:.05}, passion:{frutas:.08,xaropes:.04}, cookie_drink:{xaropes:.05},
+  mirtilo_sour:{frutas:.10,xaropes:.04}, toscano:{xaropes:.04}, oreo_yin:{xaropes:.05},
+  soda_italiana_limao_siciliano_e_morango:{frutas:.06,xaropes:.03},
+};
+
+// --- Storage helpers ---
+function estLoad(){ return JSON.parse(localStorage.getItem('ddrinks_estoque') || 'null') || EST_ITENS_BASE.map(i=>({...i, quantidade: i.id==='gin'?5:i.id==='vodka'?4:i.id==='whisky'?3:2, minimo: i.id==='frutas'||i.id==='xaropes'?1:2})); }
+function estSave(e){ localStorage.setItem('ddrinks_estoque', JSON.stringify(e)); }
+function estHistLoad(){ return JSON.parse(localStorage.getItem('ddrinks_hist')||'[]'); }
+function estHistSave(h){ localStorage.setItem('ddrinks_hist', JSON.stringify(h.slice(0,100))); }
+function estProcLoad(){ return JSON.parse(localStorage.getItem('ddrinks_ev_proc')||'[]'); }
+function estProcSave(ids){ localStorage.setItem('ddrinks_ev_proc', JSON.stringify(ids)); }
+function estR2(n){ return Math.round(n*100)/100; }
+
+function estAddHist(tipo,itemId,itemNome,delta,obs){
+  const h = estHistLoad();
+  h.unshift({tipo,itemId,itemNome,delta,obs:obs||'',data:new Date().toISOString()});
+  estHistSave(h);
+}
+
+// --- Open / Close ---
+function abrirEstoque(){
+  document.getElementById('estoqueDrawer').classList.add('open');
+  document.getElementById('estoqueOverlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  estRenderAll();
+}
+function fecharEstoque(){
+  document.getElementById('estoqueDrawer').classList.remove('open');
+  document.getElementById('estoqueOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// --- Tabs ---
+function trocarTab(nome, el){
+  document.querySelectorAll('.est-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.est-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+nome).classList.add('active');
+  if(nome==='historico') estRenderHistorico();
+}
+
+// --- Render summary ---
+function estRenderSummary(){
+  const est = estLoad();
+  const baixos = est.filter(i=>i.quantidade>0&&i.quantidade<=i.minimo).length;
+  const criticos = est.filter(i=>i.quantidade===0).length;
+  const ok = est.length - baixos - criticos;
+  document.getElementById('estSummary').innerHTML=`
+    <div class="est-card ok"><span class="ec-icon">✅</span><div class="ec-val">${ok}</div><div class="ec-lbl">OK</div></div>
+    <div class="est-card warn"><span class="ec-icon">⚠️</span><div class="ec-val">${baixos}</div><div class="ec-lbl">Baixo</div></div>
+    <div class="est-card danger"><span class="ec-icon">🚨</span><div class="ec-val">${criticos}</div><div class="ec-lbl">Crítico</div></div>
+  `;
+  const al = document.getElementById('estAlerta');
+  const prob = est.filter(i=>i.quantidade<=i.minimo);
+  if(criticos>0){
+    al.className='est-alerta critico'; al.style.display='block';
+    al.innerHTML='🚨 <strong>Sem estoque:</strong> '+prob.map(i=>`${i.nome} (${estFmt(i.quantidade,i.unidade)})`).join(', ');
+  } else if(baixos>0){
+    al.className='est-alerta'; al.style.display='block';
+    al.innerHTML='⚠️ <strong>Estoque baixo:</strong> '+prob.map(i=>`${i.nome} (${estFmt(i.quantidade,i.unidade)})`).join(', ');
+  } else { al.style.display='none'; }
+}
+
+function estFmt(qty,un){ return Number(qty).toLocaleString('pt-BR',{minimumFractionDigits:qty%1!==0?1:0})+' '+un; }
+
+function estGetStatus(item){
+  if(item.quantidade===0) return{cls:'est-badge-danger',prog:'est-prog-danger',txt:'🚨 Crítico'};
+  if(item.quantidade<=item.minimo) return{cls:'est-badge-warn',prog:'est-prog-warn',txt:'⚠️ Baixo'};
+  return{cls:'est-badge-ok',prog:'est-prog-ok',txt:'✅ OK'};
+}
+
+// --- Render items ---
+function estRenderItens(){
+  const est = estLoad();
+  document.getElementById('estItens').innerHTML = est.map(item=>{
+    const st = estGetStatus(item);
+    const pct = item.minimo>0 ? Math.min(100,(item.quantidade/(item.minimo*3))*100) : 100;
+    return `
+      <div class="est-item">
+        <div class="est-item-top">
+          <div class="est-item-info">
+            <span class="est-item-emoji">${item.icone}</span>
+            <div>
+              <div class="est-item-nome">${item.nome}</div>
+              <div class="est-item-sub">Mín: ${estFmt(item.minimo,item.unidade)}</div>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="est-item-qty" style="color:${item.quantidade===0?'#ef4444':item.quantidade<=item.minimo?'#f59e0b':'#1e293b'}">
+              ${Number(item.quantidade).toLocaleString('pt-BR',{minimumFractionDigits:item.quantidade%1!==0?1:0})}
+              <span class="est-item-unit">${item.unidade}</span>
+            </div>
+            <span class="est-badge ${st.cls}" style="margin-top:3px;">${st.txt}</span>
+          </div>
+        </div>
+        <div class="est-prog-wrap"><div class="est-prog-bar ${st.prog}" style="width:${pct}%"></div></div>
+        <div class="est-item-actions">
+          <button class="est-btn est-btn-add" onclick="toggleMiniForm('${item.id}','add')">＋ Adicionar</button>
+          <button class="est-btn est-btn-rem" onclick="toggleMiniForm('${item.id}','rem')">－ Retirar</button>
+        </div>
+        <div class="est-inline-form" id="form-${item.id}">
+          <div class="est-form-row">
+            <input type="number" id="finput-${item.id}" min="0.1" step="0.1" placeholder="Qtd (${item.unidade})" />
+            <input type="text" id="fobs-${item.id}" placeholder="Obs (opcional)" style="flex:1.4;" />
+            <button class="est-form-confirm" id="fconfirm-${item.id}" onclick="confirmMiniForm('${item.id}')">OK</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// --- Mini form toggle ---
+let _miniFormMode = {};
+function toggleMiniForm(itemId, mode){
+  const f = document.getElementById('form-'+itemId);
+  const btn = document.getElementById('fconfirm-'+itemId);
+  if(f.classList.contains('open') && _miniFormMode[itemId]===mode){
+    f.classList.remove('open'); return;
+  }
+  _miniFormMode[itemId] = mode;
+  f.classList.add('open');
+  btn.className = 'est-form-confirm '+(mode==='add'?'add':'rem');
+  btn.textContent = mode==='add'?'＋ OK':'－ OK';
+  document.getElementById('finput-'+itemId).focus();
+}
+
+function confirmMiniForm(itemId){
+  const qty = parseFloat(document.getElementById('finput-'+itemId).value);
+  const obs = document.getElementById('fobs-'+itemId).value.trim();
+  const mode = _miniFormMode[itemId];
+  if(!qty||qty<=0){ estToast('Informe uma quantidade válida','error'); return; }
+  const est = estLoad();
+  const idx = est.findIndex(i=>i.id===itemId);
+  if(idx<0) return;
+  if(mode==='rem'&&qty>est[idx].quantidade){ estToast('Quantidade maior que o estoque!','error'); return; }
+  if(mode==='add'){
+    est[idx].quantidade = estR2(est[idx].quantidade+qty);
+    estAddHist('entrada',itemId,est[idx].nome,qty,obs||'Entrada manual');
+    estToast(`✅ +${qty} ${est[idx].unidade} de ${est[idx].nome}`,'success');
+  } else {
+    est[idx].quantidade = estR2(est[idx].quantidade-qty);
+    estAddHist('saida',itemId,est[idx].nome,-qty,obs||'Retirada manual');
+    estToast(`📤 -${qty} ${est[idx].unidade} de ${est[idx].nome}`,'warning');
+  }
+  estSave(est);
+  document.getElementById('form-'+itemId).classList.remove('open');
+  document.getElementById('finput-'+itemId).value='';
+  document.getElementById('fobs-'+itemId).value='';
+  estRenderSummary(); estRenderItens();
+}
+
+// Mini form global (add/rem all)
+function abrirMiniForm(scope, mode){
+  // scroll to top of items tab for global action - show a quick prompt
+  const item = estLoad()[0];
+  const id = item.id;
+  toggleMiniForm(id, mode);
+  document.getElementById('estoqueDrawer').querySelector('.est-body').scrollTop = 0;
+}
+
+// --- Config mínimos ---
+function abrirConfigMin(){
+  const est = estLoad();
+  document.getElementById('estModalMinBody').innerHTML = est.map(i=>`
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:.82rem;font-weight:600;color:#475569;margin-bottom:5px;">${i.icone} ${i.nome} — mínimo (${i.unidade})</label>
+      <input type="number" id="emin_${i.id}" value="${i.minimo}" min="0" step="0.1"
+        style="width:100%;padding:9px 11px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;min-height:40px;font-family:inherit;" />
+    </div>`).join('');
+  document.getElementById('estModalMin').style.display = 'flex';
+}
+function estSalvarMin(){
+  const est = estLoad();
+  est.forEach(i=>{ const el=document.getElementById('emin_'+i.id); if(el) i.minimo=estR2(parseFloat(el.value)||0); });
+  estSave(est);
+  document.getElementById('estModalMin').style.display = 'none';
+  estToast('✅ Mínimos salvos','success');
+  estRenderSummary(); estRenderItens();
+}
+
+// --- Histórico ---
+function estRenderHistorico(){
+  const hist = estHistLoad();
+  const el = document.getElementById('estHistorico');
+  if(!hist.length){ el.innerHTML='<p style="color:#94a3b8;text-align:center;padding:20px 0;font-size:.85rem;">Nenhuma movimentação ainda.</p>'; return; }
+  const tipos = {entrada:'📥 Entrada',saida:'📤 Retirada',baixa:'⚡ Baixa automática'};
+  el.innerHTML = hist.slice(0,30).map(h=>{
+    const d=new Date(h.data);
+    const dt=d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const sinal=h.delta>0?'+':'';
+    const cls=h.delta>0?'pos':'neg';
+    const tipoCls=h.tipo==='entrada'?'entrada':h.tipo==='baixa'?'baixa':'saida';
+    const un=(EST_ITENS_BASE.find(i=>i.id===h.itemId)||{unidade:''}).unidade;
+    return `<div class="est-hist-item">
+      <div class="est-hist-icon ${tipoCls}">${h.tipo==='entrada'?'📥':h.tipo==='baixa'?'⚡':'📤'}</div>
+      <div style="flex:1;">
+        <div class="est-hist-desc"><strong>${h.itemNome}</strong>${h.obs?' — '+h.obs:''}</div>
+        <div class="est-hist-meta">${tipos[h.tipo]||h.tipo} · ${dt}</div>
+      </div>
+      <div class="est-hist-qty ${cls}">${sinal}${Math.abs(h.delta).toLocaleString('pt-BR',{minimumFractionDigits:Math.abs(h.delta)%1!==0?1:0})} ${un}</div>
+    </div>`;
+  }).join('');
+}
+
+function estLimparHistorico(){
+  if(!confirm('Limpar todo o histórico?')) return;
+  localStorage.removeItem('ddrinks_hist');
+  estRenderHistorico();
+  estToast('Histórico limpo','warning');
+}
+
+// --- Baixa automática ---
+async function realizarBaixaAuto(){
+  const btn = document.getElementById('estBtnBaixa');
+  btn.disabled=true;
+  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="animation:estSpin 1s linear infinite"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="2" stroke-dasharray="30 60" fill="none"/></svg> Processando...';
+  try {
+    let eventos = [];
+    try {
+      const res = await fetch('/api/orcamentos',{credentials:'include'});
+      if(res.ok){ const d=await res.json(); eventos=(d.orcamentos||[]).filter(e=>e.status==='aceito'); }
+    } catch(_){}
+
+    if(!eventos.length){
+      estToast('Nenhum evento encontrado via API','warning');
+      btn.disabled=false; btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Processar Baixa Agora';
+      return;
+    }
+
+    const proc = estProcLoad();
+    const novos = eventos.filter(e=>!proc.includes(String(e.id)));
+    if(!novos.length){
+      estToast('Todos os eventos aceitos já foram processados ✅','success');
+      document.getElementById('estUltimaBaixa').textContent='Última verificação: '+new Date().toLocaleString('pt-BR');
+      btn.disabled=false; btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Processar Baixa Agora';
+      return;
+    }
+
+    const est = estLoad();
+    const descontos = {};
+    novos.forEach(ev=>{
+      const drinks = ev.drinks||{};
+      Object.entries(drinks).forEach(([did,qtd])=>{
+        const c=EST_CONSUMO[did]; if(!c) return;
+        Object.entries(c).forEach(([ing,por])=>{ descontos[ing]=estR2((descontos[ing]||0)+por*qtd); });
+      });
+      proc.push(String(ev.id));
+    });
+
+    Object.entries(descontos).forEach(([id,qtd])=>{
+      const idx=est.findIndex(i=>i.id===id); if(idx<0) return;
+      const ant=est[idx].quantidade;
+      est[idx].quantidade=estR2(Math.max(0,ant-qtd));
+      estAddHist('baixa',id,est[idx].nome,-(ant-est[idx].quantidade),`${novos.length} evento(s)`);
+    });
+
+    estSave(est); estProcSave(proc);
+    const dtStr=new Date().toLocaleString('pt-BR');
+    document.getElementById('estUltimaBaixa').textContent=`Última baixa: ${dtStr} — ${novos.length} evento(s)`;
+    estToast(`⚡ Baixa feita! ${novos.length} evento(s) descontados`,'success');
+    estRenderAll();
+
+  } catch(e){ estToast('Erro: '+e.message,'error'); }
+  btn.disabled=false;
+  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> Processar Baixa Agora';
+}
+
+// --- Toast ---
+function estToast(msg, tipo=''){
+  const c=document.getElementById('estToast');
+  const el=document.createElement('div');
+  el.className='est-toast '+tipo; el.textContent=msg;
+  c.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=>el.remove(),400); },3000);
+}
+
+// --- Render all ---
+function estRenderAll(){ estRenderSummary(); estRenderItens(); }
+
+// Fechar modal de mínimos clicando fora
+document.getElementById('estModalMin').addEventListener('click', function(e){
+  if(e.target===this) this.style.display='none';
+});
 </script>
 </body>
 </html>

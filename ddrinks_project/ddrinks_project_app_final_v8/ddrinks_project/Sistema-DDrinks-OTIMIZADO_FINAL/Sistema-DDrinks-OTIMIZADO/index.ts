@@ -78,6 +78,11 @@ app.get('/datas', (req, res) => {
   res.sendFile(path.join(__dirname, 'datas.html'));
 });
 
+// Rota para servir o estoque.html
+app.get('/estoque', (req, res) => {
+  res.sendFile(path.join(__dirname, 'estoque.html'));
+});
+
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {
   console.error('Erro:', err);

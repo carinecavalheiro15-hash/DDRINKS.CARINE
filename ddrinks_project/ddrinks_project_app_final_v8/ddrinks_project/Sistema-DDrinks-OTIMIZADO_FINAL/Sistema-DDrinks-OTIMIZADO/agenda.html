@@ -31,48 +31,289 @@
     checkAuth();
   </script>
   <style>
-    /* ...seu CSS existente... */
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #ffffff;
-      margin: 0; 
+      margin: 0;
       padding: 0;
       min-height: 100vh;
     }
-    .container { 
-      max-width: 1200px; 
-      margin: 20px auto; 
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
-      padding: 30px; 
-      border-radius: 20px; 
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
       border: 1px solid rgba(255,255,255,0.3);
       animation: fadeInUp 0.8s ease-out;
     }
     h1 {
       text-align: center;
       color: #2c3e50;
-      font-size: 2.5em;
+      font-size: 2em;
       margin-bottom: 10px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
       background: linear-gradient(45deg, #d4170a, #e74c3c);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    /* ...restante do CSS igual ao seu arquivo... */
+    .logo-img {
+      width: 100%;
+      max-width: 130px;
+      display: block;
+      margin: 16px auto;
+    }
+    .navigation {
+      text-align: center;
+      margin: 16px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(45deg, #d4170a, #e74c3c);
+      color: white;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(212, 23, 10, 0.3);
+      min-height: 44px;
+    }
+    .nav-btn:hover {
+      background: linear-gradient(45deg, #272625, #2c3e50);
+      transform: translateY(-2px);
+    }
+    .btn-logout {
+      background: linear-gradient(45deg, #6c757d, #495057);
+    }
+    .btn-logout:hover {
+      background: linear-gradient(45deg, #495057, #343a40);
+    }
+    /* Dashboard */
+    .dashboard { margin: 24px 0; }
+    .dashboard h2 {
+      font-size: 1.4em;
+      color: #2c3e50;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .dashboard-card {
+      background: linear-gradient(135deg, #fff, #f8f9fa);
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      border: 1px solid rgba(212, 23, 10, 0.1);
+    }
+    .dashboard-card h3 {
+      font-size: 0.8rem;
+      color: #666;
+      margin: 0 0 8px 0;
+      font-weight: 500;
+    }
+    .card-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #d4170a;
+      margin: 0;
+    }
+    .dashboard-charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .chart-container h3 {
+      font-size: 1rem;
+      color: #2c3e50;
+      margin: 0 0 12px 0;
+      text-align: center;
+    }
+    /* Divisor de seção */
+    .section-divider { margin: 24px 0 16px; }
+    .section-divider h2 {
+      font-size: 1.4em;
+      color: #2c3e50;
+      text-align: center;
+    }
+    /* Tabela responsiva */
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      border: 1px solid #eee;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+      background: white;
+    }
+    table th {
+      background: #f8f9fa;
+      padding: 12px 10px;
+      text-align: left;
+      font-weight: 600;
+      color: #444;
+      border-bottom: 2px solid #dee2e6;
+      font-size: 0.875rem;
+      white-space: nowrap;
+    }
+    table td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.875rem;
+      vertical-align: middle;
+    }
+    table tbody tr:hover { background: #f8f9fa; }
+    .status-pendente { color: #856404; font-weight: 600; }
+    .status-aceito { color: #155724; font-weight: 600; }
+    .status-recusado { color: #721c24; font-weight: 600; }
+    /* Botões da tabela */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      min-height: 36px;
+      transition: all 0.2s ease;
+    }
+    .btn-aceitar { background: #27ae60; color: white; margin-right: 4px; }
+    .btn-aceitar:hover { background: #219a52; }
+    .btn-editar { background: #3498db; color: white; margin-right: 4px; }
+    .btn-editar:hover { background: #2980b9; }
+    .btn-excluir { background: #e74c3c; color: white; }
+    .btn-excluir:hover { background: #c0392b; }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 {
+      margin: 0 0 20px;
+      color: #2c3e50;
+      font-size: 1.25rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .form-group { margin-bottom: 0; }
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      color: #444;
+      margin-bottom: 4px;
+      font-size: 0.875rem;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      min-height: 44px;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #d4170a;
+      box-shadow: 0 0 0 3px rgba(212,23,10,0.1);
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .modal-buttons button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      min-height: 44px;
+      transition: all 0.2s ease;
+    }
+    .modal-buttons button[type="submit"] { background: #d4170a; color: white; }
+    .modal-buttons button[type="submit"]:hover { background: #b01208; }
+    .modal-buttons button[type="button"] { background: #6c757d; color: white; }
+    .modal-buttons button[type="button"]:hover { background: #5a6268; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      .container { margin: 10px; padding: 16px; }
+      h1 { font-size: 1.6em; }
+      .dashboard-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .card-value { font-size: 1.2rem; }
+      .dashboard-charts { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .container { margin: 8px; padding: 12px; }
+      .dashboard-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .dashboard-card { padding: 12px 8px; }
+      .nav-btn { font-size: 13px; padding: 8px 12px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Adiciona a logo no topo da tela de cadastro -->
-    <img src="logo.png" alt="Logo DDrinks" style="width:150px; display:block; margin:20px auto;">
+    <img src="logo.png" alt="Logo DDrinks" class="logo-img">
     <h1>Agenda de Eventos - DDrinks 🍸</h1>
     
     <div class="navigation">
       <a href="index.html" class="nav-btn">📋 Orçamentos</a>
       <a href="datas.html" class="nav-btn">📅 Calendário</a>
+      <a href="/estoque" class="nav-btn">📦 Estoque</a>
       <button onclick="logout()" class="nav-btn btn-logout">🚪 Sair</button>
     </div>
 
@@ -335,7 +576,7 @@
         listaOrcamentos.innerHTML = "<p style='text-align: center; color: #666; margin: 20px 0;'>Nenhum evento cadastrado.</p>";
         return;
       }
-      let html = `<table><thead><tr><th>Cliente</th><th>Telefone</th><th>Cidade</th><th>Data</th><th>Valor (R$)</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead><tbody>`;
+      let html = `<div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Cidade</th><th>Data</th><th>Valor (R$)</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead><tbody>`;
       orcamentos.forEach(evento => {
         html += `<tr>
           <td>${evento.cliente}</td>
@@ -352,7 +593,7 @@
           </td>
         </tr>`;
       });
-      html += "</tbody></table>";
+      html += "</tbody></table></div>";
       listaOrcamentos.innerHTML = html;
     }
 
