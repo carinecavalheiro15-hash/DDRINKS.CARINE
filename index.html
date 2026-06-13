@@ -1633,6 +1633,45 @@
                     .est-sc-val { font-size:1.2rem; }
                     .est-actions { flex-wrap:wrap; }
                 }
+
+                /* Fichas Técnicas */
+                .ft-toolbar { display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px; }
+                .ft-search { flex:1;min-width:180px;padding:8px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:.85rem;outline:none;font-family:inherit; }
+                .ft-search:focus { border-color:#ef4444; }
+                .ft-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px; }
+                .ft-card { background:white;border:1px solid var(--gray-200);border-radius:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.05);transition:transform .15s,box-shadow .15s; }
+                .ft-card:hover { transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.1); }
+                .ft-card-head { padding:12px 14px 10px;display:flex;justify-content:space-between;align-items:flex-start; }
+                .ft-card-name { font-weight:700;font-size:.9rem;color:white;line-height:1.3; }
+                .ft-card-badge { background:rgba(255,255,255,.25);font-size:.62rem;padding:2px 8px;border-radius:99px;color:white;margin-top:3px;display:inline-block; }
+                .ft-card-body { padding:10px 14px 8px; }
+                .ft-ing-list { list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px; }
+                .ft-ing-item { display:flex;justify-content:space-between;align-items:baseline;font-size:.8rem;padding-bottom:4px;border-bottom:1px dashed var(--gray-100); }
+                .ft-ing-item:last-child { border-bottom:none;padding-bottom:0; }
+                .ft-ing-name { color:var(--gray-700); }
+                .ft-ing-qty { color:#ef4444;font-weight:600;font-size:.75rem;white-space:nowrap;margin-left:6px; }
+                .ft-card-foot { padding:6px 14px 12px;display:flex;gap:6px; }
+                .ft-btn { padding:4px 10px;font-size:.72rem;border-radius:6px;border:none;cursor:pointer;font-weight:600;transition:all .15s; }
+                .ft-btn-edit { background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200); }
+                .ft-btn-edit:hover { background:var(--gray-200); }
+                .ft-btn-del { background:#fee2e2;color:#b91c1c; }
+                .ft-btn-del:hover { background:#fecaca; }
+                .ft-empty { text-align:center;color:var(--gray-400);padding:2.5rem 1rem;grid-column:1/-1;font-size:.875rem; }
+
+                /* Modal fichas */
+                .ft-modal-ov { display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:center;justify-content:center;padding:1rem; }
+                .ft-modal-ov.open { display:flex; }
+                .ft-modal-box { background:white;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.25); }
+                .ft-modal-head { padding:16px 20px 12px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center; }
+                .ft-modal-title { font-weight:700;font-size:1rem;color:var(--gray-800); }
+                .ft-modal-close { background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:1.4rem;line-height:1; }
+                .ft-modal-body { padding:16px 20px; }
+                .ft-modal-foot { padding:12px 20px;border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:flex-end; }
+                .ft-ing-editor { display:flex;flex-direction:column;gap:6px;margin-top:6px; }
+                .ft-ing-row { display:grid;grid-template-columns:1fr 110px auto;gap:6px;align-items:center; }
+                .ft-ing-row input { padding:7px 10px;border:1.5px solid var(--gray-300);border-radius:7px;font-size:.82rem;font-family:inherit; }
+                .ft-ing-row input:focus { outline:none;border-color:#ef4444; }
+                .ft-del-row { background:none;border:none;cursor:pointer;color:#ef4444;font-size:1.1rem;line-height:1;padding:0 3px; }
             </style>
 
             <div class="est-wrap">
@@ -1640,7 +1679,7 @@
                     <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
                         <span style="font-size:1.6rem;">📦</span> Controle de Estoque
                     </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Gin · Vodka · Whisky · Xaropes · Frutas</p>
+                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;" id="estSubtitulo">Carregando insumos...</p>
                 </div>
 
                 <!-- Alerta -->
@@ -1662,6 +1701,10 @@
                     <button class="est-tab-btn" onclick="estTab('historico',this)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                         Histórico
+                    </button>
+                    <button class="est-tab-btn" onclick="estTab('fichas',this)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                        Fichas Técnicas
                     </button>
                 </div>
 
@@ -1702,6 +1745,53 @@
                         <button onclick="estLimparHist()" style="background:none;border:none;font-size:.78rem;color:var(--gray-400);cursor:pointer;">🗑 Limpar</button>
                     </div>
                     <div id="estHistorico"></div>
+                </div>
+
+                <!-- Painel: Fichas Técnicas -->
+                <div class="est-panel" id="est-panel-fichas">
+                    <div class="ft-toolbar">
+                        <input type="text" class="ft-search" id="ftSearch" placeholder="🔍 Buscar drink ou ingrediente..." oninput="ftFiltrar(this.value)" />
+                        <button class="est-btn-add" style="flex:0;padding:8px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;font-size:.82rem;" onclick="ftAbrirModal()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
+                            Novo Drink
+                        </button>
+                    </div>
+                    <div class="ft-grid" id="ftGrid"></div>
+                </div>
+
+            </div><!-- fim est-wrap -->
+
+            <!-- Modal Fichas Técnicas -->
+            <div class="ft-modal-ov" id="ftModal">
+                <div class="ft-modal-box">
+                    <div class="ft-modal-head">
+                        <span class="ft-modal-title" id="ftModalTitle">Novo Drink</span>
+                        <button class="ft-modal-close" onclick="ftFecharModal()">×</button>
+                    </div>
+                    <div class="ft-modal-body">
+                        <input type="hidden" id="ftEditId" />
+                        <div class="form-group">
+                            <label class="form-label">Nome do Drink *</label>
+                            <input type="text" class="form-input" id="ftNome" placeholder="Ex: Caipirinha de Framboesa" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Categoria</label>
+                            <select class="form-input" id="ftCategoria">
+                                <option value="Alcoólico">Alcoólico</option>
+                                <option value="Sem Álcool">Sem Álcool</option>
+                                <option value="Especial">Especial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ingredientes *</label>
+                            <div class="ft-ing-editor" id="ftIngEditor"></div>
+                            <button type="button" class="est-btn-rem" style="margin-top:8px;padding:6px 12px;border-radius:7px;font-size:.78rem;flex:none;width:auto;" onclick="ftAddRow()">+ Ingrediente</button>
+                        </div>
+                    </div>
+                    <div class="ft-modal-foot">
+                        <button class="est-btn-rem" style="flex:none;padding:8px 16px;border-radius:8px;" onclick="ftFecharModal()">Cancelar</button>
+                        <button class="est-btn-add" style="flex:none;padding:8px 20px;border-radius:8px;" onclick="ftSalvar()">Salvar</button>
+                    </div>
                 </div>
             </div>
 
@@ -3174,6 +3264,7 @@ html += htmlPacotes;
                                                 <button class="btn btn-sm btn-secondary" onclick="editarOrcamento(${orcamento.id})" style="margin-right: 0.5rem; background: #f59e0b; border-color: #f59e0b; color: white;"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 21h16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M7 7v10h10V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7V5h6v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Editar</button>
                                                 <button class="btn btn-sm btn-secondary" onclick="verDetalhes(${orcamento.id})" style="margin-right: 0.5rem;"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8S2 12 2 12z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>Ver</button>
                                                 <button class="btn btn-sm btn-primary" style="background: var(--error-color); color: #fff; margin-right: 0.5rem;" onclick="gerarPDFOrcamento(${orcamento.id})"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M7 10h10M7 6h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>PDF</button>
+                                                ${orcamento.status === 'aceito' ? `<button class="btn btn-sm" style="background:#10b981;color:white;margin-right:0.5rem;" onclick="verInsumos(${orcamento.id})"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="white" stroke-width="1.2" fill="none"/><path d="M9 12h6M9 16h4" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>Insumos</button>` : ''}
                                                 <button class="btn btn-sm btn-danger" onclick="excluirOrcamento(${orcamento.id})"><span aria-hidden="true" style="display:inline-flex;align-items:center;margin-right:6px;width:14px;height:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Excluir</button>
                                             </div>
                                         </td>
@@ -3613,37 +3704,119 @@ html += htmlPacotes;
     <!-- ===== ESTOQUE JS ===== -->
     <script>
     // --- Dados base ---
-    const EST_ITENS = [
-        {id:'gin',    nome:'Gin',     unidade:'garrafas', icone:'🍸'},
-        {id:'vodka',  nome:'Vodka',   unidade:'garrafas', icone:'🥃'},
-        {id:'whisky', nome:'Whisky',  unidade:'garrafas', icone:'🥃'},
-        {id:'xaropes',nome:'Xaropes', unidade:'litros',   icone:'🍯'},
-        {id:'frutas', nome:'Frutas',  unidade:'kg',       icone:'🍋'},
-    ];
-    const EST_CONSUMO = {
-        gin_tonica:{gin:.07}, negroni:{gin:.07,xaropes:.02},
-        gin_tropical:{gin:.07,frutas:.05}, gim_tropical:{gin:.07,frutas:.05}, lagoa_azul:{gin:.05,xaropes:.03},
-        moscow_mule:{vodka:.06,xaropes:.02}, moscow_mule_sem_alcool:{xaropes:.02},
-        cosmopolitan:{vodka:.06,xaropes:.03}, sex_on_the_beach:{vodka:.05,frutas:.05,xaropes:.02},
-        sex_on_the_beach_sem_alcool:{frutas:.05,xaropes:.02}, limonada_suica:{vodka:.05,frutas:.08},
-        pink_lady:{vodka:.06,frutas:.04,xaropes:.02},
-        whisky_sour:{whisky:.07,xaropes:.03},
-        caipirinha:{frutas:.12,xaropes:.02}, caipirinha_morango:{frutas:.12,xaropes:.03},
-        caipirinha_limao:{frutas:.12,xaropes:.02}, caipirinha_kiwi:{frutas:.15,xaropes:.03},
-        caipirinha_cachaca:{frutas:.12,xaropes:.02}, caipirinha_vinho:{frutas:.12,xaropes:.03},
-        mojito:{frutas:.06,xaropes:.03}, mojito_sem_alcool:{frutas:.06,xaropes:.03},
-        aperol_spritz:{xaropes:.04}, tequila_sour:{xaropes:.03}, tequila_sunrise:{frutas:.05,xaropes:.04},
-        amaretto_sour:{xaropes:.04}, pina_colada:{frutas:.10,xaropes:.04},
-        pina_colada_sem_alcool:{frutas:.10,xaropes:.04}, alexander:{xaropes:.03},
-        cream_pink:{xaropes:.04}, cotton_fairy:{frutas:.04,xaropes:.04},
-        cotton_fairy_sem_alcool:{frutas:.04,xaropes:.04}, marguerita:{frutas:.05,xaropes:.03},
-        hold_hup:{xaropes:.05}, passion:{frutas:.08,xaropes:.04}, cookie_drink:{xaropes:.05},
-        mirtilo_sour:{frutas:.10,xaropes:.04}, toscano:{xaropes:.04}, oreo_yin:{xaropes:.05},
-        soda_italiana_limao_siciliano_e_morango:{frutas:.06,xaropes:.03},
-    };
+    // Ingredientes ignorados no estoque (não rastreáveis)
+    const EST_SKIP = new Set(['gelo','agua com gas','agua']);
+
+    function ftIngId(nome){
+        return nome.toLowerCase()
+            .normalize('NFD').replace(/[̀-ͯ]/g,'')
+            .replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_+|_+$/g,'');
+    }
+    function ftParseUnit(qtyStr){
+        if(!qtyStr) return null;
+        const s=qtyStr.toLowerCase().trim();
+        if(s===''||s==='completar'||s==='a gosto') return null;
+        if(s.includes('ml')) return 'ml';
+        if(s.includes('kg')) return 'kg';
+        if(/^\d+\s*g$/.test(s)||s.endsWith(' g')) return 'g';
+        if(s.includes('litro')) return 'L';
+        if(s.includes('folha')) return 'folhas';
+        if(s.includes('fatia')) return 'fatias';
+        if(s.includes('por')) return 'porções';
+        if(s.includes('unidade')) return 'unidades';
+        return 'un';
+    }
+    function ftParseNum(qtyStr){
+        if(!qtyStr) return 0;
+        const m=qtyStr.match(/[\d.,]+/);
+        return m?parseFloat(m[0].replace(',','.')):0;
+    }
+    function ftIngIcone(nome){
+        const n=nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+        if(n.includes('vodka')) return '🥃';
+        if(n.includes('gin')) return '🍸';
+        if(n.includes('whisky')||n.includes('whiskey')) return '🥃';
+        if(n.includes('rum')) return '🍹';
+        if(n.includes('tequila')) return '🌵';
+        if(n.includes('aperol')) return '🍊';
+        if(n.includes('campari')) return '🍷';
+        if(n.includes('cointreau')||n.includes('licor')||n.includes('conhaque')||n.includes('amaretto')) return '🍾';
+        if(n.includes('espumante')||n.includes('vinho')) return '🥂';
+        if(n.includes('xarope')||n.includes('syrup')) return '🍯';
+        if(n.includes('suco')) return '🥤';
+        if(n.includes('limao')) return '🍋';
+        if(n.includes('morango')) return '🍓';
+        if(n.includes('abacaxi')) return '🍍';
+        if(n.includes('laranja')) return '🍊';
+        if(n.includes('kiwi')) return '🥝';
+        if(n.includes('maracuja')) return '🌟';
+        if(n.includes('hortela')) return '🌿';
+        if(n.includes('acucar')||n.includes('sal')) return '🧂';
+        if(n.includes('leite')) return '🥛';
+        if(n.includes('cafe')) return '☕';
+        if(n.includes('chocolate')) return '🍫';
+        if(n.includes('algodao')) return '🎀';
+        if(n.includes('vermute')||n.includes('vermouth')) return '🍷';
+        if(n.includes('ginger')||n.includes('gengibre')) return '🫚';
+        if(n.includes('energetico')||n.includes('refrigerante')) return '🥤';
+        if(n.includes('creme')) return '🫙';
+        if(n.includes('baunilha')||n.includes('farofa')) return '🍪';
+        if(n.includes('polpa')) return '🍑';
+        if(n.includes('albumina')) return '🥚';
+        if(n.includes('coco')) return '🥥';
+        return '🧪';
+    }
+
+    // Deriva itens de estoque das fichas técnicas
+    function ftGetEstItens(){
+        const fichas=ftLoad();
+        const seen=new Map();
+        fichas.forEach(f=>{
+            f.ingredientes.forEach(ing=>{
+                if(!ing.nome) return;
+                const normId=ftIngId(ing.nome);
+                if(EST_SKIP.has(ing.nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''))) return;
+                const unit=ftParseUnit(ing.qty);
+                if(unit===null) return;
+                if(!seen.has(normId)){
+                    seen.set(normId,{id:normId,nome:ing.nome,unidade:unit,icone:ftIngIcone(ing.nome),minimo:0});
+                }
+            });
+        });
+        return Array.from(seen.values()).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    }
+
+    // Mapa de consumo real por drink → ingrediente → quantidade por drinque
+    function ftGetConsumo(){
+        const fichas=ftLoad();
+        const consumo={};
+        fichas.forEach(f=>{
+            const c={};
+            f.ingredientes.forEach(ing=>{
+                if(!ing.nome) return;
+                if(EST_SKIP.has(ing.nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''))) return;
+                const unit=ftParseUnit(ing.qty);
+                if(unit===null) return;
+                const num=ftParseNum(ing.qty);
+                if(num<=0) return;
+                const id=ftIngId(ing.nome);
+                c[id]=(c[id]||0)+num;
+            });
+            if(Object.keys(c).length>0) consumo[f.id]=c;
+        });
+        return consumo;
+    }
 
     // --- Storage ---
-    function estLoad(){return JSON.parse(localStorage.getItem('ddrinks_estoque')||'null')||EST_ITENS.map(i=>({...i,quantidade:i.id==='gin'?5:i.id==='vodka'?4:i.id==='whisky'?3:2,minimo:i.id==='frutas'||i.id==='xaropes'?1:2}));}
+    function estLoad(){
+        const saved=JSON.parse(localStorage.getItem('ddrinks_estoque')||'[]');
+        const savedMap={};
+        (Array.isArray(saved)?saved:[]).forEach(i=>{savedMap[i.id]=i;});
+        return ftGetEstItens().map(item=>{
+            const s=savedMap[item.id];
+            return {...item, quantidade:s?s.quantidade:0, minimo:s?s.minimo:0};
+        });
+    }
     function estSave(e){localStorage.setItem('ddrinks_estoque',JSON.stringify(e));}
     function estHLoad(){return JSON.parse(localStorage.getItem('ddrinks_hist')||'[]');}
     function estHSave(h){localStorage.setItem('ddrinks_hist',JSON.stringify(h.slice(0,100)));}
@@ -3652,15 +3825,6 @@ html += htmlPacotes;
     function estR2(n){return Math.round(n*100)/100;}
     function estFmt(q,u){return Number(q).toLocaleString('pt-BR',{minimumFractionDigits:q%1?1:0})+' '+u;}
     function estAddH(tipo,id,nome,delta,obs){const h=estHLoad();h.unshift({tipo,itemId:id,itemNome:nome,delta,obs:obs||'',data:new Date().toISOString()});estHSave(h);}
-
-    // --- Tabs ---
-    function estTab(nome,el){
-        document.querySelectorAll('.est-tab-btn').forEach(b=>b.classList.remove('active'));
-        document.querySelectorAll('.est-panel').forEach(p=>p.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('est-panel-'+nome).classList.add('active');
-        if(nome==='historico') estRenderHist();
-    }
 
     // --- Status ---
     function estStatus(item){
@@ -3778,7 +3942,7 @@ html += htmlPacotes;
         el.innerHTML=hist.slice(0,40).map(h=>{
             const d=new Date(h.data),dt=d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
             const sinal=h.delta>0?'+':'',cls=h.delta>0?'color:#10b981':'color:#ef4444';
-            const un=(EST_ITENS.find(i=>i.id===h.itemId)||{unidade:''}).unidade;
+            const un=(estLoad().find(i=>i.id===h.itemId)||{unidade:h.unidade||''}).unidade;
             return `<div class="est-hist-item">
               <div class="est-hist-ico ${h.tipo==='entrada'?'entrada':h.tipo==='baixa'?'baixa':'saida'}">${h.tipo==='entrada'?'📥':h.tipo==='baixa'?'⚡':'📤'}</div>
               <div style="flex:1"><div style="font-size:.85rem;font-weight:500;color:var(--gray-900)"><strong>${h.itemNome}</strong>${h.obs?' — '+h.obs:''}</div>
@@ -3788,6 +3952,163 @@ html += htmlPacotes;
         }).join('');
     }
     function estLimparHist(){if(!confirm('Limpar todo o histórico?'))return;localStorage.removeItem('ddrinks_hist');estRenderHist();estToast('Histórico limpo','warning');}
+
+    // ==================== FICHAS TÉCNICAS ====================
+    const FT_PADRAO = [
+      {id:'caipirinha_limao',nome:'Caipirinha de Limão',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Limão',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'caipirinha_morango',nome:'Caipirinha de Morango',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Morango',qty:'4 unidades'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'caipirinha_kiwi',nome:'Caipirinha de Kiwi',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Kiwi',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'caipirinha_vinho',nome:'Caipirinha de Vinho',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Vinho Tinto',qty:'150 ml'},{nome:'Limão',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'mojito',nome:'Mojito',categoria:'Alcoólico',ingredientes:[{nome:'Rum Branco',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Hortelã',qty:'8 folhas'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Água com Gás',qty:'completar'},{nome:'Gelo',qty:''}]},
+      {id:'mojito_sem_alcool',nome:'Mojito Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Limão',qty:'25 ml'},{nome:'Hortelã',qty:'8 folhas'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Água com Gás',qty:'completar'},{nome:'Gelo',qty:''}]},
+      {id:'sex_on_the_beach',nome:'Sex on the Beach',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'40 ml'},{nome:'Licor de Pêssego',qty:'20 ml'},{nome:'Suco de Laranja',qty:'50 ml'},{nome:'Suco de Cranberry',qty:'50 ml'},{nome:'Gelo',qty:''}]},
+      {id:'sex_on_the_beach_sem_alcool',nome:'Sex on the Beach Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Laranja',qty:'80 ml'},{nome:'Suco de Cranberry',qty:'80 ml'},{nome:'Xarope de Pêssego',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'gin_tonica',nome:'Gin Tônica',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'60 ml'},{nome:'Água Tônica',qty:'200 ml'},{nome:'Limão Siciliano',qty:'2 fatias'},{nome:'Gelo',qty:''}]},
+      {id:'moscow_mule',nome:'Moscow Mule',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Espuma de Gengibre',qty:'100 ml'},{nome:'Gelo',qty:''}]},
+      {id:'moscow_mule_sem_alcool',nome:'Moscow Mule Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Limão',qty:'20 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Ginger Ale',qty:'150 ml'},{nome:'Gelo',qty:''}]},
+      {id:'gin_tropical',nome:'Gin Tropical',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'50 ml'},{nome:'Energético Tropical',qty:'150 ml'},{nome:'Frutas para decoração',qty:''},{nome:'Gelo',qty:''}]},
+      {id:'negroni',nome:'Negroni',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'30 ml'},{nome:'Campari',qty:'30 ml'},{nome:'Vermute Rosso',qty:'30 ml'},{nome:'Gelo',qty:''}]},
+      {id:'aperol_spritz',nome:'Aperol Spritz',categoria:'Alcoólico',ingredientes:[{nome:'Aperol',qty:'60 ml'},{nome:'Espumante',qty:'90 ml'},{nome:'Água com Gás',qty:'30 ml'},{nome:'Laranja',qty:'1 fatia'},{nome:'Gelo',qty:''}]},
+      {id:'whisky_sour',nome:'Whisky Sour',categoria:'Alcoólico',ingredientes:[{nome:'Whisky',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
+      {id:'cosmopolitan',nome:'Cosmopolitan',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'40 ml'},{nome:'Cointreau',qty:'20 ml'},{nome:'Suco de Cranberry',qty:'20 ml'},{nome:'Suco de Limão',qty:'10 ml'},{nome:'Gelo',qty:''}]},
+      {id:'pina_colada',nome:'Piña Colada',categoria:'Alcoólico',ingredientes:[{nome:'Rum Branco',qty:'50 ml'},{nome:'Suco de Abacaxi',qty:'80 ml'},{nome:'Leite de Coco',qty:'40 ml'},{nome:'Gelo',qty:''}]},
+      {id:'pina_colada_sem_alcool',nome:'Piña Colada Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Abacaxi',qty:'100 ml'},{nome:'Leite de Coco',qty:'50 ml'},{nome:'Gelo',qty:''}]},
+      {id:'alexander',nome:'Alexander',categoria:'Alcoólico',ingredientes:[{nome:'Conhaque',qty:'30 ml'},{nome:'Creme de Cacau',qty:'30 ml'},{nome:'Creme de Leite',qty:'30 ml'},{nome:'Gelo',qty:''}]},
+      {id:'tequila_sour',nome:'Tequila Sour',categoria:'Alcoólico',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
+      {id:'pink_lady',nome:'Pink Lady',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'40 ml'},{nome:'Grenadine',qty:'20 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'limonada_suica',nome:'Limonada Suíça',categoria:'Sem Álcool',ingredientes:[{nome:'Limão',qty:'1 unidade'},{nome:'Água',qty:'150 ml'},{nome:'Leite Condensado',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'soda_italiana_limao_siciliano',nome:'Soda Italiana Limão Siciliano',categoria:'Sem Álcool',ingredientes:[{nome:'Xarope de Limão Siciliano',qty:'30 ml'},{nome:'Água com Gás',qty:'200 ml'},{nome:'Gelo',qty:''}]},
+      {id:'soda_italiana_morango',nome:'Soda Italiana Morango',categoria:'Sem Álcool',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'200 ml'},{nome:'Gelo',qty:''}]},
+      {id:'lagoa_azul',nome:'Lagoa Azul',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Curaçau Blue',qty:'20 ml'},{nome:'Refrigerante de Limão',qty:'100 ml'},{nome:'Gelo',qty:''}]},
+      {id:'tequila_sunrise',nome:'Tequila Sunrise',categoria:'Alcoólico',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Laranja',qty:'120 ml'},{nome:'Grenadine',qty:'10 ml'},{nome:'Gelo',qty:''}]},
+      {id:'margarita',nome:'Margarita',categoria:'Alcoólico',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Cointreau',qty:'25 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Sal para borda',qty:''},{nome:'Gelo',qty:''}]},
+      {id:'amaretto_sour',nome:'Amaretto Sour',categoria:'Alcoólico',ingredientes:[{nome:'Amaretto',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
+      {id:'cotton_fairy',nome:'Cotton Fairy',categoria:'Especial',ingredientes:[{nome:'Espumante Brut',qty:'120 ml'},{nome:'Licor de Morango',qty:'30 ml'},{nome:'Algodão Doce',qty:'1 porção'},{nome:'Gelo',qty:''}]},
+      {id:'cotton_fairy_sem_alcool',nome:'Cotton Fairy Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'180 ml'},{nome:'Algodão Doce',qty:'1 porção'},{nome:'Gelo',qty:''}]},
+      {id:'hold_up',nome:'Hold Up',categoria:'Especial',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Aperol',qty:'20 ml'},{nome:'Suco de Abacaxi',qty:'60 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Sugar Syrup',qty:'15 ml'},{nome:'Xarope de Maracujá',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'passion',nome:'Passion',categoria:'Especial',ingredientes:[{nome:'Vodka de Baunilha',qty:'50 ml'},{nome:'Licor de Maracujá',qty:'20 ml'},{nome:'Xarope de Baunilha',qty:'15 ml'},{nome:'Suco de Abacaxi',qty:'60 ml'},{nome:'Polpa de Maracujá',qty:'30 ml'},{nome:'Gelo',qty:''}]},
+      {id:'cookie_drink',nome:'Cookie Drink',categoria:'Especial',ingredientes:[{nome:'Vodka de Baunilha',qty:'50 ml'},{nome:'Licor de Chocolate',qty:'20 ml'},{nome:'Licor de Café',qty:'20 ml'},{nome:'Café Espresso',qty:'30 ml'},{nome:'Farofa de Baunilha',qty:'1 porção'},{nome:'Gelo',qty:''}]},
+      {id:'mirtilo_sour',nome:'Mirtilo Sour',categoria:'Especial',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Abacaxi',qty:'50 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Albumina',qty:'15 ml'},{nome:'Gelo',qty:''}]},
+      {id:'oreo_yin',nome:'Oreo Yin',categoria:'Especial',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Licor de Café',qty:'20 ml'},{nome:'Café Espresso Fresco',qty:'30 ml'},{nome:'Sugar Syrup de Baunilha',qty:'15 ml'},{nome:'Creme de Baunilha',qty:'30 ml'},{nome:'Gelo',qty:''}]},
+    ];
+
+    const FT_CORES = {'Alcoólico':'#ef4444','Sem Álcool':'#10b981','Especial':'#8b5cf6'};
+
+    function ftLoad(){
+        const s=localStorage.getItem('ddrinks_fichas');
+        return s?JSON.parse(s):JSON.parse(JSON.stringify(FT_PADRAO));
+    }
+    function ftSave(d){localStorage.setItem('ddrinks_fichas',JSON.stringify(d));}
+
+    function ftEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+    function ftRender(filtro){
+        const lista=ftLoad();
+        const grid=document.getElementById('ftGrid');
+        if(!grid)return;
+        const t=(filtro||'').toLowerCase().trim();
+        const vis=t?lista.filter(f=>f.nome.toLowerCase().includes(t)||f.categoria.toLowerCase().includes(t)||f.ingredientes.some(i=>i.nome.toLowerCase().includes(t))):lista;
+        if(!vis.length){grid.innerHTML='<div class="ft-empty">Nenhum drink encontrado.</div>';return;}
+        const isPadrao=id=>FT_PADRAO.some(p=>p.id===id);
+        grid.innerHTML=vis.map(f=>{
+            const cor=FT_CORES[f.categoria]||'#ef4444';
+            const ings=f.ingredientes.filter(i=>i.nome).map(i=>
+                `<li class="ft-ing-item"><span class="ft-ing-name">${ftEsc(i.nome)}</span>${i.qty?`<span class="ft-ing-qty">${ftEsc(i.qty)}</span>`:''}</li>`
+            ).join('');
+            const delBtn=!isPadrao(f.id)?`<button class="ft-btn ft-btn-del" onclick="ftExcluir('${ftEsc(f.id)}')">🗑 Excluir</button>`:'';
+            return `<div class="ft-card">
+                <div class="ft-card-head" style="background:linear-gradient(135deg,${cor},${cor}bb);">
+                    <div>
+                        <div class="ft-card-name">${ftEsc(f.nome)}</div>
+                        <span class="ft-card-badge">${ftEsc(f.categoria)}</span>
+                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.65;flex-shrink:0;margin-top:2px;"><path d="M4 3h16" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12v6" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M9 18h6" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </div>
+                <div class="ft-card-body"><ul class="ft-ing-list">${ings}</ul></div>
+                <div class="ft-card-foot">
+                    <button class="ft-btn ft-btn-edit" onclick="ftEditar('${ftEsc(f.id)}')">✏️ Editar</button>
+                    ${delBtn}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function ftFiltrar(v){ftRender(v);}
+
+    function ftAbrirModal(id){
+        document.getElementById('ftModalTitle').textContent=id?'Editar Drink':'Novo Drink';
+        document.getElementById('ftEditId').value=id||'';
+        document.getElementById('ftNome').value='';
+        document.getElementById('ftCategoria').value='Alcoólico';
+        document.getElementById('ftIngEditor').innerHTML='';
+        if(id){
+            const f=ftLoad().find(x=>x.id===id);
+            if(f){
+                document.getElementById('ftNome').value=f.nome;
+                document.getElementById('ftCategoria').value=f.categoria;
+                f.ingredientes.forEach(i=>ftAddRow(i.nome,i.qty));
+            }
+        } else {
+            ftAddRow();ftAddRow();
+        }
+        document.getElementById('ftModal').classList.add('open');
+    }
+
+    function ftEditar(id){ftAbrirModal(id);}
+
+    function ftFecharModal(){document.getElementById('ftModal').classList.remove('open');}
+
+    function ftAddRow(nome,qty){
+        const ed=document.getElementById('ftIngEditor');
+        const r=document.createElement('div');
+        r.className='ft-ing-row';
+        r.innerHTML=`<input type="text" placeholder="Ingrediente" value="${ftEsc(nome||'')}" class="fting-nome"/><input type="text" placeholder="Qtd (50 ml)" value="${ftEsc(qty||'')}" class="fting-qty"/><button type="button" class="ft-del-row" onclick="this.parentElement.remove()">×</button>`;
+        ed.appendChild(r);
+    }
+
+    function ftSalvar(){
+        const nome=document.getElementById('ftNome').value.trim();
+        if(!nome){estToast('Informe o nome do drink','error');return;}
+        const cat=document.getElementById('ftCategoria').value;
+        const rows=document.querySelectorAll('#ftIngEditor .ft-ing-row');
+        const ings=[];
+        rows.forEach(r=>{const n=r.querySelector('.fting-nome').value.trim(),q=r.querySelector('.fting-qty').value.trim();if(n)ings.push({nome:n,qty:q});});
+        if(!ings.length){estToast('Adicione ao menos um ingrediente','error');return;}
+        const fichas=ftLoad();
+        const editId=document.getElementById('ftEditId').value;
+        if(editId){
+            const idx=fichas.findIndex(f=>f.id===editId);
+            if(idx!==-1)fichas[idx]={...fichas[idx],nome,categoria:cat,ingredientes:ings};
+        } else {
+            const nid=nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now();
+            fichas.push({id:nid,nome,categoria:cat,ingredientes:ings});
+        }
+        ftSave(fichas);
+        ftFecharModal();
+        ftRender(document.getElementById('ftSearch').value);
+        estToast('✅ Drink salvo!','success');
+    }
+
+    function ftExcluir(id){
+        if(!confirm('Excluir este drink?'))return;
+        ftSave(ftLoad().filter(f=>f.id!==id));
+        ftRender(document.getElementById('ftSearch').value);
+        estToast('Drink excluído','warning');
+    }
+
+    document.getElementById('ftModal').addEventListener('click',function(e){if(e.target===this)ftFecharModal();});
+
+    // Render fichas ao abrir a tab
+    const _ftOrigTab=estTab;
+    function estTab(nome,el){
+        document.querySelectorAll('.est-tab-btn').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.est-panel').forEach(p=>p.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('est-panel-'+nome).classList.add('active');
+        if(nome==='historico')estRenderHist();
+        if(nome==='fichas'){ftRender('');if(document.getElementById('ftSearch'))document.getElementById('ftSearch').value='';}
+    }
+    // ==================== FIM FICHAS TÉCNICAS ====================
 
     // --- Baixa automática ---
     async function estBaixaAuto(){
@@ -3804,8 +4125,9 @@ html += htmlPacotes;
             const est=estLoad();const descontos={};
             novos.forEach(ev=>{
                 const drinks=ev.drinks||ev.drinksSelecionados||{};
+                const consumo=ftGetConsumo();
                 Object.entries(drinks).forEach(([did,qtd])=>{
-                    const c=EST_CONSUMO[did];if(!c)return;
+                    const c=consumo[did];if(!c)return;
                     Object.entries(c).forEach(([ing,por])=>{descontos[ing]=estR2((descontos[ing]||0)+por*Number(qtd));});
                 });
                 proc.push(String(ev.id||ev.data));
@@ -3831,7 +4153,111 @@ html += htmlPacotes;
     }
 
     // --- Render all ---
-    function estRenderAll(){estRenderCards();estRenderItens();}
+    function estRenderAll(){
+        estRenderCards();estRenderItens();
+        const sub=document.getElementById('estSubtitulo');
+        if(sub){const itens=ftGetEstItens();sub.textContent=itens.slice(0,5).map(i=>i.nome).join(' · ')+(itens.length>5?' · + '+(itens.length-5)+' mais':'');}
+    }
+
+    // ============ VER INSUMOS DO ORÇAMENTO ============
+    function verInsumos(orcId) {
+        const orc = orcamentos.find(o => o.id === orcId);
+        if (!orc) return;
+
+        const fichas = ftLoad();
+        const drinks = orc.drinks || orc.drinksSelecionados || {};
+
+        // Agrega todos os ingredientes × quantidades de drinks pedidos
+        const agg = {}; // { ingId: { nome, unidade, total, icone } }
+        Object.entries(drinks).forEach(([did, qtdDrinks]) => {
+            const n = Number(qtdDrinks) || 0;
+            if (n <= 0) return;
+            const ficha = fichas.find(f => f.id === did);
+            if (!ficha) return;
+            ficha.ingredientes.forEach(ing => {
+                if (!ing.nome) return;
+                const normNome = ing.nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+                if (EST_SKIP.has(normNome)) return;
+                const unit = ftParseUnit(ing.qty);
+                if (unit === null) return;
+                const numPorDrink = ftParseNum(ing.qty);
+                const id = ftIngId(ing.nome);
+                if (!agg[id]) agg[id] = { nome: ing.nome, unidade: unit, total: 0, icone: ftIngIcone(ing.nome) };
+                agg[id].total += numPorDrink * n;
+            });
+        });
+
+        // Drinks sem ficha (ids não encontrados)
+        const drinksSemFicha = Object.keys(drinks).filter(did => !fichas.find(f => f.id === did) && (Number(drinks[did]) || 0) > 0);
+
+        const itens = Object.values(agg).sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
+
+        const modal = document.getElementById('insumosModal');
+        document.getElementById('insumosModalTitle').textContent = `Insumos — ${orc.nome || orc.cliente || 'Orçamento #'+orcId}`;
+        document.getElementById('insumosModalEvento').textContent =
+            `📅 ${orc.dataFormatada || orc.data || ''} · 👥 ${orc.quantidadeConvidados || '?'} convidados · 📦 Pacote ${orc.pacoteAceito ? orc.pacoteAceito.charAt(0).toUpperCase()+orc.pacoteAceito.slice(1) : 'N/A'}`;
+
+        const resumoDrinks = Object.entries(drinks)
+            .filter(([,q]) => (Number(q)||0) > 0)
+            .map(([did, q]) => {
+                const f = fichas.find(x => x.id === did);
+                return `${f ? f.nome : did}: <strong>${q}</strong>`;
+            }).join(' · ');
+        document.getElementById('insumosModalDrinks').innerHTML = resumoDrinks || '—';
+
+        if (!itens.length) {
+            document.getElementById('insumosModalBody').innerHTML =
+                '<p style="color:var(--gray-400);text-align:center;padding:2rem;">Nenhum ingrediente encontrado. Verifique as fichas técnicas dos drinks deste orçamento.</p>';
+        } else {
+            document.getElementById('insumosModalBody').innerHTML = `
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #e2e8f0;">
+                            <th style="text-align:left;padding:8px 10px;font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;">Ingrediente</th>
+                            <th style="text-align:right;padding:8px 10px;font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;">Quantidade Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itens.map((ing,i) => `
+                        <tr style="border-bottom:1px solid #f1f5f9;background:${i%2===0?'white':'#fafafa'};">
+                            <td style="padding:9px 10px;font-size:.88rem;display:flex;align-items:center;gap:8px;">
+                                <span style="font-size:1.1rem;">${ing.icone}</span>
+                                <span style="color:var(--gray-800);font-weight:500;">${ing.nome}</span>
+                            </td>
+                            <td style="padding:9px 10px;text-align:right;font-weight:700;color:#ef4444;font-size:.92rem;white-space:nowrap;">
+                                ${ing.total % 1 ? ing.total.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) : ing.total.toLocaleString('pt-BR')} ${ing.unidade}
+                            </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+                ${drinksSemFicha.length ? `<p style="font-size:.75rem;color:var(--gray-400);margin-top:10px;">⚠️ Drinks sem ficha técnica cadastrada: ${drinksSemFicha.join(', ')}</p>` : ''}`;
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    document.getElementById('insumosModal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+    });
+    // ============ FIM VER INSUMOS ============
     </script>
+
+    <!-- Modal: Ver Insumos do Orçamento -->
+    <div id="insumosModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5000;align-items:center;justify-content:center;padding:1rem;">
+        <div style="background:white;border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+            <div style="padding:18px 22px 12px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:sticky;top:0;background:white;z-index:1;border-radius:16px 16px 0 0;">
+                <div>
+                    <div style="font-weight:700;font-size:1.05rem;color:#0f172a;" id="insumosModalTitle">Insumos</div>
+                    <div style="font-size:.78rem;color:#64748b;margin-top:3px;" id="insumosModalEvento"></div>
+                </div>
+                <button onclick="document.getElementById('insumosModal').style.display='none'" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:1.5rem;line-height:1;padding:0 4px;flex-shrink:0;">×</button>
+            </div>
+            <div style="padding:14px 22px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+                <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Drinks do evento</div>
+                <div style="font-size:.82rem;color:#475569;line-height:1.6;" id="insumosModalDrinks"></div>
+            </div>
+            <div style="padding:16px 22px 20px;" id="insumosModalBody"></div>
+        </div>
+    </div>
 </body>
 </html>
