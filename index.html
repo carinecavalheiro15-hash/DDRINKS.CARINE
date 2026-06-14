@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -688,76 +688,91 @@
                 gap: 0.5rem;
             }
         }
+
+
+        /* ===== SIDEBAR LAYOUT ===== */
+        .layout-wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 240px; min-width: 240px; background: var(--gray-900); display: flex; flex-direction: column; padding: 1.5rem 0.75rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 100; }
+        .sidebar-logo { padding: 0.5rem 0.75rem; margin-bottom: 1.5rem; }
+        .sidebar-logo a { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .sidebar-logo .app-logo-text { color: white; font-size: 1.25rem; font-weight: 700; }
+        .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 0.125rem; }
+        .sidebar-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius); background: transparent; border: none; color: var(--gray-400); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: var(--transition); width: 100%; text-align: left; font-family: inherit; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.07); color: white; }
+        .sidebar-item.active { background: var(--primary-color); color: white; }
+        .sidebar-footer { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .sidebar-user { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; }
+        .sidebar-user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.75rem; flex-shrink: 0; }
+        .sidebar-user-name { color: white; font-weight: 500; font-size: 0.875rem; }
+        .sidebar-user-role { color: var(--gray-500); font-size: 0.75rem; }
+        .sidebar-logout { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius); background: transparent; border: none; color: var(--gray-400); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: var(--transition); width: 100%; text-align: left; font-family: inherit; }
+        .sidebar-logout:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .main-content { flex: 1; overflow-y: auto; min-width: 0; background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%); }
+        .layout-wrapper.logged-out .sidebar { display: none; }
+        .layout-wrapper.logged-out .main-content { display: flex; justify-content: center; align-items: flex-start; }
+        @media (max-width: 768px) { .sidebar { display: none; } }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header Profissional -->
-        <header class="app-header">
-            <div class="app-header-content">
-                <a href="#" class="app-logo-link" aria-label="DDrinks - Início" onclick="showPage('home');return false;">
-                    <span class="app-logo-icon" role="img" aria-hidden="true" title="DDrinks">
-                        <!-- Professional cocktail SVG icon -->
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <div class="layout-wrapper logged-out" id="layout-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <a href="#" onclick="showPage('home');return false;">
+                    <span class="app-logo-icon" style="flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M4 3h16" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
                             <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M12 12v6" stroke="rgba(255,255,255,0.95)" stroke-width="1.5" stroke-linecap="round"/>
                             <path d="M9 18h6" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
                         </svg>
                     </span>
+                    <div class="app-logo-text">DDrinks</div>
                 </a>
-                <nav class="app-nav">
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('login')" id="nav-login" style="color: var(--error-color); display:none;" aria-label="Login">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <span>Login</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('home')" id="nav-home" style="display: none; color: var(--error-color);" aria-label="Início">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 21V12h14v9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                    <span>Início</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('agenda')" id="nav-agenda" style="display: none; color: var(--error-color);" aria-label="Agenda">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
-                                                    <span>Agenda</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('calendar')" id="nav-calendar" style="display: none; color: var(--error-color);" aria-label="Calendário">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                                                    <span>Calendário</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('financeiro')" id="nav-financeiro" style="display: none; color: var(--error-color);" aria-label="Financeiro">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/></svg>
-                                                    <span>Financeiro</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('config')" id="nav-config" style="display: none; color: var(--error-color);" aria-label="Configurações">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                    <span>Configurações</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('estoque')" id="nav-estoque" style="display: none; color: var(--error-color);" aria-label="Estoque">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M12 12v4M10 14h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                                                    <span>Estoque</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="logout()" id="nav-logout" style="display: none; color: var(--error-color);" aria-label="Sair">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                    <span>Sair</span>
-                                                </span>
-                                        </button>
-                </nav>
-                <div style="height: 32px;"></div>
             </div>
-        </header>
+            <nav class="sidebar-nav">
+                <button class="sidebar-item" onclick="showPage('home')" id="nav-home" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 21V12h14v9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Orçamentos
+                </button>
+                <button class="sidebar-item" onclick="showPage('agenda')" id="nav-agenda" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+                    Agenda
+                </button>
+                <button class="sidebar-item" onclick="showPage('calendar')" id="nav-calendar" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Calendário
+                </button>
+                <button class="sidebar-item" onclick="showPage('financeiro')" id="nav-financeiro" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/></svg>
+                    Financeiro
+                </button>
+                <button class="sidebar-item" onclick="showPage('config')" id="nav-config" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Configurações
+                </button>
+                <button class="sidebar-item" onclick="showPage('estoque')" id="nav-estoque" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M12 12v4M10 14h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Estoque
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user" id="sidebar-user" style="display:none;">
+                    <div class="sidebar-user-avatar" id="sidebar-user-avatar">CC</div>
+                    <div>
+                        <div class="sidebar-user-name" id="sidebar-user-name">Usuário</div>
+                        <div class="sidebar-user-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="sidebar-logout" onclick="logout()" id="nav-logout" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Sair
+                </button>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="main-content">
+        <div class="app-container">
 
         <!-- Página de Login -->
         <div id="login-page" class="page active" style="background:#f1f5f9; min-height:calc(100vh - 80px); padding:1.5rem;">
@@ -1672,7 +1687,30 @@
                 .ft-ing-row input { padding:7px 10px;border:1.5px solid var(--gray-300);border-radius:7px;font-size:.82rem;font-family:inherit; }
                 .ft-ing-row input:focus { outline:none;border-color:#ef4444; }
                 .ft-del-row { background:none;border:none;cursor:pointer;color:#ef4444;font-size:1.1rem;line-height:1;padding:0 3px; }
-            </style>
+        
+
+        /* ===== SIDEBAR LAYOUT ===== */
+        .layout-wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 240px; min-width: 240px; background: var(--gray-900); display: flex; flex-direction: column; padding: 1.5rem 0.75rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 100; }
+        .sidebar-logo { padding: 0.5rem 0.75rem; margin-bottom: 1.5rem; }
+        .sidebar-logo a { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+        .sidebar-logo .app-logo-text { color: white; font-size: 1.25rem; font-weight: 700; }
+        .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 0.125rem; }
+        .sidebar-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius); background: transparent; border: none; color: var(--gray-400); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: var(--transition); width: 100%; text-align: left; font-family: inherit; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.07); color: white; }
+        .sidebar-item.active { background: var(--primary-color); color: white; }
+        .sidebar-footer { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .sidebar-user { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; }
+        .sidebar-user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.75rem; flex-shrink: 0; }
+        .sidebar-user-name { color: white; font-weight: 500; font-size: 0.875rem; }
+        .sidebar-user-role { color: var(--gray-500); font-size: 0.75rem; }
+        .sidebar-logout { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius); background: transparent; border: none; color: var(--gray-400); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: var(--transition); width: 100%; text-align: left; font-family: inherit; }
+        .sidebar-logout:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .main-content { flex: 1; overflow-y: auto; min-width: 0; background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%); }
+        .layout-wrapper.logged-out .sidebar { display: none; }
+        .layout-wrapper.logged-out .main-content { display: flex; justify-content: center; align-items: flex-start; }
+        @media (max-width: 768px) { .sidebar { display: none; } }
+    </style>
 
             <div class="est-wrap">
                 <div style="margin-bottom:20px;">
@@ -1925,19 +1963,16 @@
         let orcamentoEditandoId = null;
 
         function showPage(pageId) {
-            // Esconde todas as páginas
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
-
-            // Mostra a página selecionada
-            document.getElementById(pageId + '-page').classList.add('active');
-            
-            // Atualiza navegação
-            document.querySelectorAll('.nav-item').forEach(nav => {
-                nav.classList.remove('active');
+            var targetPage = document.getElementById(pageId + '-page');
+            if (targetPage) targetPage.classList.add('active');
+            document.querySelectorAll('.sidebar-item').forEach(function(item) {
+                item.classList.remove('active');
             });
-            document.getElementById('nav-' + pageId).classList.add('active');
+            var activeItem = document.getElementById('nav-' + pageId);
+            if (activeItem) activeItem.classList.add('active');
             
             // Carrega dados específicos da página
             if (pageId === 'agenda') {
@@ -1962,20 +1997,30 @@
 
         function updateNavigation() {
             const isLoggedIn = currentUser !== null;
-
-            document.getElementById('nav-login').style.display = 'none';
-            document.getElementById('nav-home').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-agenda').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-calendar').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-financeiro').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-config').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-estoque').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-logout').style.display = isLoggedIn ? 'block' : 'none';
-
-            // Oculta o header completo na tela de login
-            document.querySelector('header.app-header').style.display = isLoggedIn ? '' : 'none';
-
-            if (!isLoggedIn) {
+            var wrapper = document.getElementById('layout-wrapper');
+            if (isLoggedIn) {
+                wrapper.classList.remove('logged-out');
+                var username = (currentUser.username || currentUser.nome || 'Usuário');
+                document.getElementById('sidebar-user-name').textContent = username;
+                document.getElementById('sidebar-user-avatar').textContent = username.substring(0, 2).toUpperCase();
+                document.getElementById('sidebar-user').style.display = 'flex';
+                document.getElementById('nav-home').style.display = 'flex';
+                document.getElementById('nav-agenda').style.display = 'flex';
+                document.getElementById('nav-calendar').style.display = 'flex';
+                document.getElementById('nav-financeiro').style.display = 'flex';
+                document.getElementById('nav-config').style.display = 'flex';
+                document.getElementById('nav-estoque').style.display = 'flex';
+                document.getElementById('nav-logout').style.display = 'flex';
+            } else {
+                wrapper.classList.add('logged-out');
+                document.getElementById('sidebar-user').style.display = 'none';
+                document.getElementById('nav-home').style.display = 'none';
+                document.getElementById('nav-agenda').style.display = 'none';
+                document.getElementById('nav-calendar').style.display = 'none';
+                document.getElementById('nav-financeiro').style.display = 'none';
+                document.getElementById('nav-config').style.display = 'none';
+                document.getElementById('nav-estoque').style.display = 'none';
+                document.getElementById('nav-logout').style.display = 'none';
                 atualizarFotoLogin();
                 showPage('login');
             }
@@ -4259,5 +4304,8 @@ html += htmlPacotes;
             <div style="padding:16px 22px 20px;" id="insumosModalBody"></div>
         </div>
     </div>
+        </div><!-- end app-container -->
+        </main><!-- end main-content -->
+    </div><!-- end layout-wrapper -->
 </body>
 </html>

@@ -567,60 +567,216 @@
                 gap: 0.5rem;
             }
         }
+
+        /* ===== SIDEBAR LAYOUT ===== */
+        .layout-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            min-width: 240px;
+            background: var(--gray-900);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0.75rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-logo a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .sidebar-logo .app-logo-text {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            background: transparent;
+            border: none;
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255,255,255,0.07);
+            color: white;
+        }
+
+        .sidebar-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1rem;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .sidebar-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user-name {
+            color: white;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-user-role {
+            color: var(--gray-500);
+            font-size: 0.75rem;
+        }
+
+        .sidebar-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            background: transparent;
+            border: none;
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .sidebar-logout:hover {
+            background: rgba(239,68,68,0.15);
+            color: #ef4444;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            min-width: 0;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+        }
+
+        .layout-wrapper.logged-out .sidebar {
+            display: none;
+        }
+
+        .layout-wrapper.logged-out .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header Profissional -->
-        <header class="app-header">
-            <div class="app-header-content">
-                <div class="app-logo">
-                    <a href="#" class="app-logo-link" aria-label="DDrinks - Início" onclick="showPage('home');return false;">
-                        <span class="app-logo-icon" role="img" aria-hidden="true" title="DDrinks">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M4 3h16" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
-                                <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 12v6" stroke="rgba(255,255,255,0.95)" stroke-width="1.5" stroke-linecap="round"/>
-                                <path d="M9 18h6" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
-                            </svg>
-                        </span>
-                        <div class="app-logo-text">DDrinks</div>
-                    </a>
-                </div>
-                <nav class="app-nav">
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('login')" id="nav-login" aria-label="Login">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 11V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 21H8a2 2 0 01-2-2V7a2 2 0 012-2h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                    <span>Login</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('home')" id="nav-home" style="display: none;" aria-label="Início">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 21V12h14v9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                    <span>Início</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('agenda')" id="nav-agenda" style="display: none;" aria-label="Agenda">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
-                                                    <span>Agenda</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="showPage('calendar')" id="nav-calendar" style="display: none;" aria-label="Calendário">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                                                    <span>Calendário</span>
-                                                </span>
-                                        </button>
-                                        <button class="nav-item btn btn-secondary" onclick="logout()" id="nav-logout" style="display: none;" aria-label="Sair">
-                                                <span style="display:inline-flex;align-items:center;gap:0.5rem">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                    <span>Sair</span>
-                                                </span>
-                                        </button>
-                </nav>
+    <div class="layout-wrapper logged-out" id="layout-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <a href="#" onclick="showPage('home');return false;">
+                    <span class="app-logo-icon" style="flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 3h16" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 12v6" stroke="rgba(255,255,255,0.95)" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M9 18h6" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <div class="app-logo-text">DDrinks</div>
+                </a>
             </div>
-        </header>
+            <nav class="sidebar-nav">
+                <button class="sidebar-item" onclick="showPage('home')" id="nav-home" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 21V12h14v9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Orçamentos
+                </button>
+                <button class="sidebar-item" onclick="showPage('agenda')" id="nav-agenda" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M16 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="7" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+                    Agenda
+                </button>
+                <button class="sidebar-item" onclick="showPage('calendar')" id="nav-calendar" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Calendário
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user" id="sidebar-user" style="display:none;">
+                    <div class="sidebar-user-avatar" id="sidebar-user-avatar">CC</div>
+                    <div>
+                        <div class="sidebar-user-name" id="sidebar-user-name">Usuário</div>
+                        <div class="sidebar-user-role">Administrador</div>
+                    </div>
+                </div>
+                <button class="sidebar-logout" onclick="logout()" id="nav-logout" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 19H6a2 2 0 01-2-2V7a2 2 0 012-2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Sair
+                </button>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="main-content">
+        <div class="app-container">
 
         <!-- Página de Login -->
         <div id="login-page" class="page active">
@@ -1081,7 +1237,9 @@
                 <div id="calendar" class="calendar"></div>
             </div>
         </div>
-    </div>
+        </div><!-- end app-container -->
+        </main><!-- end main-content -->
+    </div><!-- end layout-wrapper -->
 
     <script>
         // Sistema de navegação SPA
@@ -1117,27 +1275,24 @@
         let orcamentoAtual = null;
 
         function showPage(pageId) {
-            // Esconde todas as páginas
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
-            
-            // Mostra a página selecionada
-            document.getElementById(pageId + '-page').classList.add('active');
-            
-            // Atualiza navegação
-            document.querySelectorAll('.nav-item').forEach(nav => {
-                nav.classList.remove('active');
+
+            const targetPage = document.getElementById(pageId + '-page');
+            if (targetPage) targetPage.classList.add('active');
+
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
             });
-            document.getElementById('nav-' + pageId).classList.add('active');
-            
-            // Carrega dados específicos da página
+            const activeItem = document.getElementById('nav-' + pageId);
+            if (activeItem) activeItem.classList.add('active');
+
             if (pageId === 'agenda') {
                 carregarAgenda();
             } else if (pageId === 'calendar') {
                 carregarCalendario();
             } else if (pageId === 'home') {
-                // Recarrega orçamentos para manter sincronização
                 const orcamentosSalvos = localStorage.getItem('orcamentos');
                 if (orcamentosSalvos) {
                     orcamentos = JSON.parse(orcamentosSalvos);
@@ -1147,14 +1302,25 @@
 
         function updateNavigation() {
             const isLoggedIn = currentUser !== null;
-            
-            document.getElementById('nav-login').style.display = isLoggedIn ? 'none' : 'block';
-            document.getElementById('nav-home').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-agenda').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-calendar').style.display = isLoggedIn ? 'block' : 'none';
-            document.getElementById('nav-logout').style.display = isLoggedIn ? 'block' : 'none';
-            
-            if (!isLoggedIn) {
+            const wrapper = document.getElementById('layout-wrapper');
+
+            if (isLoggedIn) {
+                wrapper.classList.remove('logged-out');
+                const username = currentUser.username || currentUser.nome || 'Usuário';
+                document.getElementById('sidebar-user-name').textContent = username;
+                document.getElementById('sidebar-user-avatar').textContent = username.substring(0, 2).toUpperCase();
+                document.getElementById('sidebar-user').style.display = 'flex';
+                document.getElementById('nav-home').style.display = 'flex';
+                document.getElementById('nav-agenda').style.display = 'flex';
+                document.getElementById('nav-calendar').style.display = 'flex';
+                document.getElementById('nav-logout').style.display = 'flex';
+            } else {
+                wrapper.classList.add('logged-out');
+                document.getElementById('sidebar-user').style.display = 'none';
+                document.getElementById('nav-home').style.display = 'none';
+                document.getElementById('nav-agenda').style.display = 'none';
+                document.getElementById('nav-calendar').style.display = 'none';
+                document.getElementById('nav-logout').style.display = 'none';
                 showPage('login');
             }
         }
