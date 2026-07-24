@@ -711,6 +711,23 @@
         .layout-wrapper.logged-out .sidebar { display: none; }
         .layout-wrapper.logged-out .main-content { display: flex; justify-content: center; align-items: flex-start; }
         @media (max-width: 768px) { .sidebar { display: none; } }
+
+        /* ===== Campo de data DD/MM/AAAA com mini-calendário próprio ===== */
+        .date-input-group { position: relative; display: flex; gap: 6px; align-items: center; }
+        .date-input-group input[type="text"] { flex: 1; }
+        .date-cal-btn { flex-shrink: 0; background: var(--gray-100); border: 1.5px solid var(--gray-300); border-radius: 8px; width: 42px; min-height: 42px; cursor: pointer; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+        .date-cal-btn:hover { background: var(--gray-200); }
+        .mini-cal-pop { display: none; position: absolute; top: calc(100% + 6px); left: 0; z-index: 6000; background: white; border: 1px solid var(--gray-200); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.18); padding: 12px; width: 260px; }
+        .mini-cal-pop.open { display: block; }
+        .mini-cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: .85rem; color: var(--gray-800); font-weight: 600; }
+        .mini-cal-head button { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--gray-500); width: 28px; height: 28px; border-radius: 6px; }
+        .mini-cal-head button:hover { background: var(--gray-100); color: var(--gray-900); }
+        .mini-cal-dow { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; font-size: .68rem; color: var(--gray-400); font-weight: 700; margin-bottom: 4px; }
+        .mini-cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+        .mini-cal-days span { text-align: center; padding: 6px 0; font-size: .8rem; border-radius: 6px; cursor: pointer; color: var(--gray-700); }
+        .mini-cal-days span:empty { cursor: default; }
+        .mini-cal-days span:not(:empty):hover { background: #fee2e2; color: #ef4444; font-weight: 700; }
+        .mini-cal-days span.hoje { border: 1.5px solid #ef4444; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -986,7 +1003,12 @@
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label for="dataEvento" class="form-label">Data do Evento *</label>
-                            <input type="date" id="dataEvento" class="form-input" required oninput="document.getElementById('dataEventoPreview').textContent = this.value ? ('📅 ' + formatarData(this.value)) : '';" />
+                            <div class="date-input-group">
+                                <input type="text" id="dataEvento" class="form-input" required placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" oninput="miniCalMascarar('dataEvento')">
+                                <button type="button" class="date-cal-btn" onclick="miniCalAbrir('dataEvento')" aria-label="Abrir calendário">📅</button>
+                                <div class="mini-cal-pop" id="dataEvento-calpop"></div>
+                            </div>
+                            <input type="hidden" id="dataEventoISO">
                             <small id="dataEventoPreview" style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);font-weight:600;"></small>
                         </div>
                         <div class="form-group">
@@ -2429,7 +2451,7 @@
             const clienteNome = document.getElementById('clienteNome').value.trim();
             const clienteTelefone = document.getElementById('clienteTelefone').value.trim();
             const clienteCidade = document.getElementById('clienteCidade').value.trim();
-            const dataEvento = document.getElementById('dataEvento').value;
+            const dataEvento = document.getElementById('dataEventoISO').value;
             const quantidadeConvidados = document.getElementById('quantidadeConvidados').value;
             const rawCustomDrinkName = document.getElementById('customDrinkName').value.trim();
             const customDrinkName = rawCustomDrinkName || 'Drink Personalizado';
@@ -2692,6 +2714,7 @@ html += htmlPacotes;
             document.getElementById('clienteTelefone').value = '';
             document.getElementById('clienteCidade').value = '';
             document.getElementById('dataEvento').value = '';
+            document.getElementById('dataEventoISO').value = '';
             document.getElementById('dataEventoPreview').textContent = '';
             document.getElementById('quantidadeConvidados').value = '';
             document.getElementById('descricaoEvento').value = '';
@@ -3183,6 +3206,110 @@ html += htmlPacotes;
             return `${dia}/${mes}/${ano}`;
         }
 
+        // ===== Campo de data DD/MM/AAAA com mini-calendário próprio =====
+        // Garante que o que o usuário digita/clica seja exatamente o que é salvo,
+        // independente do formato regional (mm/dd x dd/mm) configurado no Windows.
+        const MINI_CAL_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        const _miniCal = { aberto: null, ano: null, mes: null };
+
+        function miniCalMascarar(inputId) {
+            const el = document.getElementById(inputId);
+            const digitos = el.value.replace(/\D/g, '').slice(0, 8);
+            let out = digitos;
+            if (digitos.length > 4) out = digitos.slice(0, 2) + '/' + digitos.slice(2, 4) + '/' + digitos.slice(4);
+            else if (digitos.length > 2) out = digitos.slice(0, 2) + '/' + digitos.slice(2);
+            el.value = out;
+
+            const preview = document.getElementById(inputId + 'Preview');
+            const isoEl = document.getElementById(inputId + 'ISO');
+            if (out.length === 10) {
+                const [dd, mm, aaaa] = out.split('/');
+                const diaN = parseInt(dd, 10), mesN = parseInt(mm, 10), anoN = parseInt(aaaa, 10);
+                const teste = new Date(anoN, mesN - 1, diaN);
+                const valida = mesN >= 1 && mesN <= 12 && diaN >= 1 && anoN >= 1900 &&
+                    teste.getFullYear() === anoN && teste.getMonth() === mesN - 1 && teste.getDate() === diaN;
+                if (valida) {
+                    isoEl.value = `${aaaa}-${mm}-${dd}`;
+                    if (preview) preview.textContent = '📅 ' + out;
+                    return;
+                }
+                isoEl.value = '';
+                if (preview) preview.textContent = '⚠️ Data inválida';
+            } else {
+                isoEl.value = '';
+                if (preview) preview.textContent = '';
+            }
+        }
+
+        function miniCalAbrir(inputId) {
+            const pop = document.getElementById(inputId + '-calpop');
+            if (!pop) return;
+            if (pop.classList.contains('open')) { miniCalFechar(); return; }
+            document.querySelectorAll('.mini-cal-pop.open').forEach(p => p.classList.remove('open'));
+
+            const isoAtual = document.getElementById(inputId + 'ISO').value;
+            let ano, mes;
+            if (isoAtual) {
+                const [y, m] = isoAtual.split('-');
+                ano = parseInt(y, 10); mes = parseInt(m, 10) - 1;
+            } else {
+                const hoje = new Date();
+                ano = hoje.getFullYear(); mes = hoje.getMonth();
+            }
+            _miniCal.aberto = inputId; _miniCal.ano = ano; _miniCal.mes = mes;
+            miniCalRenderizar();
+            pop.classList.add('open');
+        }
+        function miniCalFechar() {
+            if (_miniCal.aberto) {
+                const pop = document.getElementById(_miniCal.aberto + '-calpop');
+                if (pop) pop.classList.remove('open');
+            }
+            _miniCal.aberto = null;
+        }
+        function miniCalNav(delta) {
+            _miniCal.mes += delta;
+            if (_miniCal.mes < 0) { _miniCal.mes = 11; _miniCal.ano--; }
+            if (_miniCal.mes > 11) { _miniCal.mes = 0; _miniCal.ano++; }
+            miniCalRenderizar();
+        }
+        function miniCalRenderizar() {
+            const inputId = _miniCal.aberto;
+            const pop = document.getElementById(inputId + '-calpop');
+            if (!pop) return;
+            const { ano, mes } = _miniCal;
+            const hoje = new Date();
+            const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+            const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+            let diasHtml = '';
+            for (let i = 0; i < primeiroDiaSemana; i++) diasHtml += '<span></span>';
+            for (let d = 1; d <= diasNoMes; d++) {
+                const ehHoje = hoje.getFullYear() === ano && hoje.getMonth() === mes && hoje.getDate() === d;
+                diasHtml += `<span class="${ehHoje ? 'hoje' : ''}" onclick="miniCalSelecionar(${ano}, ${mes}, ${d})">${d}</span>`;
+            }
+            pop.innerHTML = `
+                <div class="mini-cal-head">
+                    <button type="button" onclick="miniCalNav(-1)">‹</button>
+                    <strong>${MINI_CAL_MESES[mes]} ${ano}</strong>
+                    <button type="button" onclick="miniCalNav(1)">›</button>
+                </div>
+                <div class="mini-cal-dow"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+                <div class="mini-cal-days">${diasHtml}</div>`;
+        }
+        function miniCalSelecionar(ano, mes, dia) {
+            const inputId = _miniCal.aberto;
+            if (!inputId) return;
+            const iso = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+            document.getElementById(inputId).value = formatarData(iso);
+            document.getElementById(inputId + 'ISO').value = iso;
+            const preview = document.getElementById(inputId + 'Preview');
+            if (preview) preview.textContent = '📅 ' + formatarData(iso);
+            miniCalFechar();
+        }
+        document.addEventListener('click', function (e) {
+            if (_miniCal.aberto && !e.target.closest('.date-input-group')) miniCalFechar();
+        });
+
         // ===== GRÁFICOS DO DASHBOARD =====
         function atualizarGraficoMeses() {
             const ctx = document.getElementById('chartMeses');
@@ -3630,7 +3757,8 @@ html += htmlPacotes;
             document.getElementById('clienteNome').value = orcamento.cliente || '';
             document.getElementById('clienteTelefone').value = orcamento.telefone || '';
             document.getElementById('clienteCidade').value = orcamento.cidade || '';
-            document.getElementById('dataEvento').value = orcamento.data || '';
+            document.getElementById('dataEvento').value = orcamento.data ? formatarData(orcamento.data) : '';
+            document.getElementById('dataEventoISO').value = orcamento.data || '';
             document.getElementById('dataEventoPreview').textContent = orcamento.data ? ('📅 ' + formatarData(orcamento.data)) : '';
             document.getElementById('quantidadeConvidados').value = orcamento.quantidadeConvidados || '';
             document.getElementById('pacoteSelecionado').value = orcamento.pacote || 'bronze';
@@ -4560,7 +4688,8 @@ html += htmlPacotes;
         const p = id ? promoLoad().find(x => x.id === id) : null;
         document.getElementById('promoModalTitulo').textContent = p ? 'Editar Pacote' : 'Novo Pacote Promocional';
         document.getElementById('promoNome').value = p ? p.nome : '';
-        document.getElementById('promoValidoAte').value = p ? p.validoAte : '';
+        document.getElementById('promoValidoAte').value = p && p.validoAte ? formatarData(p.validoAte) : '';
+        document.getElementById('promoValidoAteISO').value = p ? (p.validoAte || '') : '';
         document.getElementById('promoValidoAtePreview').textContent = p && p.validoAte ? ('📅 ' + formatarData(p.validoAte)) : '';
         document.getElementById('promoMaxConvidados').value = p ? p.maxConvidados : '';
         document.getElementById('promoValor').value = p ? p.valor : '';
@@ -4575,7 +4704,7 @@ html += htmlPacotes;
     }
     function promoSalvar(){
         const nome = document.getElementById('promoNome').value.trim();
-        const validoAte = document.getElementById('promoValidoAte').value;
+        const validoAte = document.getElementById('promoValidoAteISO').value;
         const maxConvidados = parseInt(document.getElementById('promoMaxConvidados').value, 10);
         const valor = parseFloat(document.getElementById('promoValor').value);
         const valorPorPessoa = document.getElementById('promoValorPorPessoa').checked;
@@ -4862,7 +4991,12 @@ html += htmlPacotes;
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                     <div class="form-group">
                         <label class="form-label" for="promoValidoAte">Válido até *</label>
-                        <input type="date" id="promoValidoAte" class="form-input" oninput="document.getElementById('promoValidoAtePreview').textContent = this.value ? ('📅 ' + formatarData(this.value)) : '';">
+                        <div class="date-input-group">
+                            <input type="text" id="promoValidoAte" class="form-input" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" oninput="miniCalMascarar('promoValidoAte')">
+                            <button type="button" class="date-cal-btn" onclick="miniCalAbrir('promoValidoAte')" aria-label="Abrir calendário">📅</button>
+                            <div class="mini-cal-pop" id="promoValidoAte-calpop"></div>
+                        </div>
+                        <input type="hidden" id="promoValidoAteISO">
                         <small id="promoValidoAtePreview" style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);font-weight:600;"></small>
                     </div>
                     <div class="form-group">
