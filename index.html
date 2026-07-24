@@ -986,7 +986,8 @@
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label for="dataEvento" class="form-label">Data do Evento *</label>
-                            <input type="date" id="dataEvento" class="form-input" required />
+                            <input type="date" id="dataEvento" class="form-input" required oninput="document.getElementById('dataEventoPreview').textContent = this.value ? ('📅 ' + formatarData(this.value)) : '';" />
+                            <small id="dataEventoPreview" style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);font-weight:600;"></small>
                         </div>
                         <div class="form-group">
                             <label for="quantidadeConvidados" class="form-label">Convidados *</label>
@@ -2691,6 +2692,7 @@ html += htmlPacotes;
             document.getElementById('clienteTelefone').value = '';
             document.getElementById('clienteCidade').value = '';
             document.getElementById('dataEvento').value = '';
+            document.getElementById('dataEventoPreview').textContent = '';
             document.getElementById('quantidadeConvidados').value = '';
             document.getElementById('descricaoEvento').value = '';
             document.getElementById('descricaoOutro').value = '';
@@ -3629,6 +3631,7 @@ html += htmlPacotes;
             document.getElementById('clienteTelefone').value = orcamento.telefone || '';
             document.getElementById('clienteCidade').value = orcamento.cidade || '';
             document.getElementById('dataEvento').value = orcamento.data || '';
+            document.getElementById('dataEventoPreview').textContent = orcamento.data ? ('📅 ' + formatarData(orcamento.data)) : '';
             document.getElementById('quantidadeConvidados').value = orcamento.quantidadeConvidados || '';
             document.getElementById('pacoteSelecionado').value = orcamento.pacote || 'bronze';
 
@@ -4558,6 +4561,7 @@ html += htmlPacotes;
         document.getElementById('promoModalTitulo').textContent = p ? 'Editar Pacote' : 'Novo Pacote Promocional';
         document.getElementById('promoNome').value = p ? p.nome : '';
         document.getElementById('promoValidoAte').value = p ? p.validoAte : '';
+        document.getElementById('promoValidoAtePreview').textContent = p && p.validoAte ? ('📅 ' + formatarData(p.validoAte)) : '';
         document.getElementById('promoMaxConvidados').value = p ? p.maxConvidados : '';
         document.getElementById('promoValor').value = p ? p.valor : '';
         document.getElementById('promoValorPorPessoa').checked = p ? !!p.valorPorPessoa : false;
@@ -4858,7 +4862,8 @@ html += htmlPacotes;
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                     <div class="form-group">
                         <label class="form-label" for="promoValidoAte">Válido até *</label>
-                        <input type="date" id="promoValidoAte" class="form-input">
+                        <input type="date" id="promoValidoAte" class="form-input" oninput="document.getElementById('promoValidoAtePreview').textContent = this.value ? ('📅 ' + formatarData(this.value)) : '';">
+                        <small id="promoValidoAtePreview" style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);font-weight:600;"></small>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="promoMaxConvidados">Até quantos convidados *</label>
