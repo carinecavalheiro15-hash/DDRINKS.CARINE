@@ -1018,7 +1018,18 @@
                         <p class="card-subtitle" style="align-self: center;">Escolha a quantidade de cada drink para o evento</p>
                     </div>
                 </div>
-                
+
+                <style>
+                    .drink-flavor-heading { display:flex; align-items:center; gap:8px; font-size:.82rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin:22px 0 12px; padding-bottom:7px; border-bottom:2px solid var(--gray-200); }
+                    .drink-flavor-heading:first-of-type { margin-top:6px; }
+                    .drink-flavor-heading .flavor-icon { font-size:1.15rem; }
+                    .drink-flavor-heading.citrico { color:#a16207; border-color:#facc15; }
+                    .drink-flavor-heading.doce { color:#be185d; border-color:#f9a8d4; }
+                    .drink-flavor-heading.amargo { color:#6d28d9; border-color:#c4b5fd; }
+                    .drink-flavor-heading.seco { color:#334155; border-color:#94a3b8; }
+                    .drink-flavor-heading.cremoso { color:#b45309; border-color:#fcd34d; }
+                </style>
+
                 <!-- Seleção de Pacote -->
                 <div class="form-group">
                     <label class="form-label">Pacote de Preços:</label>
@@ -1029,11 +1040,8 @@
                     </select>
                 </div>
                 
+                <div class="drink-flavor-heading citrico"><span class="flavor-icon">🍋</span> Cítricos</div>
                 <div class="grid grid-cols-4 gap-4">
-                    <div class="form-group">
-                        <label for="caipirinha" class="form-label">Caipirinha de Vinho</label>
-                        <input type="number" id="caipirinha" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
                     <div class="form-group">
                         <label for="mojito" class="form-label">Mojito</label>
                         <input type="number" id="mojito" class="form-input" min="0" value="0" placeholder="0">
@@ -1041,18 +1049,6 @@
                     <div class="form-group">
                         <label for="mojito_sem_alcool" class="form-label non-alc-label">Mojito <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
                         <input type="number" id="mojito_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="sex_on_the_beach" class="form-label">Sex on the Beach</label>
-                        <input type="number" id="sex_on_the_beach" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="sex_on_the_beach_sem_alcool" class="form-label non-alc-label">Sex on the Beach <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
-                        <input type="number" id="sex_on_the_beach_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="gin_tonica" class="form-label">Gin Tônica</label>
-                        <input type="number" id="gin_tonica" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
                         <label for="moscow_mule" class="form-label">Moscow Mule</label>
@@ -1063,9 +1059,109 @@
                         <input type="number" id="moscow_mule_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
+                        <label for="whisky_sour" class="form-label">Whisky Sour</label>
+                        <input type="number" id="whisky_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cosmopolitan" class="form-label">Cosmopolitan</label>
+                        <input type="number" id="cosmopolitan" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_limao" class="form-label">Caipirinha de Limão</label>
+                        <input type="number" id="caipirinha_limao" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="tequila_sour" class="form-label">Tequila Sour</label>
+                        <input type="number" id="tequila_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="pink_lady" class="form-label">Pink Lady</label>
+                        <input type="number" id="pink_lady" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="tequila_sunrise" class="form-label">Tequila Sunrise</label>
+                        <input type="number" id="tequila_sunrise" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_cachaca" class="form-label">Caipirinha de Cachaça</label>
+                        <input type="number" id="caipirinha_cachaca" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="marguerita" class="form-label">Marguerita</label>
+                        <input type="number" id="marguerita" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="amaretto_sour" class="form-label">Amaretto Sour</label>
+                        <input type="number" id="amaretto_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="mirtilo_sour" class="form-label">Mirtilo Sour</label>
+                        <input type="number" id="mirtilo_sour" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="drink-flavor-heading doce"><span class="flavor-icon">🍬</span> Doces</div>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="form-group">
+                        <label for="caipirinha" class="form-label">Caipirinha de Vinho</label>
+                        <input type="number" id="caipirinha" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="sex_on_the_beach" class="form-label">Sex on the Beach</label>
+                        <input type="number" id="sex_on_the_beach" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="sex_on_the_beach_sem_alcool" class="form-label non-alc-label">Sex on the Beach <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+                        <input type="number" id="sex_on_the_beach_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
                         <label for="gim_tropical" class="form-label">Gim Tropical</label>
                         <input type="number" id="gim_tropical" class="form-input" min="0" value="0" placeholder="0">
                     </div>
+                    <div class="form-group">
+                        <label for="caipirinha_morango" class="form-label">Caipirinha de Morango</label>
+                        <input type="number" id="caipirinha_morango" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_kiwi" class="form-label">Caipirinha de Kiwi</label>
+                        <input type="number" id="caipirinha_kiwi" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="gin_tropical" class="form-label">Gin Tropical</label>
+                        <input type="number" id="gin_tropical" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="soda_italiana_limao_siciliano_e_morango" class="form-label">Soda Italiana (Limão Siciliano / Morango)</label>
+                        <input type="number" id="soda_italiana_limao_siciliano_e_morango" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="lagoa_azul" class="form-label">Lagoa Azul</label>
+                        <input type="number" id="lagoa_azul" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="caipirinha_vinho" class="form-label">Caipirinha de Vinho</label>
+                        <input type="number" id="caipirinha_vinho" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cotton_fairy" class="form-label">Cotton Fairy</label>
+                        <input type="number" id="cotton_fairy" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cotton_fairy_sem_alcool" class="form-label non-alc-label">Cotton Fairy <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
+                        <input type="number" id="cotton_fairy_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="hold_hup" class="form-label">Hold Hup</label>
+                        <input type="number" id="hold_hup" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="passion" class="form-label">Passion</label>
+                        <input type="number" id="passion" class="form-input" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="drink-flavor-heading amargo"><span class="flavor-icon">🍂</span> Amargos</div>
+                <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label for="negroni" class="form-label">Negroni</label>
                         <input type="number" id="negroni" class="form-input" min="0" value="0" placeholder="0">
@@ -1075,21 +1171,21 @@
                         <input type="number" id="aperol_spritz" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
-                        <label for="whisky_sour" class="form-label">Whisky Sour</label>
-                        <input type="number" id="whisky_sour" class="form-input" min="0" value="0" placeholder="0">
+                        <label for="toscano" class="form-label">Toscano</label>
+                        <input type="number" id="toscano" class="form-input" min="0" value="0" placeholder="0">
                     </div>
+                </div>
+
+                <div class="drink-flavor-heading seco"><span class="flavor-icon">🥃</span> Secos</div>
+                <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
-                        <label for="cosmopolitan" class="form-label">Cosmopolitan</label>
-                        <input type="number" id="cosmopolitan" class="form-input" min="0" value="0" placeholder="0">
+                        <label for="gin_tonica" class="form-label">Gin Tônica</label>
+                        <input type="number" id="gin_tonica" class="form-input" min="0" value="0" placeholder="0">
                     </div>
-                    <div class="form-group">
-                        <label for="caipirinha_morango" class="form-label">Caipirinha de Morango</label>
-                        <input type="number" id="caipirinha_morango" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="caipirinha_limao" class="form-label">Caipirinha de Limão</label>
-                        <input type="number" id="caipirinha_limao" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
+                </div>
+
+                <div class="drink-flavor-heading cremoso"><span class="flavor-icon">🥥</span> Cremosos</div>
+                <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label for="pina_colada" class="form-label">Piña Colada</label>
                         <input type="number" id="pina_colada" class="form-input" min="0" value="0" placeholder="0">
@@ -1103,91 +1199,25 @@
                         <input type="number" id="alexander" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
-                        <label for="tequila_sour" class="form-label">Tequila Sour</label>
-                        <input type="number" id="tequila_sour" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="pink_lady" class="form-label">Pink Lady</label>
-                        <input type="number" id="pink_lady" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="caipirinha_kiwi" class="form-label">Caipirinha de Kiwi</label>
-                        <input type="number" id="caipirinha_kiwi" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="gin_tropical" class="form-label">Gin Tropical</label>
-                        <input type="number" id="gin_tropical" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
                         <label for="limonada_suica" class="form-label">Limonada Suíça</label>
                         <input type="number" id="limonada_suica" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="soda_italiana_limao_siciliano_e_morango" class="form-label">Soda Italiana (Limão Siciliano / Morango)</label>
-                        <input type="number" id="soda_italiana_limao_siciliano_e_morango" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="lagoa_azul" class="form-label">Lagoa Azul</label>
-                        <input type="number" id="lagoa_azul" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="tequila_sunrise" class="form-label">Tequila Sunrise</label>
-                        <input type="number" id="tequila_sunrise" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="caipirinha_cachaca" class="form-label">Caipirinha de Cachaça</label>
-                        <input type="number" id="caipirinha_cachaca" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="caipirinha_vinho" class="form-label">Caipirinha de Vinho</label>
-                        <input type="number" id="caipirinha_vinho" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
                         <label for="cream_pink" class="form-label">Cream Pink</label>
                         <input type="number" id="cream_pink" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
-                        <label for="cotton_fairy" class="form-label">Cotton Fairy</label>
-                        <input type="number" id="cotton_fairy" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="cotton_fairy_sem_alcool" class="form-label non-alc-label">Cotton Fairy <span class="non-alc-badge" aria-hidden="true">Sem álcool</span></label>
-                        <input type="number" id="cotton_fairy_sem_alcool" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="marguerita" class="form-label">Marguerita</label>
-                        <input type="number" id="marguerita" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="amaretto_sour" class="form-label">Amaretto Sour</label>
-                        <input type="number" id="amaretto_sour" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="hold_hup" class="form-label">Hold Hup</label>
-                        <input type="number" id="hold_hup" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="passion" class="form-label">Passion</label>
-                        <input type="number" id="passion" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
                         <label for="cookie_drink" class="form-label">Cookie Drink</label>
                         <input type="number" id="cookie_drink" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="mirtilo_sour" class="form-label">Mirtilo Sour</label>
-                        <input type="number" id="mirtilo_sour" class="form-input" min="0" value="0" placeholder="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="toscano" class="form-label">Toscano</label>
-                        <input type="number" id="toscano" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                     <div class="form-group">
                         <label for="oreo_yin" class="form-label">Oreo Yin</label>
                         <input type="number" id="oreo_yin" class="form-input" min="0" value="0" placeholder="0">
                     </div>
                 </div>
+
                 <!-- Drinks cadastrados pelo usuário nas Configurações -->
+                <div class="drink-flavor-heading" style="color:var(--gray-500);border-color:var(--gray-300);"><span class="flavor-icon">➕</span> Outros (adicionados nas Configurações)</div>
                 <div id="drinks-extras-grid" class="grid grid-cols-4 gap-4" style="margin-top:0.5rem;"></div>
             </div>
 
