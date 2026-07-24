@@ -2760,7 +2760,7 @@ html += htmlPacotes;
 
                                 // Não salvar ainda - tentar mesclar com Design PDF primeiro
                                 document.body.removeChild(tempDiv);
-                                
+
                                 // Tentar mesclar com Design PDF e documento extra usando pdf-lib (mais robusto)
                                 const designPdfPath = new URL('./Design sem nome.pdf', window.location.href).href;
                                 const nomeCliente = orcamentoAtual.cliente.nome.replace(/\s+/g, '_');
@@ -2777,15 +2777,21 @@ html += htmlPacotes;
                                 // Obter o PDF gerado pelo jsPDF como Blob
                                 const clientBlob = pdf.output('blob');
 
-                                Promise.all([
-                                    // tentar buscar o PDF de design (pode falhar se não existir)
-                                    fetch(designPdfPath).then(r => {
+                                // Só usa o Design fixo do sistema quando NENHUM anexo novo foi selecionado.
+                                // Quando o usuário anexa um PDF novo, ele substitui o Design salvo (não soma).
+                                const designPromise = pdfExtraFile
+                                    ? Promise.resolve(null)
+                                    : fetch(designPdfPath).then(r => {
                                         if (!r.ok) throw new Error('Design não disponível');
                                         return r.arrayBuffer();
                                     }).catch(error => {
                                         console.warn('Design sem nome.pdf não encontrado ou erro:', error);
                                         return null;
-                                    }),
+                                    });
+
+                                Promise.all([
+                                    // tentar buscar o PDF de design (pulado se houver anexo novo)
+                                    designPromise,
                                     // obter arrayBuffer do PDF gerado
                                     clientBlob.arrayBuffer(),
                                     // ler o PDF extra selecionado pelo usuário
