@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400;1,600;1,700&family=Great+Vibes&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -4746,14 +4746,20 @@ html += htmlPacotes;
     // --- Gerar PDF do pacote ---
     let _promoFontesPromise = null;
     function promoCarregarFontes(){
-        // Playfair Display e Poppins já são carregadas globalmente via <link> no <head>
+        // Playfair Display, Great Vibes e Poppins já são carregadas globalmente via <link> no <head>
         if (!_promoFontesPromise) {
             _promoFontesPromise = Promise.all([
                 document.fonts.load('800 34px "Playfair Display"'),
+                document.fonts.load('900 34px "Playfair Display"'),
                 document.fonts.load('700 20px "Playfair Display"'),
+                document.fonts.load('italic 400 16px "Playfair Display"'),
+                document.fonts.load('italic 600 20px "Playfair Display"'),
+                document.fonts.load('italic 700 20px "Playfair Display"'),
+                document.fonts.load('400 30px "Great Vibes"'),
                 document.fonts.load('400 12px "Poppins"'),
                 document.fonts.load('600 12px "Poppins"'),
-                document.fonts.load('700 12px "Poppins"')
+                document.fonts.load('700 12px "Poppins"'),
+                document.fonts.load('800 12px "Poppins"')
             ]).catch(() => {});
         }
         return _promoFontesPromise;
@@ -4895,32 +4901,69 @@ html += htmlPacotes;
     // ==================== FIM PACOTES PROMOCIONAIS ====================
 
     // ==================== MENU DO EVENTO (15x20cm) ====================
-    // Gerado automaticamente quando um orçamento é aceito (ver aceitarPacote),
+    // Gerado quando o usuário clica em "Menu" num orçamento aceito,
     // mostrando somente os drinks daquele orçamento — sem preços, sem dados de cliente.
+    function menuIngredientes(id, nome){
+        const fichas = ftLoad();
+        let ficha = fichas.find(f => f.id === id);
+        if (!ficha) ficha = fichas.find(f => f.nome.toLowerCase() === String(nome).toLowerCase());
+        if (!ficha) return [];
+        return ficha.ingredientes.map(i => i.nome).filter(n => n && n.toLowerCase() !== 'gelo');
+    }
+    function menuIconeDrink(nome){
+        const n = String(nome).toLowerCase();
+        if (n.includes('spritz') || n.includes('espumante') || n.includes('mimosa')) return '🥂';
+        if (n.includes('sour') || n.includes('negroni') || n.includes('alexander') || n.includes('martini')) return '🥃';
+        if (n.includes('colada') || n.includes('cream') || n.includes('leite')) return '🍨';
+        if (n.includes('tônica') || n.includes('tonica') || n.includes('mule') || n.includes('tropical') || n.includes('mojito')) return '🍹';
+        return '🍸';
+    }
     async function menuMontarPdfBlob(orcamento){
         await promoCarregarFontes();
         const ids = degDrinkIds(orcamento);
-        const nomes = ids.map(id => degNomeDrink(orcamento, id)).filter(Boolean);
-        if (!nomes.length) return null;
+        const itens = ids.map(id => {
+            const nome = degNomeDrink(orcamento, id);
+            return nome ? { nome, ingredientes: menuIngredientes(id, nome) } : null;
+        }).filter(Boolean);
+        if (!itens.length) return null;
 
-        const qtd = nomes.length;
-        const fontSize = qtd > 14 ? 13 : qtd > 10 ? 15 : qtd > 6 ? 17 : 20;
-        const gap = qtd > 14 ? 8 : qtd > 10 ? 11 : qtd > 6 ? 16 : 22;
-        const itensHtml = nomes.map(n =>
-            `<div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:${fontSize}px;color:#ffffff;letter-spacing:.3px;">${String(n).replace(/</g, '&lt;')}</div>`
-        ).join('');
+        const qtd = itens.length;
+        const nomeSize = qtd > 14 ? 15 : qtd > 10 ? 17 : qtd > 6 ? 20 : 24;
+        const ingSize = qtd > 14 ? 10 : qtd > 10 ? 11 : qtd > 6 ? 12.5 : 14;
+        const gapRow = qtd > 14 ? 16 : qtd > 10 ? 22 : qtd > 6 ? 32 : 46;
+        const gapCol = qtd > 10 ? 22 : 36;
+        const maxIng = qtd > 10 ? 3 : qtd > 6 ? 4 : 5;
+
+        const itensHtml = itens.map(it => {
+            const icone = menuIconeDrink(it.nome);
+            const ingredientesMostrar = it.ingredientes.slice(0, maxIng);
+            const ingHtml = ingredientesMostrar.map(i => `<div>${String(i).replace(/</g, '&lt;')}</div>`).join('');
+            return `
+                <div style="text-align:left;">
+                    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:600;font-size:${nomeSize}px;color:#1a1a1a;margin-bottom:9px;">${String(it.nome).replace(/</g, '&lt;')}</div>
+                    ${ingredientesMostrar.length ? `
+                    <div style="display:flex;align-items:flex-start;gap:11px;">
+                        <span style="font-size:${nomeSize + 6}px;line-height:1;flex-shrink:0;">${icone}</span>
+                        <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:${ingSize}px;color:#3f3f3f;line-height:1.5;">${ingHtml}</div>
+                    </div>` : ''}
+                </div>`;
+        }).join('');
 
         const htmlMenu = `
-            <div style="width:600px;height:800px;box-sizing:border-box;background:radial-gradient(circle at 50% 0%, #1a0505 0%, #000000 60%);color:#f5f5f5;font-family:'Poppins',Arial,sans-serif;padding:50px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;">
-                <div style="font-family:'Playfair Display',Georgia,serif;color:#ef4444;font-size:24px;font-weight:800;letter-spacing:1px;">DDrinks</div>
-                <div style="width:46px;height:2px;background:#ef4444;margin:14px 0 26px;"></div>
-                <div style="font-family:'Playfair Display',Georgia,serif;color:#ffffff;font-size:42px;font-weight:700;letter-spacing:7px;margin-bottom:6px;">MENU</div>
-                <div style="color:#9ca3af;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:34px;">Coquetelaria Autoral</div>
-                <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:${gap}px;width:100%;">
-                    ${itensHtml}
+            <div style="width:600px;height:800px;box-sizing:border-box;position:relative;background-color:#f7f3ec;background-image:repeating-linear-gradient(45deg, rgba(0,0,0,.02) 0, rgba(0,0,0,.02) 1px, transparent 1px, transparent 7px);font-family:'Poppins',Arial,sans-serif;">
+                <div style="position:absolute;top:26px;left:26px;right:26px;bottom:26px;border:1.5px solid #c9a24b;pointer-events:none;"></div>
+                <div style="position:relative;height:100%;box-sizing:border-box;padding:46px 42px;display:flex;flex-direction:column;">
+                    <div style="text-align:center;margin-bottom:${qtd <= 6 ? 36 : 24}px;">
+                        <div style="font-family:'Great Vibes',cursive;font-size:26px;color:#1a1a1a;margin-bottom:-8px;">Drinks</div>
+                        <div style="font-family:'Playfair Display',Georgia,serif;font-weight:900;font-size:54px;letter-spacing:2px;color:#1a1a1a;">MENU</div>
+                    </div>
+                    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;column-gap:${gapCol}px;row-gap:${gapRow}px;align-content:center;">
+                        ${itensHtml}
+                    </div>
+                    <div style="text-align:center;margin-top:${qtd <= 6 ? 28 : 16}px;">
+                        <div style="font-family:'Poppins',Arial,sans-serif;font-weight:800;font-size:25px;letter-spacing:1px;color:#1a1a1a;">DDrinks</div>
+                    </div>
                 </div>
-                <div style="width:46px;height:2px;background:#ef4444;margin:26px 0 14px;"></div>
-                <div style="color:#9ca3af;font-size:9.5px;letter-spacing:.1em;">Especialistas em Coquetelaria para Eventos</div>
             </div>`;
 
         const tempDiv = document.createElement('div');
@@ -4930,7 +4973,7 @@ html += htmlPacotes;
         tempDiv.innerHTML = htmlMenu;
         document.body.appendChild(tempDiv);
 
-        const canvas = await html2canvas(tempDiv.firstElementChild, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: '#000000' });
+        const canvas = await html2canvas(tempDiv.firstElementChild, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: '#f7f3ec' });
         document.body.removeChild(tempDiv);
 
         const { jsPDF } = window.jspdf;
