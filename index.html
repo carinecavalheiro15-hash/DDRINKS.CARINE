@@ -3692,11 +3692,6 @@ html += htmlPacotes;
                 localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
                 carregarAgenda();
                 showNotification(`Orçamento aceito com sucesso! Pacote: ${pacoteAceito.charAt(0).toUpperCase() + pacoteAceito.slice(1)}`, 'success');
-
-                // Gera automaticamente o Menu (15x20cm) somente com os drinks deste orçamento
-                if (typeof menuGerarEBaixar === 'function') {
-                    menuGerarEBaixar(orcamento).catch(() => {});
-                }
             }
         }
 
