@@ -1576,9 +1576,14 @@
         <!-- ===== PÁGINA DE ESTOQUE ===== -->
         <div id="estoque-page" class="page">
             <style>
-                .est-wrap { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+                .est-wrap { max-width: 1360px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
                 .est-top-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
-                .est-sc { background: white; border-radius: 14px; padding: 16px 12px; text-align: center; border: 1px solid var(--gray-200); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+                .est-sc { background: white; border-radius: 14px; padding: 16px 12px; text-align: center; border: 1px solid var(--gray-200); box-shadow: 0 2px 8px rgba(0,0,0,.05); cursor:pointer; transition: transform .15s, box-shadow .15s, border-color .15s; }
+                .est-sc:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.09); }
+                .est-sc.selected { border-width: 2px; }
+                .est-sc.ok.selected { border-color:#10b981; }
+                .est-sc.warn.selected { border-color:#f59e0b; }
+                .est-sc.danger.selected { border-color:#ef4444; }
                 .est-sc-icon { font-size: 1.6rem; display: block; margin-bottom: 6px; }
                 .est-sc-val { font-size: 1.5rem; font-weight: 700; }
                 .est-sc-lbl { font-size: 0.73rem; color: var(--gray-500); margin-top: 3px; }
@@ -1587,7 +1592,21 @@
                 .est-sc.danger .est-sc-val { color: #ef4444; }
                 .est-alert { display:none; background:#fff3cd; border:1px solid #f59e0b; border-left:5px solid #f59e0b; border-radius:10px; padding:11px 16px; margin-bottom:16px; color:#92400e; font-size:.85rem; font-weight:500; }
                 .est-alert.critico { background:#fee2e2; border-color:#ef4444; color:#7f1d1d; }
-                .est-card-item { background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--gray-200); box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+                .est-toolbar-itens { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:16px; }
+                .est-search-box { position:relative; flex:1 1 220px; min-width:200px; }
+                .est-search-box svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--gray-400); pointer-events:none; }
+                .est-search-box input { width:100%; padding:9px 12px 9px 34px; border:1.5px solid var(--gray-300); border-radius:8px; font-size:.85rem; min-height:38px; font-family:inherit; }
+                .est-search-box input:focus { outline:none; border-color:#ef4444; }
+                .est-filtros { display:flex; gap:6px; flex-wrap:wrap; }
+                .est-filtro-chip { padding:8px 14px; border-radius:20px; border:1.5px solid var(--gray-300); background:white; font-size:.78rem; font-weight:600; color:var(--gray-600); cursor:pointer; transition:all .15s; white-space:nowrap; min-height:38px; }
+                .est-filtro-chip:hover { border-color:var(--gray-400); }
+                .est-filtro-chip.active { background:var(--gray-900); border-color:var(--gray-900); color:white; }
+                .est-filtro-chip.active[data-f="critico"] { background:#ef4444; border-color:#ef4444; }
+                .est-filtro-chip.active[data-f="baixo"] { background:#f59e0b; border-color:#f59e0b; }
+                .est-filtro-chip.active[data-f="ok"] { background:#10b981; border-color:#10b981; }
+                .est-items-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:12px; align-items:start; }
+                .est-empty-msg { grid-column:1/-1; text-align:center; padding:48px 20px; color:var(--gray-400); font-size:.9rem; background:white; border-radius:14px; border:1px dashed var(--gray-300); }
+                .est-card-item { background: white; border-radius: 14px; padding: 16px; border: 1px solid var(--gray-200); box-shadow: 0 2px 6px rgba(0,0,0,.04); }
                 .est-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
                 .est-info { display: flex; align-items: center; gap: 10px; }
                 .est-emoji { font-size: 1.6rem; }
@@ -1646,6 +1665,9 @@
                 @media(max-width:600px) {
                     .est-top-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
                     .est-sc-val { font-size:1.2rem; }
+                    .est-items-grid { grid-template-columns:1fr; }
+                    .est-toolbar-itens { flex-direction:column; align-items:stretch; }
+                    .est-filtros { overflow-x:auto; padding-bottom:2px; }
                     .est-actions { flex-wrap:wrap; }
                 }
 
@@ -1748,10 +1770,20 @@
 
                 <!-- Painel: Itens -->
                 <div class="est-panel active" id="est-panel-itens">
-                    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                    <div class="est-toolbar-itens">
+                        <div class="est-search-box">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                            <input type="text" id="estBusca" placeholder="Buscar insumo..." oninput="estBuscar(this.value)"/>
+                        </div>
+                        <div class="est-filtros" id="estFiltros">
+                            <button class="est-filtro-chip active" data-f="todos" onclick="estSetFiltro('todos')">Todos</button>
+                            <button class="est-filtro-chip" data-f="critico" onclick="estSetFiltro('critico')">🚨 Crítico</button>
+                            <button class="est-filtro-chip" data-f="baixo" onclick="estSetFiltro('baixo')">⚠️ Baixo</button>
+                            <button class="est-filtro-chip" data-f="ok" onclick="estSetFiltro('ok')">✅ OK</button>
+                        </div>
                         <button onclick="estAbrirMin()" class="btn btn-secondary btn-sm">⚙ Configurar Mínimos</button>
                     </div>
-                    <div id="estItens"></div>
+                    <div id="estItens" class="est-items-grid"></div>
                 </div>
 
                 <!-- Painel: Baixa automática -->
@@ -3877,6 +3909,26 @@ html += htmlPacotes;
         if(item.quantidade<=item.minimo) return{cls:'est-badge-warn',prog:'est-prog-warn',txt:'⚠️ Baixo'};
         return{cls:'est-badge-ok',prog:'est-prog-ok',txt:'✅ OK'};
     }
+    function estCategoria(item){
+        if(item.quantidade===0) return 'critico';
+        if(item.quantidade<=item.minimo) return 'baixo';
+        return 'ok';
+    }
+    const _estPrioridade={critico:0,baixo:1,ok:2};
+
+    // --- Filtro e busca da lista de itens ---
+    let _estFiltroAtivo='todos';
+    let _estBuscaTxt='';
+    function estSetFiltro(f){
+        _estFiltroAtivo=f;
+        document.querySelectorAll('.est-filtro-chip').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
+        estRenderCards();
+        estRenderItens();
+    }
+    function estBuscar(v){
+        _estBuscaTxt=(v||'').toLowerCase().trim();
+        estRenderItens();
+    }
 
     // --- Render cards resumo ---
     function estRenderCards(){
@@ -3885,9 +3937,9 @@ html += htmlPacotes;
         const criticos=est.filter(i=>i.quantidade===0).length;
         const ok=est.length-baixos-criticos;
         document.getElementById('estCards').innerHTML=`
-            <div class="est-sc ok"><span class="est-sc-icon">✅</span><div class="est-sc-val">${ok}</div><div class="est-sc-lbl">OK</div></div>
-            <div class="est-sc warn"><span class="est-sc-icon">⚠️</span><div class="est-sc-val">${baixos}</div><div class="est-sc-lbl">Baixo</div></div>
-            <div class="est-sc danger"><span class="est-sc-icon">🚨</span><div class="est-sc-val">${criticos}</div><div class="est-sc-lbl">Crítico</div></div>`;
+            <div class="est-sc ok ${_estFiltroAtivo==='ok'?'selected':''}" onclick="estSetFiltro('ok')"><span class="est-sc-icon">✅</span><div class="est-sc-val">${ok}</div><div class="est-sc-lbl">OK</div></div>
+            <div class="est-sc warn ${_estFiltroAtivo==='baixo'?'selected':''}" onclick="estSetFiltro('baixo')"><span class="est-sc-icon">⚠️</span><div class="est-sc-val">${baixos}</div><div class="est-sc-lbl">Baixo</div></div>
+            <div class="est-sc danger ${_estFiltroAtivo==='critico'?'selected':''}" onclick="estSetFiltro('critico')"><span class="est-sc-icon">🚨</span><div class="est-sc-val">${criticos}</div><div class="est-sc-lbl">Crítico</div></div>`;
         const al=document.getElementById('estAlert');
         const prob=est.filter(i=>i.quantidade<=i.minimo);
         if(criticos>0){al.className='est-alert critico';al.style.display='block';al.innerHTML='🚨 <strong>Sem estoque:</strong> '+prob.map(i=>`${i.nome} (${estFmt(i.quantidade,i.unidade)})`).join(', ');}
@@ -3898,8 +3950,13 @@ html += htmlPacotes;
     // --- Render itens ---
     const _mfMode={};
     function estRenderItens(){
-        const est=estLoad();
-        document.getElementById('estItens').innerHTML=est.map(item=>{
+        let est=estLoad();
+        if(_estBuscaTxt) est=est.filter(i=>i.nome.toLowerCase().includes(_estBuscaTxt));
+        if(_estFiltroAtivo!=='todos') est=est.filter(i=>estCategoria(i)===_estFiltroAtivo);
+        est.sort((a,b)=>_estPrioridade[estCategoria(a)]-_estPrioridade[estCategoria(b)]||a.nome.localeCompare(b.nome,'pt-BR'));
+        const cont=document.getElementById('estItens');
+        if(!est.length){cont.innerHTML='<div class="est-empty-msg">🔍 Nenhum insumo encontrado com esse filtro.</div>';return;}
+        cont.innerHTML=est.map(item=>{
             const st=estStatus(item);
             const pct=item.minimo>0?Math.min(100,(item.quantidade/(item.minimo*3))*100):100;
             const qColor=item.quantidade===0?'#ef4444':item.quantidade<=item.minimo?'#f59e0b':'var(--gray-900)';
