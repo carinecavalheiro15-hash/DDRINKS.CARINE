@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1988,16 +1989,20 @@
                 .promo-wrap { max-width: 1360px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
                 .promo-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
                 .promo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
-                .promo-card { position:relative; background:#111111; border-radius:16px; overflow:hidden; border:1px solid #2b2b2b; box-shadow:0 6px 20px rgba(0,0,0,.15); display:flex; flex-direction:column; }
-                .promo-card-badge { position:absolute; top:14px; right:-32px; background:#d4170a; color:white; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:5px 38px; transform:rotate(40deg); box-shadow:0 2px 8px rgba(0,0,0,.3); }
-                .promo-card-head { padding:22px 22px 16px; text-align:center; border-bottom:1px solid #2b2b2b; }
-                .promo-card-nome { color:#ffffff; font-size:1.15rem; font-weight:800; margin:0 0 8px; }
-                .promo-card-valor { color:#ef4444; font-size:2rem; font-weight:800; line-height:1; }
-                .promo-card-valor small { color:#9ca3af; font-size:.7rem; font-weight:600; display:block; margin-top:4px; text-transform:uppercase; letter-spacing:.04em; }
-                .promo-card-regras { display:flex; flex-direction:column; gap:8px; padding:16px 22px; font-size:.8rem; color:#e5e7eb; border-bottom:1px solid #2b2b2b; }
+                .promo-card { position:relative; background:linear-gradient(155deg,#151515 0%,#0c0c0c 100%); border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.08); box-shadow:0 10px 28px rgba(0,0,0,.25); display:flex; flex-direction:column; font-family:'Poppins',Arial,sans-serif; }
+                .promo-card-badge { position:absolute; top:14px; right:-32px; background:linear-gradient(90deg,#dc2626,#ef4444); color:white; font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:5px 38px; transform:rotate(40deg); box-shadow:0 2px 10px rgba(0,0,0,.35); }
+                .promo-card-head { padding:26px 22px 20px; text-align:center; border-bottom:1px solid rgba(255,255,255,.08); }
+                .promo-card-nome { font-family:'Playfair Display',Georgia,serif; color:#ffffff; font-size:1.3rem; font-weight:700; margin:0 0 10px; letter-spacing:.2px; }
+                .promo-card-valor { color:#ef4444; font-size:2.1rem; font-weight:700; line-height:1; letter-spacing:-.5px; }
+                .promo-card-valor small { color:#9ca3af; font-size:.65rem; font-weight:500; display:block; margin-top:5px; text-transform:uppercase; letter-spacing:.06em; }
+                .promo-card-regras { display:flex; flex-direction:column; gap:9px; padding:16px 22px; font-size:.8rem; color:#e5e7eb; font-weight:300; border-bottom:1px solid rgba(255,255,255,.08); }
                 .promo-regra-item { display:flex; align-items:center; gap:8px; }
                 .promo-regra-item .ic { flex-shrink:0; }
-                .promo-card-desc { padding:16px 22px; font-size:.82rem; color:#d1d5db; line-height:1.7; flex:1; white-space:pre-line; }
+                .promo-regra-item strong { font-weight:600; }
+                .promo-card-desc { padding:18px 22px; font-size:.82rem; color:#d1d5db; font-weight:300; line-height:1.6; flex:1; }
+                .promo-item-linha { display:flex; align-items:flex-start; gap:9px; margin-bottom:9px; }
+                .promo-item-linha:last-child { margin-bottom:0; }
+                .promo-item-linha span { color:#ef4444; font-size:.7rem; flex-shrink:0; margin-top:3px; }
                 .promo-card-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#2b2b2b; }
                 .promo-card-actions button { background:#1a1a1a; color:#e5e7eb; border:none; padding:11px 4px; font-size:.72rem; font-weight:600; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:background .15s; }
                 .promo-card-actions button:hover { background:#242424; color:#fff; }
@@ -4671,7 +4676,7 @@ html += htmlPacotes;
                     <div class="promo-regra-item"><span class="ic">📅</span> Válido até <strong>${formatarData(p.validoAte)}</strong></div>
                     <div class="promo-regra-item"><span class="ic">👥</span> Até <strong>${p.maxConvidados}</strong> convidados</div>
                 </div>
-                <div class="promo-card-desc">${(p.descricao || '').replace(/</g, '&lt;')}</div>
+                <div class="promo-card-desc">${(p.descricao || '').split(/[\n,]/).map(l => l.trim()).filter(Boolean).map(l => `<div class="promo-item-linha"><span>◆</span>${l.replace(/</g, '&lt;')}</div>`).join('')}</div>
                 <div class="promo-card-actions">
                     <button onclick="promoGerarPDF(${p.id})">📄<span>PDF</span></button>
                     <button onclick="promoEnviar(${p.id})">📤<span>Enviar</span></button>
@@ -4738,41 +4743,75 @@ html += htmlPacotes;
     }
 
     // --- Gerar PDF do pacote ---
+    let _promoFontesPromise = null;
+    function promoCarregarFontes(){
+        // Playfair Display e Poppins já são carregadas globalmente via <link> no <head>
+        if (!_promoFontesPromise) {
+            _promoFontesPromise = Promise.all([
+                document.fonts.load('800 34px "Playfair Display"'),
+                document.fonts.load('700 20px "Playfair Display"'),
+                document.fonts.load('400 12px "Poppins"'),
+                document.fonts.load('600 12px "Poppins"'),
+                document.fonts.load('700 12px "Poppins"')
+            ]).catch(() => {});
+        }
+        return _promoFontesPromise;
+    }
+
     async function promoMontarPdfBlob(pacote){
+        await promoCarregarFontes();
         const { jsPDF } = window.jspdf;
-        const valorTxt = formatarValorBR(Number(pacote.valor || 0)) + (pacote.valorPorPessoa ? ' /pessoa' : '');
-        const itensHtml = (pacote.descricao || '').split('\n').filter(l => l.trim()).map(l =>
-            `<div style="display:flex;align-items:flex-start;margin-bottom:6px;"><span style="color:#d4170a;margin-right:8px;">•</span>${l.trim().replace(/</g, '&lt;')}</div>`
+        const valorNum = formatarValorBR(Number(pacote.valor || 0));
+        const itensLista = (pacote.descricao || '')
+            .split(/[\n,]/)
+            .map(l => l.trim())
+            .filter(Boolean);
+        const itensHtml = itensLista.map(l =>
+            `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+                <span style="color:#ef4444;font-size:15px;line-height:1.5;flex-shrink:0;">◆</span>
+                <span>${l.replace(/</g, '&lt;')}</span>
+            </div>`
         ).join('');
 
         const htmlPDF = `
-            <div style="font-family:'Arial',sans-serif;max-width:720px;margin:0 auto;background:#000000;padding:32px;color:white;min-height:900px;font-size:13px;line-height:1.5;">
-                <div style="text-align:center;margin-bottom:28px;border-bottom:2px solid #d4170a;padding-bottom:16px;">
-                    <h1 style="color:#d4170a;margin:0;font-size:30px;font-weight:bold;letter-spacing:.8px;">DDrinks</h1>
-                    <h2 style="color:#ffffff;margin:10px 0 0;font-size:15px;font-weight:500;">Pacote Promocional</h2>
+            <div style="font-family:'Poppins',Arial,sans-serif;max-width:720px;margin:0 auto;background:radial-gradient(circle at 50% 0%, #1a0505 0%, #000000 55%);padding:44px 40px;color:#f5f5f5;min-height:900px;font-size:13px;line-height:1.6;">
+                <div style="text-align:center;margin-bottom:36px;">
+                    <div style="font-family:'Playfair Display',Georgia,serif;color:#ef4444;font-size:38px;font-weight:800;letter-spacing:1px;">DDrinks</div>
+                    <div style="color:#9ca3af;font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;margin-top:6px;">Pacote Promocional</div>
+                    <div style="width:64px;height:3px;background:linear-gradient(90deg,transparent,#ef4444,transparent);margin:18px auto 0;border-radius:3px;"></div>
                 </div>
-                <div style="text-align:center;background:#1a1a1a;border:1px solid #2b2b2b;border-radius:16px;padding:26px;margin-bottom:24px;">
-                    ${pacote.destaque ? `<div style="display:inline-block;background:#d4170a;color:white;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:5px 14px;border-radius:999px;margin-bottom:14px;">${pacote.destaque}</div><br/>` : ''}
-                    <h3 style="color:#ffffff;font-size:22px;margin:0 0 12px;">${pacote.nome}</h3>
-                    <div style="color:#ef4444;font-size:34px;font-weight:800;">${valorTxt}</div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
-                    <div style="background:#1a1a1a;border:1px solid #2b2b2b;border-radius:12px;padding:16px;text-align:center;">
-                        <div style="color:#9ca3af;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Válido até</div>
-                        <div style="color:#ffffff;font-size:17px;font-weight:700;">${formatarData(pacote.validoAte)}</div>
-                    </div>
-                    <div style="background:#1a1a1a;border:1px solid #2b2b2b;border-radius:12px;padding:16px;text-align:center;">
-                        <div style="color:#9ca3af;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Até</div>
-                        <div style="color:#ffffff;font-size:17px;font-weight:700;">${pacote.maxConvidados} convidados</div>
+
+                <div style="text-align:center;background:linear-gradient(155deg,#181818 0%,#0f0f0f 100%);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:38px 30px;margin-bottom:22px;box-shadow:0 25px 50px rgba(0,0,0,.45);">
+                    ${pacote.destaque ? `<div style="display:inline-block;background:linear-gradient(90deg,#dc2626,#ef4444);color:white;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:7px 20px;border-radius:999px;margin-bottom:20px;box-shadow:0 6px 16px rgba(239,68,68,.35);">${pacote.destaque}</div><br/>` : ''}
+                    <div style="font-family:'Playfair Display',Georgia,serif;color:#ffffff;font-size:26px;font-weight:700;margin:0 0 16px;letter-spacing:.3px;">${pacote.nome}</div>
+                    <div style="color:#ef4444;font-size:40px;font-weight:700;letter-spacing:-.5px;">
+                        ${valorNum}${pacote.valorPorPessoa ? '<span style="color:#9ca3af;font-size:14px;font-weight:500;"> /pessoa</span>' : ''}
                     </div>
                 </div>
-                <div style="background:#1a1a1a;border:1px solid #2b2b2b;border-radius:14px;padding:20px;margin-bottom:24px;">
-                    <h3 style="color:#d4170a;margin:0 0 14px;font-size:15px;text-transform:uppercase;letter-spacing:.04em;">O que está incluso</h3>
-                    <div style="font-size:12.5px;color:#f3f4f6;">${itensHtml || '<i style="color:#9ca3af;">Sem itens detalhados</i>'}</div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;">
+                    <div style="background:#141414;border:1px solid rgba(255,255,255,.07);border-top:2px solid #ef4444;border-radius:14px;padding:18px 16px;text-align:center;">
+                        <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:8px;">Válido até</div>
+                        <div style="color:#ffffff;font-size:18px;font-weight:600;">${formatarData(pacote.validoAte)}</div>
+                    </div>
+                    <div style="background:#141414;border:1px solid rgba(255,255,255,.07);border-top:2px solid #ef4444;border-radius:14px;padding:18px 16px;text-align:center;">
+                        <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:8px;">Até</div>
+                        <div style="color:#ffffff;font-size:18px;font-weight:600;">${pacote.maxConvidados} convidados</div>
+                    </div>
                 </div>
-                <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:2px solid #d4170a;color:#cccccc;font-size:11px;">
-                    <p style="color:#ffffff;margin:0;"><strong>DDrinks - Especialistas em Coquetelaria para Eventos</strong></p>
-                    <p style="margin:6px 0 0;">Consulte disponibilidade de data antes de fechar. Condições sujeitas à confirmação.</p>
+
+                <div style="background:#141414;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:26px 28px;margin-bottom:26px;">
+                    <div style="color:#ffffff;font-size:13.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin:0 0 18px;display:flex;align-items:center;gap:10px;">
+                        <span style="width:4px;height:16px;background:#ef4444;border-radius:2px;display:inline-block;"></span>
+                        O que está incluso
+                    </div>
+                    <div style="font-size:13px;color:#e5e7eb;font-weight:300;">${itensHtml || '<i style="color:#9ca3af;">Sem itens detalhados</i>'}</div>
+                </div>
+
+                <div style="text-align:center;margin-top:34px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);color:#9ca3af;font-size:10.5px;">
+                    <p style="font-family:'Playfair Display',Georgia,serif;color:#ffffff;margin:0;font-size:14px;font-weight:700;">DDrinks</p>
+                    <p style="margin:5px 0 0;letter-spacing:.02em;">Especialistas em Coquetelaria para Eventos</p>
+                    <p style="margin:10px 0 0;">Consulte disponibilidade de data antes de fechar. Condições sujeitas à confirmação.</p>
                 </div>
             </div>`;
 
