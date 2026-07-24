@@ -2597,11 +2597,6 @@ html += htmlPacotes;
             // Mostra botão de PDF
             document.getElementById('btnPDF').style.display = 'inline-flex';
 
-            // Abre automaticamente a tela de degustação com os drinks deste orçamento
-            if (typeof degAbrirModal === 'function' && drinkIdsParaDegustacao.length > 0) {
-                degAbrirModal(orcamentoParaSalvar.id);
-            }
-
             limparCampos();
             
             // Atualiza calendário e agenda automaticamente
