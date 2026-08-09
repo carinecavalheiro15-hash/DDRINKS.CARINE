@@ -839,8 +839,8 @@
                     <!-- Formulário de Login -->
                     <form id="loginForm" onsubmit="fazerLogin(event)" class="form-active">
                         <div class="form-group" style="margin-bottom:0.75rem;">
-                            <label for="usuario" class="form-label" style="font-size:0.8rem;">Usuário ou Email *</label>
-                            <input type="text" id="usuario" class="form-input" placeholder="Usuário ou email" required style="padding:0.5rem 0.75rem; font-size:0.875rem;" />
+                            <label for="usuario" class="form-label" style="font-size:0.8rem;">Usuário *</label>
+                            <input type="text" id="usuario" class="form-input" placeholder="Usuário" required style="padding:0.5rem 0.75rem; font-size:0.875rem;" />
                         </div>
                         <div class="form-group" style="margin-bottom:0.75rem;">
                             <label for="senha" class="form-label" style="font-size:0.8rem;">Senha *</label>
@@ -852,38 +852,6 @@
                         </button>
                     </form>
 
-                    <!-- Formulário de Cadastro -->
-                    <form id="registerForm" onsubmit="fazerCadastro(event)" class="form-hidden">
-                        <div class="form-group" style="margin-bottom:0.6rem;">
-                            <label for="regNome" class="form-label" style="font-size:0.8rem;">Nome Completo *</label>
-                            <input type="text" id="regNome" class="form-input" placeholder="Nome completo" required style="padding:0.5rem 0.75rem; font-size:0.875rem;" />
-                        </div>
-                        <div class="form-group" style="margin-bottom:0.6rem;">
-                            <label for="regUsuario" class="form-label" style="font-size:0.8rem;">Usuário *</label>
-                            <input type="text" id="regUsuario" class="form-input" placeholder="Usuário" required style="padding:0.5rem 0.75rem; font-size:0.875rem;" />
-                        </div>
-                        <div class="form-group" style="margin-bottom:0.6rem;">
-                            <label for="regEmail" class="form-label" style="font-size:0.8rem;">Email *</label>
-                            <input type="email" id="regEmail" class="form-input" placeholder="Email" required style="padding:0.5rem 0.75rem; font-size:0.875rem;" />
-                        </div>
-                        <div class="form-group" style="margin-bottom:0.6rem;">
-                            <label for="regSenha" class="form-label" style="font-size:0.8rem;">Senha *</label>
-                            <input type="password" id="regSenha" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6" style="padding:0.5rem 0.75rem; font-size:0.875rem;" />
-                        </div>
-                        <div class="form-group" style="margin-bottom:0.6rem;">
-                            <label for="regConfirmarSenha" class="form-label" style="font-size:0.8rem;">Confirmar Senha *</label>
-                            <input type="password" id="regConfirmarSenha" class="form-input" placeholder="Confirme sua senha" required style="padding:0.5rem 0.75rem; font-size:0.875rem;" />
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.75rem; padding:0.6rem; font-size:0.875rem; gap:6px;">
-                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                            Cadastrar
-                        </button>
-                    </form>
-
-                    <div style="display:flex; justify-content:center; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
-                        <a href="#" id="toggleForm" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:0.4rem 0.75rem;">Não tem conta? Cadastre-se</a>
-                        <a href="#" id="toggleLogin" class="btn btn-secondary btn-sm hidden" style="font-size:0.75rem; padding:0.4rem 0.75rem;">Já tem conta? Faça login</a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -2385,56 +2353,30 @@
         }
 
         // Funções de autenticação
+        const CREDENCIAL_UNICA = { usuario: 'DDrinksJocemar', senha: '45892020' };
+
         async function fazerLogin(event) {
             event.preventDefault();
             const usuario = document.getElementById('usuario').value;
             const senha = document.getElementById('senha').value;
-            
+
             if (!usuario || !senha) {
                 showNotification('Preencha todos os campos!', 'warning');
                 return;
             }
-            
-            // Simulação de login
+
+            if (usuario !== CREDENCIAL_UNICA.usuario || senha !== CREDENCIAL_UNICA.senha) {
+                showNotification('Usuário ou senha incorretos!', 'error');
+                return;
+            }
+
             currentUser = {
                 id: 1,
                 username: usuario,
                 email: 'demo@ddrinks.com'
             };
-            
-            showNotification('Login realizado com sucesso!', 'success');
-            localStorage.setItem('usuario', JSON.stringify(currentUser));
-            updateNavigation();
-            showPage('home');
-        }
 
-        async function fazerCadastro(event) {
-            event.preventDefault();
-            const nome = document.getElementById('regNome').value.trim();
-            const usuario = document.getElementById('regUsuario').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const senha = document.getElementById('regSenha').value;
-            const confirmarSenha = document.getElementById('regConfirmarSenha').value;
-            
-            if (senha !== confirmarSenha) {
-                showNotification('As senhas não coincidem!', 'error');
-                return;
-            }
-            
-            if (senha.length < 6) {
-                showNotification('A senha deve ter pelo menos 6 caracteres!', 'error');
-                return;
-            }
-            
-            // Simulação de cadastro
-            currentUser = {
-                id: 1,
-                username: usuario,
-                email: email,
-                nome: nome
-            };
-            
-            showNotification('Cadastro realizado com sucesso!', 'success');
+            showNotification('Login realizado com sucesso!', 'success');
             localStorage.setItem('usuario', JSON.stringify(currentUser));
             updateNavigation();
             showPage('home');
@@ -3999,30 +3941,6 @@ html += htmlPacotes;
             return icons[type] || icons.info;
         }
 
-        // Toggle de formulários
-        function toggleForm() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const toggleFormLink = document.getElementById('toggleForm');
-            const toggleLoginLink = document.getElementById('toggleLogin');
-
-            if (loginForm.classList.contains('form-active')) {
-                loginForm.classList.remove('form-active');
-                loginForm.classList.add('form-hidden');
-                registerForm.classList.remove('form-hidden');
-                registerForm.classList.add('form-active');
-                toggleFormLink.classList.add('hidden');
-                toggleLoginLink.classList.remove('hidden');
-            } else {
-                registerForm.classList.remove('form-active');
-                registerForm.classList.add('form-hidden');
-                loginForm.classList.remove('form-hidden');
-                loginForm.classList.add('form-active');
-                toggleLoginLink.classList.add('hidden');
-                toggleFormLink.classList.remove('hidden');
-            }
-        }
-
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             // Verifica se há usuário logado
@@ -4034,31 +3952,6 @@ html += htmlPacotes;
             atualizarFotoLogin();
             carregarDrinksCustomizados();
             updateNavigation();
-            
-            // Event listeners
-            document.getElementById('toggleForm').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.getElementById('loginForm').classList.remove('form-active');
-                    document.getElementById('loginForm').classList.add('form-hidden');
-                    document.getElementById('registerForm').classList.remove('form-hidden');
-                    document.getElementById('registerForm').classList.add('form-active');
-                    document.getElementById('toggleForm').classList.add('hidden');
-                    document.getElementById('toggleLogin').classList.remove('hidden');
-                });
-                document.getElementById('toggleLogin').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.getElementById('registerForm').classList.remove('form-active');
-                    document.getElementById('registerForm').classList.add('form-hidden');
-                    document.getElementById('loginForm').classList.remove('form-hidden');
-                    document.getElementById('loginForm').classList.add('form-active');
-                    document.getElementById('toggleLogin').classList.add('hidden');
-                    document.getElementById('toggleForm').classList.remove('hidden');
-                });
-            
-            document.getElementById('toggleLogin').addEventListener('click', function(e) {
-                e.preventDefault();
-                toggleForm();
-            });
 
             // Inicializa preços
             atualizarPrecos();
