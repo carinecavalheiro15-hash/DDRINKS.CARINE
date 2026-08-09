@@ -920,6 +920,17 @@
                                 <label class="form-label">Nome do Drink *</label>
                                 <input type="text" id="cfg-drink-nome" class="form-input" placeholder="Ex: Espumante, Blue Lagoon..." required />
                             </div>
+                            <div class="form-group" style="grid-column: span 4;">
+                                <label class="form-label">Sabor *</label>
+                                <select id="cfg-drink-sabor" class="form-input" required>
+                                    <option value="" disabled selected>Selecione o sabor...</option>
+                                    <option value="citrico">🍋 Cítrico</option>
+                                    <option value="doce">🍬 Doce</option>
+                                    <option value="amargo">🍂 Amargo</option>
+                                    <option value="seco">🥃 Seco</option>
+                                    <option value="cremoso">🥥 Cremoso</option>
+                                </select>
+                            </div>
                             <div class="form-group">
                                 <label class="form-label">🥉 Bronze (R$) *</label>
                                 <input type="number" id="cfg-drink-bronze" class="form-input" min="0" step="0.01" placeholder="0.00" required />
@@ -1048,7 +1059,7 @@
                 </div>
                 
                 <div class="drink-flavor-heading citrico"><span class="flavor-icon">🍋</span> Cítricos</div>
-                <div class="grid grid-cols-4 gap-4">
+                <div id="grid-citrico" class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label for="mojito" class="form-label">Mojito</label>
                         <input type="number" id="mojito" class="form-input" min="0" value="0" placeholder="0">
@@ -1108,7 +1119,7 @@
                 </div>
 
                 <div class="drink-flavor-heading doce"><span class="flavor-icon">🍬</span> Doces</div>
-                <div class="grid grid-cols-4 gap-4">
+                <div id="grid-doce" class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label for="caipirinha" class="form-label">Caipirinha de Vinho</label>
                         <input type="number" id="caipirinha" class="form-input" min="0" value="0" placeholder="0">
@@ -1168,7 +1179,7 @@
                 </div>
 
                 <div class="drink-flavor-heading amargo"><span class="flavor-icon">🍂</span> Amargos</div>
-                <div class="grid grid-cols-4 gap-4">
+                <div id="grid-amargo" class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label for="negroni" class="form-label">Negroni</label>
                         <input type="number" id="negroni" class="form-input" min="0" value="0" placeholder="0">
@@ -1184,7 +1195,7 @@
                 </div>
 
                 <div class="drink-flavor-heading seco"><span class="flavor-icon">🥃</span> Secos</div>
-                <div class="grid grid-cols-4 gap-4">
+                <div id="grid-seco" class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label for="gin_tonica" class="form-label">Gin Tônica</label>
                         <input type="number" id="gin_tonica" class="form-input" min="0" value="0" placeholder="0">
@@ -1192,7 +1203,7 @@
                 </div>
 
                 <div class="drink-flavor-heading cremoso"><span class="flavor-icon">🥥</span> Cremosos</div>
-                <div class="grid grid-cols-4 gap-4">
+                <div id="grid-cremoso" class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label for="pina_colada" class="form-label">Piña Colada</label>
                         <input type="number" id="pina_colada" class="form-input" min="0" value="0" placeholder="0">
@@ -2244,20 +2255,30 @@
 
         // ===== GERENCIAMENTO DE DRINKS CUSTOMIZADOS =====
 
+        const SABOR_GRID_MAP = {
+            citrico: 'grid-citrico',
+            doce: 'grid-doce',
+            amargo: 'grid-amargo',
+            seco: 'grid-seco',
+            cremoso: 'grid-cremoso'
+        };
+
         function carregarDrinksCustomizados() {
             const drinks = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
-            const grid = document.getElementById('drinks-extras-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
+            // Remove itens injetados anteriormente em todas as grids (sabores + Outros)
+            document.querySelectorAll('.custom-drink-item').forEach(el => el.remove());
             drinks.forEach(drink => {
                 // Injeta no precosPacotes para que o cálculo funcione
                 ['bronze', 'prata', 'ouro'].forEach(p => {
                     if (!precosPacotes[p]) precosPacotes[p] = {};
                     precosPacotes[p][drink.id] = parseFloat(drink[p]) || 0;
                 });
-                // Adiciona input no grid
+                // Sem sabor definido (drinks cadastrados antes dessa opção existir) caem em "Outros"
+                const gridId = SABOR_GRID_MAP[drink.sabor] || 'drinks-extras-grid';
+                const grid = document.getElementById(gridId);
+                if (!grid) return;
                 const div = document.createElement('div');
-                div.className = 'form-group';
+                div.className = 'form-group custom-drink-item';
                 div.innerHTML = `
                     <label for="${drink.id}" class="form-label" style="color:var(--primary-light);">${drink.nome}</label>
                     <input type="number" id="${drink.id}" class="form-input" min="0" value="0" placeholder="0" />
@@ -2270,18 +2291,20 @@
         function adicionarDrinkCustomizado(event) {
             event.preventDefault();
             const nome = document.getElementById('cfg-drink-nome').value.trim();
+            const sabor = document.getElementById('cfg-drink-sabor').value;
             const bronze = parseFloat(document.getElementById('cfg-drink-bronze').value);
             const prata = parseFloat(document.getElementById('cfg-drink-prata').value);
             const ouro = parseFloat(document.getElementById('cfg-drink-ouro').value);
-            if (!nome || isNaN(bronze) || isNaN(prata) || isNaN(ouro)) {
+            if (!nome || !sabor || isNaN(bronze) || isNaN(prata) || isNaN(ouro)) {
                 showNotification('Preencha todos os campos do drink!', 'warning');
                 return;
             }
             const drinks = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
             const id = 'cdrink_' + Date.now();
-            drinks.push({ id, nome, bronze, prata, ouro });
+            drinks.push({ id, nome, sabor, bronze, prata, ouro });
             localStorage.setItem('drinksCustomizados', JSON.stringify(drinks));
             document.getElementById('cfg-drink-nome').value = '';
+            document.getElementById('cfg-drink-sabor').value = '';
             document.getElementById('cfg-drink-bronze').value = '';
             document.getElementById('cfg-drink-prata').value = '';
             document.getElementById('cfg-drink-ouro').value = '';
@@ -2310,11 +2333,13 @@
                 lista.innerHTML = `<p style="color:var(--gray-400);font-size:0.85rem;text-align:center;padding:1rem 0;">Nenhum drink cadastrado ainda.</p>`;
                 return;
             }
+            const SABOR_LABEL = { citrico: '🍋 Cítrico', doce: '🍬 Doce', amargo: '🍂 Amargo', seco: '🥃 Seco', cremoso: '🥥 Cremoso' };
             lista.innerHTML = `
                 <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
                     <thead>
                         <tr style="background:var(--gray-50);border-bottom:1px solid var(--gray-200);">
                             <th style="text-align:left;padding:0.5rem 0.75rem;">Drink</th>
+                            <th style="text-align:center;padding:0.5rem;">Sabor</th>
                             <th style="text-align:center;padding:0.5rem;">🥉 Bronze</th>
                             <th style="text-align:center;padding:0.5rem;">🥈 Prata</th>
                             <th style="text-align:center;padding:0.5rem;">🥇 Ouro</th>
@@ -2325,6 +2350,7 @@
                         ${drinks.map(d => `
                         <tr style="border-bottom:1px solid var(--gray-100);">
                             <td style="padding:0.5rem 0.75rem;font-weight:500;">${d.nome}</td>
+                            <td style="text-align:center;padding:0.5rem;">${SABOR_LABEL[d.sabor] || '—'}</td>
                             <td style="text-align:center;padding:0.5rem;">R$ ${parseFloat(d.bronze).toFixed(2)}</td>
                             <td style="text-align:center;padding:0.5rem;">R$ ${parseFloat(d.prata).toFixed(2)}</td>
                             <td style="text-align:center;padding:0.5rem;">R$ ${parseFloat(d.ouro).toFixed(2)}</td>
