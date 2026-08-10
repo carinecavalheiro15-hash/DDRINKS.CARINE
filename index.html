@@ -792,6 +792,10 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 12l-7.5 7.5a2 2 0 01-2.8 0L4 13.8a2 2 0 010-2.8L11.5 3.5H18a2 2 0 012 2v6.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><circle cx="15" cy="8" r="1.3" fill="currentColor"/></svg>
                     Pacotes Promocionais
                 </button>
+                <button class="sidebar-item" onclick="showPage('vouchers')" id="nav-vouchers" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4V8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M10 6v12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="2 2"/></svg>
+                    Vouchers
+                </button>
             </nav>
             <div class="sidebar-footer">
                 <div class="sidebar-user" id="sidebar-user" style="display:none;">
@@ -1018,6 +1022,14 @@
                                 <option value="Outros">Outros</option>
                             </select>
                             <input type="text" id="descricaoOutro" class="form-input" placeholder="Descreva (quando Outros)" style="margin-top:8px; display:none;" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label for="clienteVoucherCodigo" class="form-label">Código de Indicação (opcional)</label>
+                            <input type="text" id="clienteVoucherCodigo" class="form-input" placeholder="Ex: ANAEDU01" style="text-transform:uppercase;" />
+                            <small style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);">Se este cliente foi indicado por um casal com voucher, informe o código aqui. O desconto de 5% é aplicado ao aceitar o pacote.</small>
                         </div>
                     </div>
                 </form>
@@ -2018,6 +2030,92 @@
         </div>
         <!-- FIM PÁGINA PACOTES PROMOCIONAIS -->
 
+        <!-- Página de Vouchers de Indicação -->
+        <div id="vouchers-page" class="page">
+            <style>
+                .voucher-wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+                .voucher-toolbar { margin-bottom: 20px; }
+                .voucher-empty { text-align:center; padding:60px 20px; color:var(--gray-400); font-size:.9rem; background:white; border-radius:14px; border:1px dashed var(--gray-300); }
+                .voucher-casal-card { background:white; border-radius:16px; border:1px solid var(--gray-200); box-shadow:var(--shadow); margin-bottom:20px; overflow:hidden; }
+                .voucher-casal-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:16px 20px; background:var(--gray-50); border-bottom:1px solid var(--gray-200); }
+                .voucher-casal-nome { font-weight:700; font-size:1.05rem; color:var(--gray-900); }
+                .voucher-casal-sub { font-size:.8rem; color:var(--gray-600); margin-top:2px; }
+                .voucher-casal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; padding:18px 20px; }
+                .voucher-item { border:1px solid var(--gray-200); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; background:var(--gray-50); }
+                .voucher-item-codigo { font-weight:700; font-size:.95rem; color:var(--gray-900); letter-spacing:.03em; }
+                .voucher-item-status { font-size:.72rem; font-weight:600; display:inline-block; }
+                .voucher-item-status.usado { color:var(--success-color); }
+                .voucher-item-status.disponivel { color:#16a34a; }
+                .voucher-item-info { font-size:.72rem; color:var(--gray-500); line-height:1.4; }
+                .voucher-item-credito { font-size:.78rem; color:var(--gray-800); }
+                .voucher-item-pago { font-size:.7rem; font-weight:600; }
+                .voucher-item-pago.pago { color:var(--success-color); }
+                .voucher-item-pago.pendente { color:var(--warning-color); }
+                .voucher-item-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; }
+                @media(max-width:600px) { .voucher-casal-grid { grid-template-columns:1fr 1fr; } }
+            </style>
+            <div class="voucher-wrap">
+                <div class="voucher-toolbar">
+                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.6rem;">🎟️</span> Vouchers de Indicação
+                    </h2>
+                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cada casal com pacote aceito recebe 5 vouchers para indicar amigos. Quem for indicado e fechar contrato ganha 5% de desconto na hora. Já o casal indicador recebe um crédito por indicação fechada, conforme o porte do evento indicado: até 60 convidados = R$250 · 61 a 120 = R$300 · acima de 120 = R$500. O crédito só é repassado ao casal após a realização do casamento do indicado.</p>
+                </div>
+                <div id="voucherGrid"></div>
+            </div>
+        </div>
+
+        <!-- Modal: Visualizar/Baixar Voucher -->
+        <div id="voucherCardModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5000;align-items:center;justify-content:center;padding:1rem;overflow:auto;" onclick="if(event.target===this) voucherFecharCardModal()">
+            <div style="background:#0a0a0a;border-radius:20px;max-width:620px;width:100%;padding:1.25rem;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+                <input type="hidden" id="voucherCardModalId">
+                <div id="voucherCardPreview" style="display:flex;justify-content:center;"></div>
+                <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+                    <button class="btn btn-primary" style="flex:1;" onclick="voucherBaixarImagem(Number(document.getElementById('voucherCardModalId').value))">
+                        📥 Baixar Imagem
+                    </button>
+                    <button class="btn btn-secondary" style="flex:1;" onclick="voucherCompartilhar(Number(document.getElementById('voucherCardModalId').value))">
+                        📤 Compartilhar
+                    </button>
+                    <button class="btn btn-secondary" style="flex:1;" onclick="voucherFecharCardModal()">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Dar Baixa Manual em Voucher -->
+        <div id="voucherBaixaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5000;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this) voucherFecharBaixaModal()">
+            <div style="background:white;border-radius:16px;max-width:420px;width:100%;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+                <div style="font-weight:700;font-size:1.05rem;color:#0f172a;margin-bottom:0.25rem;">Dar Baixa em Voucher</div>
+                <div style="font-size:.85rem;color:var(--gray-500);margin-bottom:1rem;">Código: <strong id="voucherBaixaCodigo"></strong></div>
+                <input type="hidden" id="voucherBaixaId">
+                <div class="form-group">
+                    <label class="form-label">Nome do cliente indicado *</label>
+                    <input type="text" id="voucherBaixaNomeIndicado" class="form-input" placeholder="Quem usou este voucher" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefone (opcional)</label>
+                    <input type="tel" id="voucherBaixaTelefone" class="form-input" placeholder="(11) 99999-9999" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nº de convidados do evento indicado *</label>
+                    <input type="number" id="voucherBaixaConvidados" class="form-input" min="1" placeholder="Ex: 150" />
+                    <small style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);">Define o crédito do casal indicador: até 60 conv. = R$250 · 61 a 120 = R$300 · acima de 120 = R$500.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data do casamento do indicado (opcional)</label>
+                    <input type="date" id="voucherBaixaDataEvento" class="form-input" />
+                </div>
+                <p style="font-size:.75rem;color:var(--gray-500);margin-bottom:1rem;">Use isso apenas quando o desconto foi concedido fora do fluxo normal de orçamento (ex: informado manualmente). Se o cliente indicado já preencheu o código no orçamento e teve o pacote aceito, a baixa já foi feita automaticamente. O crédito só deve ser repassado ao casal indicador após a realização do casamento do indicado.</p>
+                <div style="display:flex;gap:0.75rem;">
+                    <button class="btn btn-primary" style="flex:1;" onclick="voucherConfirmarBaixaManual()">Confirmar Baixa</button>
+                    <button class="btn btn-secondary" style="flex:1;" onclick="voucherFecharBaixaModal()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        <!-- FIM PÁGINA VOUCHERS -->
+
         <!-- Página de Financeiro -->
         <div id="financeiro-page" class="page">
             <div class="card">
@@ -2163,6 +2261,8 @@
                 degRenderLista();
             } else if (pageId === 'promocoes') {
                 promoRender();
+            } else if (pageId === 'vouchers') {
+                voucherRender();
             }
         }
 
@@ -2183,6 +2283,7 @@
                 document.getElementById('nav-estoque').style.display = 'flex';
                 document.getElementById('nav-degustacao').style.display = 'flex';
                 document.getElementById('nav-promocoes').style.display = 'flex';
+                document.getElementById('nav-vouchers').style.display = 'flex';
                 document.getElementById('nav-logout').style.display = 'flex';
             } else {
                 wrapper.classList.add('logged-out');
@@ -2195,6 +2296,7 @@
                 document.getElementById('nav-estoque').style.display = 'none';
                 document.getElementById('nav-degustacao').style.display = 'none';
                 document.getElementById('nav-promocoes').style.display = 'none';
+                document.getElementById('nav-vouchers').style.display = 'none';
                 document.getElementById('nav-logout').style.display = 'none';
                 atualizarFotoLogin();
                 showPage('login');
@@ -2444,6 +2546,7 @@
             let descricaoEvento = document.getElementById('descricaoEvento').value || '';
             descricaoEvento = descricaoEvento === 'Outros' ? (document.getElementById('descricaoOutro').value || '').trim() : descricaoEvento.trim();
             const pacote = document.getElementById('pacoteSelecionado').value;
+            const voucherCodigoIndicacao = (document.getElementById('clienteVoucherCodigo')?.value || '').trim().toUpperCase();
 
             if (!clienteNome || !clienteTelefone || !clienteCidade || !dataEvento || !quantidadeConvidados || !descricaoEvento) {
                 showNotification("Por favor, preencha todas as informações do cliente!", "warning");
@@ -2606,6 +2709,9 @@
             orcamentoParaSalvar.taxaServico = taxaServicoPacote;
             orcamentoParaSalvar.incluirTaxaServico = incluirTaxaServico;
             orcamentoParaSalvar.pacote = pacote;
+            if (!orcamentoParaSalvar.descontoIndicacaoAplicado) {
+                orcamentoParaSalvar.voucherCodigoIndicacao = voucherCodigoIndicacao || null;
+            }
             orcamentoParaSalvar.drinks = dados;
             orcamentoParaSalvar.dataFormatada = formatarData(dataEvento);
             orcamentoParaSalvar.valorFormatado = formatarValorBR(valorFinal);
@@ -2705,7 +2811,9 @@ html += htmlPacotes;
             document.getElementById('descricaoOutro').value = '';
             document.getElementById('descricaoOutro').style.display = 'none';
             document.getElementById('descricaoOutro').required = false;
-            
+            const campoVoucherCodigoLimpar = document.getElementById('clienteVoucherCodigo');
+            if (campoVoucherCodigoLimpar) campoVoucherCodigoLimpar.value = '';
+
             document.querySelectorAll('input[type="number"]').forEach(input => {
                 input.value = '0';
             });
@@ -3664,14 +3772,26 @@ html += htmlPacotes;
                     valorFinal = valorBase + taxaServico;
                 }
 
+                // Aplica desconto de indicação (5%), se este cliente foi indicado por um voucher válido
+                const voucherUsado = voucherAplicarIndicacaoNoAceite(orcamento);
+                if (voucherUsado) {
+                    valorFinal = valorFinal * (1 - DESCONTO_INDICADO_PERCENT / 100);
+                }
+
                 orcamento.valor = valorFinal;
                 orcamento.valorFormatado = formatarValorBR(valorFinal);
                 orcamento.valorBase = valorBase;
                 orcamento.taxaServico = taxaServico;
-                
+
+                // Gera os vouchers de indicação deste casal (não duplica se já existirem)
+                voucherGerarParaOrcamento(orcamento.id, orcamento.cliente);
+
                 localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
                 carregarAgenda();
                 showNotification(`Orçamento aceito com sucesso! Pacote: ${pacoteAceito.charAt(0).toUpperCase() + pacoteAceito.slice(1)}`, 'success');
+                if (voucherUsado) {
+                    showNotification(`🎟️ Cupom de indicação ${voucherUsado.codigo} aplicado! 5% de desconto concedido.`, 'success');
+                }
             }
         }
 
@@ -3748,6 +3868,8 @@ html += htmlPacotes;
             document.getElementById('dataEventoPreview').textContent = orcamento.data ? ('📅 ' + formatarData(orcamento.data)) : '';
             document.getElementById('quantidadeConvidados').value = orcamento.quantidadeConvidados || '';
             document.getElementById('pacoteSelecionado').value = orcamento.pacote || 'bronze';
+            const campoVoucherCodigo = document.getElementById('clienteVoucherCodigo');
+            if (campoVoucherCodigo) campoVoucherCodigo.value = orcamento.voucherCodigoIndicacao || '';
 
             const descricaoSelecao = document.getElementById('descricaoEvento');
             const descricaoOutro = document.getElementById('descricaoOutro');
@@ -4824,6 +4946,445 @@ html += htmlPacotes;
         }
     }
     // ==================== FIM PACOTES PROMOCIONAIS ====================
+
+    // ==================== VOUCHERS DE INDICAÇÃO ====================
+    const DDRINKS_WHATSAPP_NUMERO = '5547999712872';
+    const VOUCHERS_POR_CASAL = 5;
+    const DESCONTO_INDICADO_PERCENT = 5;
+
+    // Crédito que o casal indicador recebe por voucher de indicação fechado, conforme o
+    // porte (nº de convidados) do evento do cliente indicado.
+    function voucherCalcularCredito(convidados) {
+        const qtd = Number(convidados) || 0;
+        if (qtd <= 60) return 250;
+        if (qtd <= 120) return 300;
+        return 500;
+    }
+
+    function voucherLoad() {
+        return JSON.parse(localStorage.getItem('ddrinks_vouchers') || '[]');
+    }
+    function voucherSave(lista) {
+        localStorage.setItem('ddrinks_vouchers', JSON.stringify(lista));
+    }
+
+    function voucherNomeParaCodigo(nomeCompleto) {
+        const stopwords = new Set(['e', 'de', 'da', 'do', 'dos', 'das', 'and']);
+        const palavras = (nomeCompleto || '')
+            .normalize('NFD').replace(/[̀-ͯ]/g, '')
+            .toUpperCase()
+            .split(/[^A-Z]+/)
+            .filter(w => w.length >= 2 && !stopwords.has(w.toLowerCase()));
+        if (palavras.length >= 2) return palavras[0].slice(0, 3) + palavras[1].slice(0, 3);
+        if (palavras.length === 1) return palavras[0].slice(0, 6);
+        return 'CLIENTE';
+    }
+    function voucherGerarCodigo(nomeCompleto, numero) {
+        return voucherNomeParaCodigo(nomeCompleto) + String(numero).padStart(2, '0');
+    }
+
+    // Gera os 5 vouchers de um casal quando o pacote dele é aceito (não duplica se já existirem)
+    function voucherGerarParaOrcamento(orcamentoId, nomeCliente) {
+        const vouchers = voucherLoad();
+        if (vouchers.some(v => v.orcamentoId === orcamentoId)) return;
+        for (let n = 1; n <= VOUCHERS_POR_CASAL; n++) {
+            vouchers.push({
+                id: Date.now() + n,
+                orcamentoId,
+                clienteNome: nomeCliente,
+                codigo: voucherGerarCodigo(nomeCliente, n),
+                numero: n,
+                status: 'disponivel',
+                criadoEm: new Date().toISOString(),
+                usadoPor: null
+            });
+        }
+        voucherSave(vouchers);
+    }
+
+    // Aplica o desconto de 5% ao orçamento do cliente INDICADO, ao aceitar o pacote dele,
+    // e dá baixa automática no voucher do casal que o indicou.
+    function voucherAplicarIndicacaoNoAceite(orcamento) {
+        const codigo = (orcamento.voucherCodigoIndicacao || '').trim().toUpperCase();
+        if (!codigo || orcamento.descontoIndicacaoAplicado) return null;
+        const vouchers = voucherLoad();
+        const voucher = vouchers.find(v => v.codigo === codigo && v.status === 'disponivel');
+        if (!voucher) {
+            showNotification(`Código de indicação "${codigo}" inválido ou já utilizado — desconto não aplicado.`, 'warning');
+            return null;
+        }
+        voucher.status = 'usado';
+        voucher.usadoPor = {
+            nome: orcamento.cliente,
+            orcamentoId: orcamento.id,
+            data: new Date().toISOString(),
+            convidados: orcamento.quantidadeConvidados || 0,
+            dataEvento: orcamento.data || null,
+            credito: voucherCalcularCredito(orcamento.quantidadeConvidados),
+            pago: false,
+            dataPagamento: null
+        };
+        voucherSave(vouchers);
+        orcamento.descontoIndicacaoAplicado = DESCONTO_INDICADO_PERCENT;
+        orcamento.voucherUtilizadoId = voucher.id;
+        return voucher;
+    }
+
+    // Totais de crédito (gerado/pago/pendente) de um casal indicador
+    function voucherTotaisIndicador(orcamentoId) {
+        const usados = voucherLoad().filter(v => v.orcamentoId === orcamentoId && v.status === 'usado');
+        const gerado = usados.reduce((soma, v) => soma + (v.usadoPor?.credito || 0), 0);
+        const pago = usados.filter(v => v.usadoPor?.pago).reduce((soma, v) => soma + (v.usadoPor.credito || 0), 0);
+        return { fechados: usados.length, gerado, pago, pendente: gerado - pago };
+    }
+
+    // --- Baixa manual (fora do fluxo automático de orçamento) ---
+    function voucherAbrirBaixaManual(voucherId) {
+        const voucher = voucherLoad().find(v => v.id === voucherId);
+        if (!voucher || voucher.status !== 'disponivel') return;
+        document.getElementById('voucherBaixaId').value = voucherId;
+        document.getElementById('voucherBaixaCodigo').textContent = voucher.codigo;
+        document.getElementById('voucherBaixaNomeIndicado').value = '';
+        document.getElementById('voucherBaixaTelefone').value = '';
+        document.getElementById('voucherBaixaConvidados').value = '';
+        document.getElementById('voucherBaixaDataEvento').value = '';
+        document.getElementById('voucherBaixaModal').style.display = 'flex';
+    }
+    function voucherFecharBaixaModal() {
+        document.getElementById('voucherBaixaModal').style.display = 'none';
+    }
+    function voucherConfirmarBaixaManual() {
+        const voucherId = Number(document.getElementById('voucherBaixaId').value);
+        const nomeIndicado = document.getElementById('voucherBaixaNomeIndicado').value.trim();
+        const telefoneIndicado = document.getElementById('voucherBaixaTelefone').value.trim();
+        const convidados = parseInt(document.getElementById('voucherBaixaConvidados').value, 10);
+        const dataEvento = document.getElementById('voucherBaixaDataEvento').value || null;
+        if (!nomeIndicado) {
+            showNotification('Informe o nome do cliente indicado!', 'warning');
+            return;
+        }
+        if (!convidados || convidados <= 0) {
+            showNotification('Informe o número de convidados do evento indicado!', 'warning');
+            return;
+        }
+        const vouchers = voucherLoad();
+        const voucher = vouchers.find(v => v.id === voucherId);
+        if (!voucher || voucher.status !== 'disponivel') {
+            showNotification('Voucher não encontrado ou já utilizado.', 'error');
+            return;
+        }
+        voucher.status = 'usado';
+        voucher.usadoPor = {
+            nome: nomeIndicado,
+            telefone: telefoneIndicado,
+            orcamentoId: null,
+            data: new Date().toISOString(),
+            convidados,
+            dataEvento,
+            credito: voucherCalcularCredito(convidados),
+            pago: false,
+            dataPagamento: null
+        };
+        voucherSave(vouchers);
+        showNotification(`Baixa registrada! ${voucher.codigo} marcado como usado por ${nomeIndicado}. Crédito devido: ${formatarValorBR(voucher.usadoPor.credito)}.`, 'success');
+        voucherFecharBaixaModal();
+        voucherRender();
+    }
+
+    // Marca o crédito de um voucher já usado como efetivamente pago ao casal indicador
+    function voucherMarcarComoPago(voucherId) {
+        const vouchers = voucherLoad();
+        const voucher = vouchers.find(v => v.id === voucherId);
+        if (!voucher || voucher.status !== 'usado' || !voucher.usadoPor || voucher.usadoPor.pago) return;
+        if (!confirm(`Confirma que o crédito de ${formatarValorBR(voucher.usadoPor.credito)} do voucher ${voucher.codigo} já foi repassado ao casal indicador?`)) return;
+        voucher.usadoPor.pago = true;
+        voucher.usadoPor.dataPagamento = new Date().toISOString();
+        voucherSave(vouchers);
+        showNotification(`Pagamento de ${formatarValorBR(voucher.usadoPor.credito)} confirmado para ${voucher.clienteNome}.`, 'success');
+        voucherRender();
+    }
+
+    // Exclui um voucher específico do cliente
+    function voucherExcluir(voucherId) {
+        const vouchers = voucherLoad();
+        const voucher = vouchers.find(v => v.id === voucherId);
+        if (!voucher) return;
+        const aviso = voucher.status === 'usado' && voucher.usadoPor && !voucher.usadoPor.pago
+            ? `Excluir o voucher ${voucher.codigo}? Ele já foi usado e tem um crédito de ${formatarValorBR(voucher.usadoPor.credito)} pendente de pagamento — excluir apaga esse registro também. Essa ação não pode ser desfeita.`
+            : `Excluir o voucher ${voucher.codigo}? Essa ação não pode ser desfeita.`;
+        if (!confirm(aviso)) return;
+        voucherSave(vouchers.filter(v => v.id !== voucherId));
+        showNotification(`Voucher ${voucher.codigo} excluído.`, 'warning');
+        voucherRender();
+    }
+
+    // --- Renderização da tela de Vouchers ---
+    function voucherRender() {
+        const vouchers = voucherLoad();
+        const cont = document.getElementById('voucherGrid');
+        if (!cont) return;
+        if (!vouchers.length) {
+            cont.innerHTML = '<div class="voucher-empty">🎟️ Nenhum voucher gerado ainda. Vouchers são criados automaticamente quando um casal tem o pacote aceito.</div>';
+            return;
+        }
+        const porCasal = {};
+        vouchers.forEach(v => {
+            if (!porCasal[v.orcamentoId]) porCasal[v.orcamentoId] = { nome: v.clienteNome, items: [] };
+            porCasal[v.orcamentoId].items.push(v);
+        });
+        cont.innerHTML = Object.entries(porCasal).map(([orcId, grupo]) => {
+            const orcamentoIdNum = Number(orcId);
+            const totais = voucherTotaisIndicador(orcamentoIdNum);
+            const itemsHtml = grupo.items.sort((a, b) => a.numero - b.numero).map(v => {
+                const up = v.usadoPor;
+                let infoUsoHtml = '';
+                if (v.status === 'usado' && up) {
+                    const dataUsoTxt = up.data ? new Date(up.data).toLocaleDateString('pt-BR') : '';
+                    const dataEventoTxt = up.dataEvento ? formatarData(up.dataEvento) : null;
+                    infoUsoHtml = `
+                        <div class="voucher-item-info">Por: ${up.nome || '—'} (${up.convidados || 0} conv.)<br>Fechado em ${dataUsoTxt}</div>
+                        <div class="voucher-item-credito">💰 Crédito: <strong>${formatarValorBR(up.credito || 0)}</strong></div>
+                        <div class="voucher-item-pago ${up.pago ? 'pago' : 'pendente'}">
+                            ${up.pago
+                                ? `✅ Pago em ${up.dataPagamento ? new Date(up.dataPagamento).toLocaleDateString('pt-BR') : ''}`
+                                : `⏳ Pendente${dataEventoTxt ? ` — repassar após o casamento em ${dataEventoTxt}` : ' — repassar após o casamento do indicado'}`}
+                        </div>
+                    `;
+                }
+                return `
+                <div class="voucher-item">
+                    <div class="voucher-item-codigo">${v.codigo}</div>
+                    <div class="voucher-item-status ${v.status}">${v.status === 'usado' ? '✅ Usado' : '🟢 Disponível'}</div>
+                    ${infoUsoHtml}
+                    <div class="voucher-item-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="voucherAbrirCard(${v.id})">🎫 Ver</button>
+                        ${v.status === 'disponivel' ? `<button class="btn btn-sm btn-success" onclick="voucherAbrirBaixaManual(${v.id})">✔️ Dar Baixa</button>` : ''}
+                        ${v.status === 'usado' && up && !up.pago ? `<button class="btn btn-sm btn-primary" onclick="voucherMarcarComoPago(${v.id})">💸 Marcar como Pago</button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="voucherExcluir(${v.id})">🗑️ Excluir</button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+            return `
+                <div class="voucher-casal-card">
+                    <div class="voucher-casal-header">
+                        <div>
+                            <div class="voucher-casal-nome">💑 ${grupo.nome}</div>
+                            <div class="voucher-casal-sub">${totais.fechados}/${VOUCHERS_POR_CASAL} indicações fechadas • Crédito gerado: <strong>${formatarValorBR(totais.gerado)}</strong> • Pago: <strong>${formatarValorBR(totais.pago)}</strong> • Pendente: <strong>${formatarValorBR(totais.pendente)}</strong></div>
+                        </div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button class="btn btn-sm btn-primary" style="background:var(--error-color);color:#fff;" onclick="voucherExplicarEEnviar(${orcamentoIdNum})">💬 Explicar + Enviar Vouchers</button>
+                        </div>
+                    </div>
+                    <div class="voucher-casal-grid">${itemsHtml}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // --- Arte do voucher (preview + imagem para baixar/compartilhar) ---
+    function voucherMontarCardHtml(voucher) {
+        const mensagem = `Olá! Recebi o voucher ${voucher.codigo} de indicação da D'Drinks e quero saber mais.`;
+        const linkWhats = `https://wa.me/${DDRINKS_WHATSAPP_NUMERO}?text=${encodeURIComponent(mensagem)}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkWhats)}`;
+        return `
+            <div style="font-family:'Poppins',Arial,sans-serif;width:560px;background:radial-gradient(circle at 50% 0%, #4a0a0a 0%, #000000 65%);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:32px 34px;color:#fff;box-sizing:border-box;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+                    <div>
+                        <div style="font-size:9.5px;letter-spacing:.16em;color:#9ca3af;text-transform:uppercase;font-weight:600;">Voucher Nº</div>
+                        <div style="background:#0f0f0f;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 14px;font-weight:700;font-size:14px;letter-spacing:.05em;margin-top:6px;display:inline-block;">${voucher.codigo}</div>
+                    </div>
+                    <div style="font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:13px;color:#ffffff;">D<span style="color:#ef4444;">'</span>DRINKS</div>
+                </div>
+
+                <div style="text-align:center;margin-bottom:18px;">
+                    <div style="font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:38px;letter-spacing:.02em;color:#f59e0b;">VOUCHER</div>
+                    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;color:#ef4444;font-size:16px;letter-spacing:.05em;margin-top:-4px;">EXCLUSIVO</div>
+                </div>
+
+                <div style="text-align:center;color:#e5e7eb;font-size:12px;margin-bottom:18px;line-height:1.6;">
+                    VOCÊ RECEBEU UMA<br/>
+                    <span style="color:#ef4444;font-weight:700;">INDICAÇÃO ESPECIAL</span><br/>
+                    <span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-style:italic;color:#fff;">de ${(voucher.clienteNome || '').replace(/</g, '&lt;')}!</span>
+                </div>
+
+                <div style="border:1px solid #ef4444;border-radius:14px;padding:16px 18px;text-align:center;background:rgba(0,0,0,.35);margin-bottom:20px;">
+                    <div style="color:#ef4444;font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Benefício para você</div>
+                    <div style="font-weight:800;font-size:24px;color:#fff;">${DESCONTO_INDICADO_PERCENT}% DE DESCONTO</div>
+                    <div style="color:#9ca3af;font-size:10.5px;margin-top:8px;">Utilize na contratação do Bar D'DRINKS e/ou em um de nossos serviços<br/><i>(Barmans / Garçons / Copeiros / Maître)</i></div>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px;">
+                    <img src="${qrUrl}" width="110" height="110" style="border-radius:10px;background:#fff;padding:5px;flex-shrink:0;" crossorigin="anonymous" />
+                    <div style="font-size:10px;color:#9ca3af;max-width:200px;">
+                        <div style="font-weight:700;color:#fff;margin-bottom:4px;">Escaneie o QR Code</div>
+                        ou apresente este voucher no momento do contato com a D'Drinks pelo WhatsApp.
+                    </div>
+                </div>
+
+                <div style="text-align:center;font-size:9.5px;color:#facc15;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Indique • Contrate • Ganhe</div>
+                <div style="text-align:center;font-size:8.5px;color:#6b7280;margin-top:8px;line-height:1.5;">
+                    Voucher válido apenas para novos contratos e por 12 meses após o evento realizado.<br/>
+                    Consulte todas as condições do programa.
+                </div>
+            </div>
+        `;
+    }
+
+    function voucherAbrirCard(voucherId) {
+        const voucher = voucherLoad().find(v => v.id === voucherId);
+        if (!voucher) { showNotification('Voucher não encontrado', 'error'); return; }
+        document.getElementById('voucherCardPreview').innerHTML = voucherMontarCardHtml(voucher);
+        document.getElementById('voucherCardModalId').value = voucher.id;
+        document.getElementById('voucherCardModal').style.display = 'flex';
+    }
+    function voucherFecharCardModal() {
+        document.getElementById('voucherCardModal').style.display = 'none';
+    }
+
+    async function voucherEsperarImagens(container) {
+        const imgs = Array.from(container.querySelectorAll('img'));
+        await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; })));
+    }
+
+    async function voucherMontarCanvas(voucher) {
+        await promoCarregarFontes();
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.left = '-9999px';
+        tempDiv.style.top = '0';
+        tempDiv.innerHTML = voucherMontarCardHtml(voucher);
+        document.body.appendChild(tempDiv);
+        await voucherEsperarImagens(tempDiv);
+        const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#000000' });
+        document.body.removeChild(tempDiv);
+        return canvas;
+    }
+
+    async function voucherBaixarImagem(voucherId) {
+        const voucher = voucherLoad().find(v => v.id === voucherId);
+        if (!voucher) { showNotification('Voucher não encontrado', 'error'); return; }
+        try {
+            const canvas = await voucherMontarCanvas(voucher);
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voucher_${voucher.codigo}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            showNotification('✅ Voucher baixado!', 'success');
+        } catch (e) {
+            showNotification('Erro ao gerar voucher: ' + e.message, 'error');
+        }
+    }
+
+    async function voucherCompartilhar(voucherId) {
+        const voucher = voucherLoad().find(v => v.id === voucherId);
+        if (!voucher) { showNotification('Voucher não encontrado', 'error'); return; }
+        try {
+            const canvas = await voucherMontarCanvas(voucher);
+            canvas.toBlob(async (blob) => {
+                const arquivo = new File([blob], `voucher_${voucher.codigo}.png`, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+                    await navigator.share({ files: [arquivo], title: 'Voucher D\'Drinks', text: `Voucher ${voucher.codigo}` });
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `voucher_${voucher.codigo}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                    showNotification('📥 Imagem baixada — envie por WhatsApp quando quiser.', 'info');
+                }
+            }, 'image/png');
+        } catch (e) {
+            if (e.name !== 'AbortError') showNotification('Erro ao preparar envio: ' + e.message, 'error');
+        }
+    }
+
+    // --- Explicar o programa e enviar todos os vouchers ao casal indicador ---
+    function voucherNormalizarTelefoneBR(telefone) {
+        let digitos = (telefone || '').replace(/\D/g, '');
+        if (!digitos) return null;
+        if (digitos.length <= 11) digitos = '55' + digitos;
+        return digitos;
+    }
+
+    function voucherExplicacaoTexto(nomeCliente) {
+        return `Olá, ${nomeCliente}!\n\n` +
+            `Preparamos um mimo especial para vocês: o *Programa de Indicação D'Drinks*.\n\n` +
+            `Vocês receberam *5 vouchers exclusivos* para indicar casais amigos que também estão organizando um evento.\n\n` +
+            `*Como funciona:*\n` +
+            `1. Compartilhem cada voucher com um casal amigo diferente (1 código por casal, até 5 indicações no total).\n` +
+            `2. Se esse casal fechar contrato com a D'Drinks usando o código do voucher, ele já ganha *5% de desconto* na hora.\n` +
+            `3. Vocês ganham um crédito por cada indicação fechada, de acordo com o porte do evento indicado:\n\n` +
+            `R$250 - até 60 convidados\n` +
+            `R$300 - de 61 a 120 convidados\n` +
+            `R$500 - acima de 120 convidados\n\n` +
+            `O crédito é repassado a vocês somente após a realização do casamento do casal indicado.\n\n` +
+            `Em anexo, segue um PDF com os 5 vouchers para vocês compartilharem com quem quiserem. Cada um tem um QR Code que leva direto para o nosso WhatsApp.\n\n` +
+            `Qualquer dúvida, estamos à disposição!`;
+    }
+
+    // Monta um único PDF com os 5 vouchers do casal, um por página
+    async function voucherMontarPdfBlob(vouchers) {
+        await promoCarregarFontes();
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210, pageHeight = 297;
+        for (let i = 0; i < vouchers.length; i++) {
+            const canvas = await voucherMontarCanvas(vouchers[i]);
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const imgWidth = pageWidth - 30;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            if (i > 0) pdf.addPage();
+            pdf.setFillColor(0, 0, 0);
+            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+            const x = (pageWidth - imgWidth) / 2;
+            const y = Math.max(10, (pageHeight - imgHeight) / 2);
+            pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+        }
+        return pdf.output('blob');
+    }
+
+    // Ação única: explica o programa e já entrega os 5 vouchers junto, no mesmo clique.
+    // O navegador só permite abrir o WhatsApp (pop-up) enquanto o clique do usuário ainda
+    // está "fresco", então isso é feito primeiro (com o texto). Os 5 vouchers são gerados
+    // depois e empacotados num único PDF (um por página), pronto para anexar na conversa.
+    async function voucherExplicarEEnviar(orcamentoId) {
+        const vouchers = voucherLoad().filter(v => v.orcamentoId === orcamentoId).sort((a, b) => a.numero - b.numero);
+        if (!vouchers.length) { showNotification('Nenhum voucher encontrado para este casal.', 'error'); return; }
+        const orc = orcamentos.find(o => o.id === orcamentoId);
+        const nomeCliente = orc ? orc.cliente : vouchers[0].clienteNome;
+        const texto = voucherExplicacaoTexto(nomeCliente);
+
+        const numero = voucherNormalizarTelefoneBR(orc ? orc.telefone : null);
+        const url = numero
+            ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`
+            : `https://wa.me/?text=${encodeURIComponent(texto)}`;
+        window.open(url, '_blank');
+
+        showNotification('WhatsApp aberto com a explicação. Gerando o PDF com os 5 vouchers...', 'info');
+        try {
+            const pdfBlob = await voucherMontarPdfBlob(vouchers);
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            const nomeArquivo = `vouchers_${nomeCliente.replace(/\s+/g, '_').replace(/[^\w-]/g, '')}.pdf`;
+            const a = document.createElement('a');
+            a.href = pdfUrl;
+            a.download = nomeArquivo;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(pdfUrl);
+            showNotification(`📥 ${nomeArquivo} baixado com os 5 vouchers — anexe esse PDF na conversa do WhatsApp que abrimos.`, 'success');
+        } catch (e) {
+            showNotification('Erro ao gerar vouchers: ' + e.message, 'error');
+        }
+    }
+    // ==================== FIM VOUCHERS DE INDICAÇÃO ====================
 
     // ============ VER INSUMOS DO ORÇAMENTO ============
     function verInsumos(orcId) {
