@@ -800,6 +800,10 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4V8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M10 6v12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="2 2"/></svg>
                     Vouchers
                 </button>
+                <button class="sidebar-item" onclick="showPage('cerimonialistas')" id="nav-cerimonialistas" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Cerimonialistas
+                </button>
             </nav>
             <div class="sidebar-footer">
                 <div class="sidebar-user" id="sidebar-user" style="display:none;">
@@ -1037,7 +1041,7 @@
                         <div class="form-group">
                             <label for="clienteVoucherCodigo" class="form-label">Código de Indicação (opcional)</label>
                             <input type="text" id="clienteVoucherCodigo" class="form-input" placeholder="Ex: ANAEDU01" style="text-transform:uppercase;" />
-                            <small style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);">Se este cliente foi indicado por um casal com voucher, informe o código aqui. O desconto de 5% é aplicado ao aceitar o pacote.</small>
+                            <small style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);">Se este cliente foi indicado por um casal ou por uma cerimonialista parceira com voucher, informe o código aqui. O desconto de 5% é aplicado ao aceitar o pacote.</small>
                         </div>
                     </div>
                 </form>
@@ -2213,6 +2217,31 @@
         </div>
         <!-- FIM PÁGINA CLIENTES -->
 
+        <!-- Página de Cerimonialistas Parceiras -->
+        <div id="cerimonialistas-page" class="page">
+            <div class="voucher-wrap">
+                <div class="voucher-toolbar">
+                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.6rem;">🤝</span> Cerimonialistas Parceiras
+                    </h2>
+                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cadastre cerimonialistas parceiras e gere vouchers pra elas indicarem clientes — separado dos vouchers de indicação entre casais. Quem for indicado com o código dela ganha 5% de desconto ao aceitar o pacote; a cerimonialista acumula crédito por indicação fechada, conforme o porte do evento indicado: até 60 convidados = R$250 · 61 a 120 = R$300 · acima de 120 = R$500.</p>
+                    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:flex-end;max-width:480px;">
+                        <div class="form-group" style="flex:1;margin-bottom:0;">
+                            <label class="form-label" style="font-size:.75rem;">Nome da Cerimonialista</label>
+                            <input type="text" id="cerimonialistaNome" class="form-input" placeholder="Nome completo" onkeydown="if(event.key==='Enter') cerimonialistaAdicionar()" />
+                        </div>
+                        <div class="form-group" style="flex:1;margin-bottom:0;">
+                            <label class="form-label" style="font-size:.75rem;">Telefone (opcional)</label>
+                            <input type="text" id="cerimonialistaTelefone" class="form-input" placeholder="(11) 99999-9999" onkeydown="if(event.key==='Enter') cerimonialistaAdicionar()" />
+                        </div>
+                        <button class="btn btn-primary" style="background:#f59e0b;color:#000;" onclick="cerimonialistaAdicionar()">+ Cadastrar</button>
+                    </div>
+                </div>
+                <div id="cerimonialistaGrid"></div>
+            </div>
+        </div>
+        <!-- FIM PÁGINA CERIMONIALISTAS -->
+
         <!-- Página de Financeiro -->
         <div id="financeiro-page" class="page">
             <div class="card">
@@ -2406,6 +2435,8 @@
                 voucherRender();
             } else if (pageId === 'clientes') {
                 clienteRenderGrid();
+            } else if (pageId === 'cerimonialistas') {
+                cerimonialistaRender();
             }
         }
 
@@ -2428,6 +2459,7 @@
                 document.getElementById('nav-degustacao').style.display = 'flex';
                 document.getElementById('nav-promocoes').style.display = 'flex';
                 document.getElementById('nav-vouchers').style.display = 'flex';
+                document.getElementById('nav-cerimonialistas').style.display = 'flex';
                 document.getElementById('nav-logout').style.display = 'flex';
             } else {
                 wrapper.classList.add('logged-out');
@@ -2442,6 +2474,7 @@
                 document.getElementById('nav-degustacao').style.display = 'none';
                 document.getElementById('nav-promocoes').style.display = 'none';
                 document.getElementById('nav-vouchers').style.display = 'none';
+                document.getElementById('nav-cerimonialistas').style.display = 'none';
                 document.getElementById('nav-logout').style.display = 'none';
                 atualizarFotoLogin();
                 showPage('login');
@@ -5609,6 +5642,7 @@ html += htmlPacotes;
         voucherFecharBaixaModal();
         voucherRender();
         clienteReabrirDetalheAtual();
+        if (typeof cerimonialistaRender === 'function') cerimonialistaRender();
     }
 
     // Baixa rápida: digita o código e já marca o voucher como usado, sem abrir formulário.
@@ -5647,19 +5681,27 @@ html += htmlPacotes;
         showNotification(`✅ Baixa registrada no voucher ${codigo}! Clique em "✏️ Editar" nele pra informar os convidados e calcular o crédito.`, 'success');
         voucherRender();
         clienteReabrirDetalheAtual();
+        if (typeof cerimonialistaRender === 'function') cerimonialistaRender();
     }
 
     // Marca o crédito de um voucher já usado como efetivamente pago ao casal indicador
+    // Nome de quem indicou (casal ou cerimonialista parceira) — usado nas telas genéricas
+    // que lidam com voucher sem saber de que tipo ele é.
+    function voucherNomeIndicador(voucher) {
+        return voucher.clienteNome || voucher.cerimonialistaNome || '—';
+    }
+
     function voucherMarcarComoPago(voucherId) {
         const vouchers = voucherLoad();
         const voucher = vouchers.find(v => v.id === voucherId);
         if (!voucher || voucher.status !== 'usado' || !voucher.usadoPor || voucher.usadoPor.pago) return;
-        if (!confirm(`Confirma que o crédito de ${formatarValorBR(voucher.usadoPor.credito)} do voucher ${voucher.codigo} já foi repassado ao casal indicador?`)) return;
+        if (!confirm(`Confirma que o crédito de ${formatarValorBR(voucher.usadoPor.credito)} do voucher ${voucher.codigo} já foi repassado a quem indicou?`)) return;
         voucher.usadoPor.pago = true;
         voucher.usadoPor.dataPagamento = new Date().toISOString();
         voucherSave(vouchers);
-        showNotification(`Pagamento de ${formatarValorBR(voucher.usadoPor.credito)} confirmado para ${voucher.clienteNome}.`, 'success');
+        showNotification(`Pagamento de ${formatarValorBR(voucher.usadoPor.credito)} confirmado para ${voucherNomeIndicador(voucher)}.`, 'success');
         voucherRender();
+        if (typeof cerimonialistaRender === 'function') cerimonialistaRender();
     }
 
     // Exclui um voucher específico do cliente
@@ -5674,6 +5716,7 @@ html += htmlPacotes;
         voucherSave(vouchers.filter(v => v.id !== voucherId));
         showNotification(`Voucher ${voucher.codigo} excluído.`, 'warning');
         voucherRender();
+        if (typeof cerimonialistaRender === 'function') cerimonialistaRender();
     }
 
     // --- Renderização da tela de Vouchers ---
@@ -5681,7 +5724,9 @@ html += htmlPacotes;
         const orcamentosSalvos = localStorage.getItem('orcamentos');
         if (orcamentosSalvos) orcamentos = JSON.parse(orcamentosSalvos);
 
-        const vouchers = voucherLoad();
+        // Vouchers de cerimonialista parceira têm tela própria (Cerimonialistas) — não
+        // entram nesta grade, que é só dos casais clientes.
+        const vouchers = voucherLoad().filter(v => v.tipo !== 'cerimonialista');
         const cont = document.getElementById('voucherGrid');
         if (!cont) return;
         if (!vouchers.length) {
@@ -5765,33 +5810,49 @@ html += htmlPacotes;
     }
 
     // --- Arte do voucher (preview + imagem para baixar/compartilhar) ---
+    // Vouchers de cerimonialista parceira usam um selo/cor diferentes dos vouchers de
+    // indicação entre casais, pra não sair uma peça igual à outra.
     function voucherMontarCardHtml(voucher) {
+        const ehCerimonialista = voucher.tipo === 'cerimonialista';
+        const corAccent = ehCerimonialista ? '#f59e0b' : '#ef4444';
+        const fundoGradiente = ehCerimonialista
+            ? 'radial-gradient(circle at 50% 0%, #3a2a05 0%, #000000 65%)'
+            : 'radial-gradient(circle at 50% 0%, #4a0a0a 0%, #000000 65%)';
+        const selo = ehCerimonialista ? 'PARCERIA' : 'EXCLUSIVO';
+        const nomeIndicador = voucherNomeIndicador(voucher).replace(/</g, '&lt;');
+
         const mensagem = `Olá! Recebi o voucher ${voucher.codigo} de indicação da D'Drinks e quero saber mais.`;
         const linkWhats = `https://wa.me/${DDRINKS_WHATSAPP_NUMERO}?text=${encodeURIComponent(mensagem)}`;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkWhats)}`;
         return `
-            <div style="font-family:'Poppins',Arial,sans-serif;width:560px;background:radial-gradient(circle at 50% 0%, #4a0a0a 0%, #000000 65%);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:32px 34px;color:#fff;box-sizing:border-box;">
+            <div style="font-family:'Poppins',Arial,sans-serif;width:560px;background:${fundoGradiente};border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:32px 34px;color:#fff;box-sizing:border-box;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
                     <div>
                         <div style="font-size:9.5px;letter-spacing:.16em;color:#9ca3af;text-transform:uppercase;font-weight:600;">Voucher Nº</div>
                         <div style="background:#0f0f0f;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 14px;font-weight:700;font-size:14px;letter-spacing:.05em;margin-top:6px;display:inline-block;">${voucher.codigo}</div>
                     </div>
-                    <div style="font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:13px;color:#ffffff;">D<span style="color:#ef4444;">'</span>DRINKS</div>
+                    <div style="font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:13px;color:#ffffff;">D<span style="color:${corAccent};">'</span>DRINKS</div>
                 </div>
 
                 <div style="text-align:center;margin-bottom:18px;">
                     <div style="font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:38px;letter-spacing:.02em;color:#f59e0b;">VOUCHER</div>
-                    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;color:#ef4444;font-size:16px;letter-spacing:.05em;margin-top:-4px;">EXCLUSIVO</div>
+                    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;color:${corAccent};font-size:16px;letter-spacing:.05em;margin-top:-4px;">${selo}</div>
                 </div>
 
                 <div style="text-align:center;color:#e5e7eb;font-size:12px;margin-bottom:18px;line-height:1.6;">
-                    VOCÊ RECEBEU UMA<br/>
-                    <span style="color:#ef4444;font-weight:700;">INDICAÇÃO ESPECIAL</span><br/>
-                    <span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-style:italic;color:#fff;">de ${(voucher.clienteNome || '').replace(/</g, '&lt;')}!</span>
+                    ${ehCerimonialista ? `
+                        VOCÊ RECEBEU UMA<br/>
+                        <span style="color:${corAccent};font-weight:700;">INDICAÇÃO DE PARCEIRA</span><br/>
+                        <span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-style:italic;color:#fff;">Cerimonialista ${nomeIndicador}</span>
+                    ` : `
+                        VOCÊ RECEBEU UMA<br/>
+                        <span style="color:${corAccent};font-weight:700;">INDICAÇÃO ESPECIAL</span><br/>
+                        <span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-style:italic;color:#fff;">de ${nomeIndicador}!</span>
+                    `}
                 </div>
 
-                <div style="border:1px solid #ef4444;border-radius:14px;padding:16px 18px;text-align:center;background:rgba(0,0,0,.35);margin-bottom:20px;">
-                    <div style="color:#ef4444;font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Benefício para você</div>
+                <div style="border:1px solid ${corAccent};border-radius:14px;padding:16px 18px;text-align:center;background:rgba(0,0,0,.35);margin-bottom:20px;">
+                    <div style="color:${corAccent};font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Benefício para você</div>
                     <div style="font-weight:800;font-size:24px;color:#fff;">${DESCONTO_INDICADO_PERCENT}% DE DESCONTO</div>
                     <div style="color:#9ca3af;font-size:10.5px;margin-top:8px;">Utilize na contratação do Bar D'DRINKS e/ou em um de nossos serviços<br/><i>(Barmans / Garçons / Copeiros / Maître)</i></div>
                 </div>
@@ -5967,6 +6028,153 @@ html += htmlPacotes;
         }
     }
     // ==================== FIM VOUCHERS DE INDICAÇÃO ====================
+
+    // ==================== CERIMONIALISTAS PARCEIRAS ====================
+    // Programa separado do de indicação entre casais: cerimonialistas recebem vouchers
+    // gerados sob demanda (sem lote fixo) pra indicar clientes. O código é digitado no
+    // mesmo campo "Código de Indicação" do orçamento — a baixa e o desconto de 5% usam
+    // exatamente a mesma lógica (voucherAplicarIndicacaoNoAceite), já que os vouchers
+    // ficam guardados no mesmo array de sempre, só marcados com tipo: 'cerimonialista'.
+
+    function cerimonialistaLoad() {
+        return JSON.parse(localStorage.getItem('ddrinks_cerimonialistas') || '[]');
+    }
+    function cerimonialistaSave(lista) {
+        localStorage.setItem('ddrinks_cerimonialistas', JSON.stringify(lista));
+    }
+
+    function cerimonialistaAdicionar() {
+        const nomeInput = document.getElementById('cerimonialistaNome');
+        const telefoneInput = document.getElementById('cerimonialistaTelefone');
+        const nome = nomeInput.value.trim();
+        const telefone = telefoneInput.value.trim();
+        if (!nome) {
+            showNotification('Informe o nome da cerimonialista.', 'warning');
+            return;
+        }
+        const lista = cerimonialistaLoad();
+        lista.push({ id: Date.now(), nome, telefone, criadoEm: new Date().toISOString() });
+        cerimonialistaSave(lista);
+        nomeInput.value = '';
+        telefoneInput.value = '';
+        showNotification(`Cerimonialista "${nome}" cadastrada!`, 'success');
+        cerimonialistaRender();
+    }
+
+    function cerimonialistaExcluir(id) {
+        const lista = cerimonialistaLoad();
+        const c = lista.find(c => c.id === id);
+        if (!c) return;
+        const vouchersDela = voucherLoad().filter(v => v.tipo === 'cerimonialista' && v.cerimonialistaId === id);
+        const pendentes = vouchersDela.filter(v => v.status === 'usado' && v.usadoPor && !v.usadoPor.pago);
+        const aviso = pendentes.length
+            ? `Excluir ${c.nome}? Ela tem ${pendentes.length} voucher(s) usado(s) com crédito pendente de pagamento — os vouchers não são apagados, só o cadastro dela. Essa ação não pode ser desfeita.`
+            : `Excluir ${c.nome}? Essa ação não pode ser desfeita.`;
+        if (!confirm(aviso)) return;
+        cerimonialistaSave(lista.filter(c => c.id !== id));
+        showNotification(`${c.nome} removida.`, 'warning');
+        cerimonialistaRender();
+    }
+
+    // Gera um novo voucher pra cerimonialista, sob demanda — sem lote fixo como o do casal,
+    // já que ela pode indicar muitos clientes ao longo do tempo.
+    function cerimonialistaGerarVoucher(cerimonialistaId) {
+        const c = cerimonialistaLoad().find(c => c.id === cerimonialistaId);
+        if (!c) return;
+        const vouchers = voucherLoad();
+        let numero = vouchers.filter(v => v.tipo === 'cerimonialista' && v.cerimonialistaId === cerimonialistaId).length + 1;
+        let codigo = voucherGerarCodigo(c.nome, numero);
+        while (vouchers.some(v => v.codigo === codigo)) {
+            numero++;
+            codigo = voucherGerarCodigo(c.nome, numero);
+        }
+        vouchers.push({
+            id: Date.now(),
+            tipo: 'cerimonialista',
+            cerimonialistaId,
+            cerimonialistaNome: c.nome,
+            codigo,
+            numero,
+            status: 'disponivel',
+            criadoEm: new Date().toISOString(),
+            usadoPor: null
+        });
+        voucherSave(vouchers);
+        showNotification(`Voucher ${codigo} gerado para ${c.nome}!`, 'success');
+        cerimonialistaRender();
+    }
+
+    // Totais de crédito (gerado/pago/pendente) de uma cerimonialista
+    function cerimonialistaTotais(cerimonialistaId) {
+        const usados = voucherLoad().filter(v => v.tipo === 'cerimonialista' && v.cerimonialistaId === cerimonialistaId && v.status === 'usado');
+        const gerado = usados.reduce((soma, v) => soma + (v.usadoPor?.credito || 0), 0);
+        const pago = usados.filter(v => v.usadoPor?.pago).reduce((soma, v) => soma + (v.usadoPor.credito || 0), 0);
+        return { fechados: usados.length, gerado, pago, pendente: gerado - pago };
+    }
+
+    function cerimonialistaRender() {
+        const cerimonialistas = cerimonialistaLoad();
+        const cont = document.getElementById('cerimonialistaGrid');
+        if (!cont) return;
+        if (!cerimonialistas.length) {
+            cont.innerHTML = '<div class="voucher-empty">🤝 Nenhuma cerimonialista cadastrada ainda. Cadastre acima pra começar a gerar vouchers pra ela(e).</div>';
+            return;
+        }
+        const vouchers = voucherLoad().filter(v => v.tipo === 'cerimonialista');
+        cont.innerHTML = cerimonialistas.map(c => {
+            const vouchersDela = vouchers.filter(v => v.cerimonialistaId === c.id).sort((a, b) => a.numero - b.numero);
+            const totais = cerimonialistaTotais(c.id);
+            const itemsHtml = !vouchersDela.length ? `
+                <div class="voucher-empty" style="grid-column:1/-1;padding:24px;">Nenhum voucher gerado ainda pra ela.</div>
+            ` : vouchersDela.map(v => {
+                const up = v.usadoPor;
+                let infoUsoHtml = '';
+                if (v.status === 'usado' && up) {
+                    const dataUsoTxt = up.data ? new Date(up.data).toLocaleDateString('pt-BR') : '';
+                    const dataEventoTxt = up.dataEvento ? formatarData(up.dataEvento) : null;
+                    infoUsoHtml = `
+                        <div class="voucher-item-info">Por: ${up.nome || '—'} (${up.convidados || 0} conv.)<br>Fechado em ${dataUsoTxt}</div>
+                        <div class="voucher-item-credito">💰 Crédito: <strong>${formatarValorBR(up.credito || 0)}</strong></div>
+                        <div class="voucher-item-pago ${up.pago ? 'pago' : 'pendente'}">
+                            ${up.pago
+                                ? `✅ Pago em ${up.dataPagamento ? new Date(up.dataPagamento).toLocaleDateString('pt-BR') : ''}`
+                                : `⏳ Pendente${dataEventoTxt ? ` — repassar após o casamento em ${dataEventoTxt}` : ' — repassar após o casamento do indicado'}`}
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="voucher-item">
+                        <div class="voucher-item-codigo">${v.codigo}</div>
+                        <div class="voucher-item-status ${v.status}">${v.status === 'usado' ? '✅ Usado' : '🟢 Disponível'}</div>
+                        ${infoUsoHtml}
+                        <div class="voucher-item-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="voucherAbrirCard(${v.id})">🎫 Ver</button>
+                            ${v.status === 'disponivel' ? `<button class="btn btn-sm btn-success" onclick="voucherAbrirBaixaManual(${v.id})">✔️ Dar Baixa</button>` : ''}
+                            ${v.status === 'usado' ? `<button class="btn btn-sm btn-secondary" onclick="voucherAbrirBaixaManual(${v.id})">✏️ Editar</button>` : ''}
+                            ${v.status === 'usado' && up && !up.pago ? `<button class="btn btn-sm btn-primary" onclick="voucherMarcarComoPago(${v.id})">💸 Marcar como Pago</button>` : ''}
+                            <button class="btn btn-sm btn-danger" onclick="voucherExcluir(${v.id})">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            return `
+                <div class="voucher-casal-card">
+                    <div class="voucher-casal-header">
+                        <div>
+                            <div class="voucher-casal-nome">🤝 ${c.nome}</div>
+                            <div class="voucher-casal-sub">${c.telefone ? `📞 ${c.telefone} · ` : ''}${totais.fechados} indicaç${totais.fechados === 1 ? 'ão' : 'ões'} fechada${totais.fechados === 1 ? '' : 's'} • Crédito gerado: <strong>${formatarValorBR(totais.gerado)}</strong> • Pago: <strong>${formatarValorBR(totais.pago)}</strong> • Pendente: <strong>${formatarValorBR(totais.pendente)}</strong></div>
+                        </div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button class="btn btn-sm btn-primary" style="background:#f59e0b;color:#000;" onclick="cerimonialistaGerarVoucher(${c.id})">+ Gerar Voucher</button>
+                            <button class="btn btn-sm btn-danger" onclick="cerimonialistaExcluir(${c.id})">🗑️ Excluir Cerimonialista</button>
+                        </div>
+                    </div>
+                    <div class="voucher-casal-grid">${itemsHtml}</div>
+                </div>
+            `;
+        }).join('');
+    }
+    // ==================== FIM CERIMONIALISTAS PARCEIRAS ====================
 
     // ==================== CLIENTES (VISÃO ÚNICA) ====================
     let clienteGruposAtual = [];
