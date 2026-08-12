@@ -2152,6 +2152,7 @@
                 .cliente-card { background:white; border:1px solid var(--gray-200); border-radius:14px; padding:18px; box-shadow:var(--shadow); cursor:pointer; transition:transform .15s, box-shadow .15s; display:flex; flex-direction:column; gap:10px; }
                 .cliente-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.12); border-color:var(--primary-color); }
                 .cliente-card-nome { font-weight:700; font-size:1.05rem; color:var(--gray-900); display:flex; align-items:center; gap:8px; }
+                .cliente-card-data { font-weight:700; font-size:1.05rem; color:var(--primary-color); margin-top:2px; }
                 .cliente-card-info { font-size:.8rem; color:var(--gray-600); display:flex; flex-direction:column; gap:3px; }
                 .cliente-card-stats { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
                 .cliente-chip { font-size:.7rem; font-weight:600; padding:3px 9px; border-radius:20px; background:var(--gray-100); color:var(--gray-700); }
@@ -2224,7 +2225,7 @@
                     <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
                         <span style="font-size:1.6rem;">🤝</span> Cerimonialistas Parceiras
                     </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cadastre cerimonialistas parceiras e gere vouchers pra elas indicarem clientes — separado dos vouchers de indicação entre casais. Quem for indicado com o código dela ganha 5% de desconto ao aceitar o pacote; a cerimonialista acumula crédito por indicação fechada, conforme o porte do evento indicado: até 60 convidados = R$250 · 61 a 120 = R$300 · acima de 120 = R$500.</p>
+                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cadastre cerimonialistas parceiras e gere vouchers pra elas indicarem clientes — separado dos vouchers de indicação entre casais. Quem for indicado com o código dela ganha o desconto escolhido na hora de gerar o voucher, dentro do prazo de validade definido. A cerimonialista não recebe crédito nem comissão — o programa dela é só o voucher de desconto.</p>
                     <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:flex-end;max-width:480px;">
                         <div class="form-group" style="flex:1;margin-bottom:0;">
                             <label class="form-label" style="font-size:.75rem;">Nome da Cerimonialista</label>
@@ -2238,6 +2239,39 @@
                     </div>
                 </div>
                 <div id="cerimonialistaGrid"></div>
+            </div>
+        </div>
+
+        <!-- Modal: Gerar Voucher para Cerimonialista -->
+        <div id="cerimonialistaGerarModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5100;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this) cerimonialistaFecharGerarModal()">
+            <div style="background:white;border-radius:16px;max-width:420px;width:100%;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+                <div style="font-weight:700;font-size:1.05rem;color:#0f172a;margin-bottom:0.25rem;">Gerar Voucher</div>
+                <div style="font-size:.85rem;color:var(--gray-500);margin-bottom:1rem;">Para: <strong id="cerimonialistaGerarNome"></strong></div>
+                <input type="hidden" id="cerimonialistaGerarId">
+                <div class="form-group">
+                    <label class="form-label">Desconto para o cliente indicado</label>
+                    <select id="cerimonialistaGerarDesconto" class="form-input">
+                        <option value="5">5%</option>
+                        <option value="10">10%</option>
+                        <option value="15">15%</option>
+                        <option value="20">20%</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Validade para utilização</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="number" id="cerimonialistaGerarValidadeQtd" class="form-input" min="1" value="30" />
+                        <select id="cerimonialistaGerarValidadeUnidade" class="form-input">
+                            <option value="dias">Dias</option>
+                            <option value="meses">Meses</option>
+                        </select>
+                    </div>
+                    <small style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);">O cliente precisa usar o código dentro desse prazo a partir de hoje, senão o voucher expira.</small>
+                </div>
+                <div style="display:flex;gap:0.75rem;margin-top:1rem;">
+                    <button class="btn btn-primary" style="flex:1;background:#f59e0b;color:#000;" onclick="cerimonialistaConfirmarGerarVoucher()">Gerar Voucher</button>
+                    <button class="btn btn-secondary" style="flex:1;" onclick="cerimonialistaFecharGerarModal()">Cancelar</button>
+                </div>
             </div>
         </div>
         <!-- FIM PÁGINA CERIMONIALISTAS -->
@@ -5549,8 +5583,9 @@ html += htmlPacotes;
         voucherSave(vouchers);
     }
 
-    // Aplica o desconto de 5% ao orçamento do cliente INDICADO, ao aceitar o pacote dele,
-    // e dá baixa automática no voucher do casal que o indicou.
+    // Aplica o desconto ao orçamento do cliente INDICADO, ao aceitar o pacote dele, e dá
+    // baixa automática no voucher usado. Vouchers de casal usam o desconto fixo de 5%;
+    // vouchers de cerimonialista usam o percentual e a validade definidos na geração.
     function voucherAplicarIndicacaoNoAceite(orcamento) {
         const codigo = (orcamento.voucherCodigoIndicacao || '').trim().toUpperCase();
         if (!codigo || orcamento.descontoIndicacaoAplicado) return null;
@@ -5560,6 +5595,14 @@ html += htmlPacotes;
             showNotification(`Código de indicação "${codigo}" inválido ou já utilizado — desconto não aplicado.`, 'warning');
             return null;
         }
+        if (voucher.validadeAte && new Date() > new Date(voucher.validadeAte)) {
+            showNotification(`Voucher "${codigo}" expirou em ${new Date(voucher.validadeAte).toLocaleDateString('pt-BR')} — desconto não aplicado.`, 'warning');
+            return null;
+        }
+        const descontoPercent = voucher.descontoPercent || DESCONTO_INDICADO_PERCENT;
+        // Cerimonialista não recebe crédito — o programa dela é só o voucher de desconto.
+        // Só o casal indicador acumula crédito por indicação fechada.
+        const credito = voucher.tipo === 'cerimonialista' ? 0 : voucherCalcularCredito(orcamento.quantidadeConvidados);
         voucher.status = 'usado';
         voucher.usadoPor = {
             nome: orcamento.cliente,
@@ -5567,12 +5610,12 @@ html += htmlPacotes;
             data: new Date().toISOString(),
             convidados: orcamento.quantidadeConvidados || 0,
             dataEvento: orcamento.data || null,
-            credito: voucherCalcularCredito(orcamento.quantidadeConvidados),
+            credito,
             pago: false,
             dataPagamento: null
         };
         voucherSave(vouchers);
-        orcamento.descontoIndicacaoAplicado = DESCONTO_INDICADO_PERCENT;
+        orcamento.descontoIndicacaoAplicado = descontoPercent;
         orcamento.voucherUtilizadoId = voucher.id;
         return voucher;
     }
@@ -5821,7 +5864,9 @@ html += htmlPacotes;
         const selo = ehCerimonialista ? 'PARCERIA' : 'EXCLUSIVO';
         const nomeIndicador = voucherNomeIndicador(voucher).replace(/</g, '&lt;');
 
-        const mensagem = `Olá! Recebi o voucher ${voucher.codigo} de indicação da D'Drinks e quero saber mais.`;
+        const mensagem = ehCerimonialista
+            ? `Olá! Recebi o voucher ${voucher.codigo} da cerimonialista ${nomeIndicador} e quero saber mais sobre a D'Drinks.`
+            : `Olá! Recebi o voucher ${voucher.codigo} de indicação da D'Drinks e quero saber mais.`;
         const linkWhats = `https://wa.me/${DDRINKS_WHATSAPP_NUMERO}?text=${encodeURIComponent(mensagem)}`;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkWhats)}`;
         return `
@@ -5841,9 +5886,9 @@ html += htmlPacotes;
 
                 <div style="text-align:center;color:#e5e7eb;font-size:12px;margin-bottom:18px;line-height:1.6;">
                     ${ehCerimonialista ? `
-                        VOCÊ RECEBEU UMA<br/>
-                        <span style="color:${corAccent};font-weight:700;">INDICAÇÃO DE PARCEIRA</span><br/>
-                        <span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-style:italic;color:#fff;">Cerimonialista ${nomeIndicador}</span>
+                        VOCÊ RECEBEU UM VOUCHER<br/>
+                        <span style="color:${corAccent};font-weight:700;">DA CERIMONIALISTA</span><br/>
+                        <span style="font-family:'Playfair Display',Georgia,serif;font-size:16px;font-style:italic;color:#fff;">${nomeIndicador}</span>
                     ` : `
                         VOCÊ RECEBEU UMA<br/>
                         <span style="color:${corAccent};font-weight:700;">INDICAÇÃO ESPECIAL</span><br/>
@@ -5853,8 +5898,9 @@ html += htmlPacotes;
 
                 <div style="border:1px solid ${corAccent};border-radius:14px;padding:16px 18px;text-align:center;background:rgba(0,0,0,.35);margin-bottom:20px;">
                     <div style="color:${corAccent};font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Benefício para você</div>
-                    <div style="font-weight:800;font-size:24px;color:#fff;">${DESCONTO_INDICADO_PERCENT}% DE DESCONTO</div>
+                    <div style="font-weight:800;font-size:24px;color:#fff;">${voucher.descontoPercent || DESCONTO_INDICADO_PERCENT}% DE DESCONTO</div>
                     <div style="color:#9ca3af;font-size:10.5px;margin-top:8px;">Utilize na contratação do Bar D'DRINKS e/ou em um de nossos serviços<br/><i>(Barmans / Garçons / Copeiros / Maître)</i></div>
+                    ${voucher.validadeAte ? `<div style="color:${corAccent};font-size:10px;font-weight:700;margin-top:10px;">Válido até ${new Date(voucher.validadeAte).toLocaleDateString('pt-BR')}</div>` : ''}
                 </div>
 
                 <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px;">
@@ -5865,9 +5911,12 @@ html += htmlPacotes;
                     </div>
                 </div>
 
-                <div style="text-align:center;font-size:9.5px;color:#facc15;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Indique • Contrate • Ganhe</div>
+                ${ehCerimonialista ? '' : '<div style="text-align:center;font-size:9.5px;color:#facc15;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Indique • Contrate • Ganhe</div>'}
                 <div style="text-align:center;font-size:8.5px;color:#6b7280;margin-top:8px;line-height:1.5;">
-                    Voucher válido apenas para novos contratos e por 12 meses após o evento realizado.<br/>
+                    ${ehCerimonialista
+                        ? 'Voucher válido apenas para novos contratos, dentro do prazo indicado acima.'
+                        : 'Voucher válido apenas para novos contratos e por 12 meses após o evento realizado.'}<br/>
+                    Vouchers não são cumulativos — válido apenas um por contrato.<br/>
                     Consulte todas as condições do programa.
                 </div>
             </div>
@@ -6066,9 +6115,8 @@ html += htmlPacotes;
         const c = lista.find(c => c.id === id);
         if (!c) return;
         const vouchersDela = voucherLoad().filter(v => v.tipo === 'cerimonialista' && v.cerimonialistaId === id);
-        const pendentes = vouchersDela.filter(v => v.status === 'usado' && v.usadoPor && !v.usadoPor.pago);
-        const aviso = pendentes.length
-            ? `Excluir ${c.nome}? Ela tem ${pendentes.length} voucher(s) usado(s) com crédito pendente de pagamento — os vouchers não são apagados, só o cadastro dela. Essa ação não pode ser desfeita.`
+        const aviso = vouchersDela.length
+            ? `Excluir ${c.nome}? Ela tem ${vouchersDela.length} voucher(s) gerado(s) — os vouchers não são apagados, só o cadastro dela. Essa ação não pode ser desfeita.`
             : `Excluir ${c.nome}? Essa ação não pode ser desfeita.`;
         if (!confirm(aviso)) return;
         cerimonialistaSave(lista.filter(c => c.id !== id));
@@ -6078,9 +6126,39 @@ html += htmlPacotes;
 
     // Gera um novo voucher pra cerimonialista, sob demanda — sem lote fixo como o do casal,
     // já que ela pode indicar muitos clientes ao longo do tempo.
-    function cerimonialistaGerarVoucher(cerimonialistaId) {
+    // Abre o formulário pra escolher o desconto (5/10/15/20%) e a validade do voucher
+    // antes de gerar — diferente do voucher de casal, que é sempre 5% e sem validade.
+    function cerimonialistaAbrirGerarModal(cerimonialistaId) {
         const c = cerimonialistaLoad().find(c => c.id === cerimonialistaId);
         if (!c) return;
+        document.getElementById('cerimonialistaGerarId').value = cerimonialistaId;
+        document.getElementById('cerimonialistaGerarNome').textContent = c.nome;
+        document.getElementById('cerimonialistaGerarDesconto').value = '5';
+        document.getElementById('cerimonialistaGerarValidadeQtd').value = 30;
+        document.getElementById('cerimonialistaGerarValidadeUnidade').value = 'dias';
+        document.getElementById('cerimonialistaGerarModal').style.display = 'flex';
+    }
+    function cerimonialistaFecharGerarModal() {
+        document.getElementById('cerimonialistaGerarModal').style.display = 'none';
+    }
+
+    function cerimonialistaConfirmarGerarVoucher() {
+        const cerimonialistaId = Number(document.getElementById('cerimonialistaGerarId').value);
+        const c = cerimonialistaLoad().find(c => c.id === cerimonialistaId);
+        if (!c) return;
+
+        const descontoPercent = Number(document.getElementById('cerimonialistaGerarDesconto').value);
+        const validadeQtd = parseInt(document.getElementById('cerimonialistaGerarValidadeQtd').value, 10);
+        const validadeUnidade = document.getElementById('cerimonialistaGerarValidadeUnidade').value;
+        if (!validadeQtd || validadeQtd <= 0) {
+            showNotification('Informe uma validade válida.', 'warning');
+            return;
+        }
+
+        const validade = new Date();
+        if (validadeUnidade === 'meses') validade.setMonth(validade.getMonth() + validadeQtd);
+        else validade.setDate(validade.getDate() + validadeQtd);
+
         const vouchers = voucherLoad();
         let numero = vouchers.filter(v => v.tipo === 'cerimonialista' && v.cerimonialistaId === cerimonialistaId).length + 1;
         let codigo = voucherGerarCodigo(c.nome, numero);
@@ -6095,21 +6173,22 @@ html += htmlPacotes;
             cerimonialistaNome: c.nome,
             codigo,
             numero,
+            descontoPercent,
+            validadeAte: validade.toISOString(),
             status: 'disponivel',
             criadoEm: new Date().toISOString(),
             usadoPor: null
         });
         voucherSave(vouchers);
-        showNotification(`Voucher ${codigo} gerado para ${c.nome}!`, 'success');
+        cerimonialistaFecharGerarModal();
+        showNotification(`Voucher ${codigo} gerado — ${descontoPercent}% de desconto, válido até ${validade.toLocaleDateString('pt-BR')}.`, 'success');
         cerimonialistaRender();
     }
 
     // Totais de crédito (gerado/pago/pendente) de uma cerimonialista
     function cerimonialistaTotais(cerimonialistaId) {
         const usados = voucherLoad().filter(v => v.tipo === 'cerimonialista' && v.cerimonialistaId === cerimonialistaId && v.status === 'usado');
-        const gerado = usados.reduce((soma, v) => soma + (v.usadoPor?.credito || 0), 0);
-        const pago = usados.filter(v => v.usadoPor?.pago).reduce((soma, v) => soma + (v.usadoPor.credito || 0), 0);
-        return { fechados: usados.length, gerado, pago, pendente: gerado - pago };
+        return { fechados: usados.length };
     }
 
     function cerimonialistaRender() {
@@ -6131,27 +6210,20 @@ html += htmlPacotes;
                 let infoUsoHtml = '';
                 if (v.status === 'usado' && up) {
                     const dataUsoTxt = up.data ? new Date(up.data).toLocaleDateString('pt-BR') : '';
-                    const dataEventoTxt = up.dataEvento ? formatarData(up.dataEvento) : null;
-                    infoUsoHtml = `
-                        <div class="voucher-item-info">Por: ${up.nome || '—'} (${up.convidados || 0} conv.)<br>Fechado em ${dataUsoTxt}</div>
-                        <div class="voucher-item-credito">💰 Crédito: <strong>${formatarValorBR(up.credito || 0)}</strong></div>
-                        <div class="voucher-item-pago ${up.pago ? 'pago' : 'pendente'}">
-                            ${up.pago
-                                ? `✅ Pago em ${up.dataPagamento ? new Date(up.dataPagamento).toLocaleDateString('pt-BR') : ''}`
-                                : `⏳ Pendente${dataEventoTxt ? ` — repassar após o casamento em ${dataEventoTxt}` : ' — repassar após o casamento do indicado'}`}
-                        </div>
-                    `;
+                    infoUsoHtml = `<div class="voucher-item-info">Usado por: ${up.nome || '—'}<br>Fechado em ${dataUsoTxt}</div>`;
                 }
+                const expirado = v.status === 'disponivel' && v.validadeAte && new Date() > new Date(v.validadeAte);
                 return `
                     <div class="voucher-item">
                         <div class="voucher-item-codigo">${v.codigo}</div>
-                        <div class="voucher-item-status ${v.status}">${v.status === 'usado' ? '✅ Usado' : '🟢 Disponível'}</div>
+                        <div class="voucher-item-status ${v.status}">${v.status === 'usado' ? '✅ Usado' : expirado ? '⚠️ Expirado' : '🟢 Disponível'}</div>
+                        <div class="voucher-item-info">🏷️ ${v.descontoPercent || DESCONTO_INDICADO_PERCENT}% de desconto${v.validadeAte ? ` · válido até ${new Date(v.validadeAte).toLocaleDateString('pt-BR')}` : ''}</div>
                         ${infoUsoHtml}
                         <div class="voucher-item-actions">
                             <button class="btn btn-sm btn-secondary" onclick="voucherAbrirCard(${v.id})">🎫 Ver</button>
+                            ${v.status === 'disponivel' ? `<button class="btn btn-sm btn-primary" style="background:#f59e0b;color:#000;" onclick="cerimonialistaEnviarWhatsApp(${v.id})">📤 Enviar WhatsApp</button>` : ''}
                             ${v.status === 'disponivel' ? `<button class="btn btn-sm btn-success" onclick="voucherAbrirBaixaManual(${v.id})">✔️ Dar Baixa</button>` : ''}
                             ${v.status === 'usado' ? `<button class="btn btn-sm btn-secondary" onclick="voucherAbrirBaixaManual(${v.id})">✏️ Editar</button>` : ''}
-                            ${v.status === 'usado' && up && !up.pago ? `<button class="btn btn-sm btn-primary" onclick="voucherMarcarComoPago(${v.id})">💸 Marcar como Pago</button>` : ''}
                             <button class="btn btn-sm btn-danger" onclick="voucherExcluir(${v.id})">🗑️ Excluir</button>
                         </div>
                     </div>
@@ -6162,10 +6234,10 @@ html += htmlPacotes;
                     <div class="voucher-casal-header">
                         <div>
                             <div class="voucher-casal-nome">🤝 ${c.nome}</div>
-                            <div class="voucher-casal-sub">${c.telefone ? `📞 ${c.telefone} · ` : ''}${totais.fechados} indicaç${totais.fechados === 1 ? 'ão' : 'ões'} fechada${totais.fechados === 1 ? '' : 's'} • Crédito gerado: <strong>${formatarValorBR(totais.gerado)}</strong> • Pago: <strong>${formatarValorBR(totais.pago)}</strong> • Pendente: <strong>${formatarValorBR(totais.pendente)}</strong></div>
+                            <div class="voucher-casal-sub">${c.telefone ? `📞 ${c.telefone} · ` : ''}${totais.fechados} indicaç${totais.fechados === 1 ? 'ão' : 'ões'} fechada${totais.fechados === 1 ? '' : 's'}</div>
                         </div>
                         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                            <button class="btn btn-sm btn-primary" style="background:#f59e0b;color:#000;" onclick="cerimonialistaGerarVoucher(${c.id})">+ Gerar Voucher</button>
+                            <button class="btn btn-sm btn-primary" style="background:#f59e0b;color:#000;" onclick="cerimonialistaAbrirGerarModal(${c.id})">+ Gerar Voucher</button>
                             <button class="btn btn-sm btn-danger" onclick="cerimonialistaExcluir(${c.id})">🗑️ Excluir Cerimonialista</button>
                         </div>
                     </div>
@@ -6173,6 +6245,48 @@ html += htmlPacotes;
                 </div>
             `;
         }).join('');
+    }
+
+    // Envia o código pra cerimonialista pelo WhatsApp, com uma mensagem própria mostrando
+    // o desconto que os clientes indicados por ela vão receber. Sem crédito/comissão —
+    // o programa da cerimonialista é só o voucher de desconto. Abre o WhatsApp com o texto
+    // (enquanto o clique do usuário ainda está "fresco") e, na sequência, baixa a imagem
+    // do voucher pra ela anexar na conversa — mesmo fluxo usado com os clientes.
+    async function cerimonialistaEnviarWhatsApp(voucherId) {
+        const voucher = voucherLoad().find(v => v.id === voucherId);
+        if (!voucher) { showNotification('Voucher não encontrado', 'error'); return; }
+        const c = cerimonialistaLoad().find(c => c.id === voucher.cerimonialistaId);
+        const nome = (c && c.nome) || voucher.cerimonialistaNome || 'Cerimonialista';
+        const desconto = voucher.descontoPercent || DESCONTO_INDICADO_PERCENT;
+        const validadeTxt = voucher.validadeAte ? new Date(voucher.validadeAte).toLocaleDateString('pt-BR') : null;
+
+        const texto = `Olá, ${nome}!\n\n` +
+            `Aqui está o seu voucher de parceria com a D'Drinks: *${voucher.codigo}*\n\n` +
+            `Toda vez que você indicar um casal e ele fechar contrato com a D'Drinks usando esse código, ele já ganha *${desconto}% de desconto* na hora.` +
+            (validadeTxt ? `\n\nEsse código é válido até *${validadeTxt}*.` : '') +
+            `\n\nSegue em anexo a imagem do voucher — pode compartilhar com quem for indicar!\n\n` +
+            `Qualquer dúvida, estou à disposição!`;
+
+        const numero = voucherNormalizarTelefoneBR(c ? c.telefone : null);
+        const url = numero
+            ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`
+            : `https://wa.me/?text=${encodeURIComponent(texto)}`;
+        window.open(url, '_blank');
+
+        showNotification('WhatsApp aberto com a mensagem. Gerando a imagem do voucher...', 'info');
+        try {
+            const canvas = await voucherMontarCanvas(voucher);
+            const imgUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = imgUrl;
+            a.download = `voucher_${voucher.codigo}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            showNotification(`📥 voucher_${voucher.codigo}.png baixado — anexe essa imagem na conversa do WhatsApp que abrimos.`, 'success');
+        } catch (e) {
+            showNotification('Erro ao gerar imagem do voucher: ' + e.message, 'error');
+        }
     }
     // ==================== FIM CERIMONIALISTAS PARCEIRAS ====================
 
@@ -6195,7 +6309,15 @@ html += htmlPacotes;
                 orcamentos: [orc],
                 ultimaAtividade: orc.dataCriacao || orc.data || ''
             }))
-            .sort((a, b) => new Date(b.ultimaAtividade) - new Date(a.ultimaAtividade));
+            // Ordena pela data do evento (mais próxima primeiro) — quem não tem data fica no fim
+            .sort((a, b) => {
+                const dataA = a.orcamentos[0]?.data;
+                const dataB = b.orcamentos[0]?.data;
+                if (!dataA && !dataB) return 0;
+                if (!dataA) return 1;
+                if (!dataB) return -1;
+                return new Date(dataA) - new Date(dataB);
+            });
     }
 
     // Vouchers gerados como indicador em qualquer orçamento aceito deste cliente
@@ -6238,9 +6360,12 @@ html += htmlPacotes;
             const totais = clienteTotaisFinanceiros(grupo);
             const vouchers = clienteVouchersComoIndicador(grupo);
             const vouchersUsados = vouchers.filter(v => v.status === 'usado').length;
+            const orcamentoPrincipal = grupo.orcamentos[0];
+            const dataEventoTxt = orcamentoPrincipal ? (orcamentoPrincipal.dataFormatada || formatarData(orcamentoPrincipal.data)) : '';
             return `
                 <div class="cliente-card" onclick="clienteAbrirDetalhe(${idx})">
                     <div class="cliente-card-nome">👤 ${grupo.nome || 'Sem nome'}</div>
+                    ${dataEventoTxt ? `<div class="cliente-card-data">📅 ${dataEventoTxt}</div>` : ''}
                     <div class="cliente-card-info">
                         <span>📞 ${grupo.telefone || '—'}</span>
                         <span>🏙️ ${grupo.cidade || '—'}</span>
