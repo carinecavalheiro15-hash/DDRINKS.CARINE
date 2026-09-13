@@ -2501,6 +2501,29 @@
         let currentUser = null;
         let orcamentos = [];
 
+        // Migração única: orçamentos salvos antes da correção do escopo de captura de
+        // inputs numéricos (calcularOrcamento) podiam ter campos de outras telas
+        // (ex: cerimonialistaGerarValidadeQtd) misturados em orcamento.drinks. Remove.
+        (function limparDrinksContaminados(){
+            try {
+                const raw = localStorage.getItem('orcamentos');
+                if (!raw) return;
+                const lista = JSON.parse(raw);
+                const CHAVES_ESTRANHAS = ['cerimonialistaGerarValidadeQtd', 'voucherBaixaConvidados', 'promoMaxConvidados', 'promoValor'];
+                let mudou = false;
+                lista.forEach(o => {
+                    if (!o.drinks) return;
+                    CHAVES_ESTRANHAS.forEach(chave => {
+                        if (Object.prototype.hasOwnProperty.call(o.drinks, chave)) {
+                            delete o.drinks[chave];
+                            mudou = true;
+                        }
+                    });
+                });
+                if (mudou) localStorage.setItem('orcamentos', JSON.stringify(lista));
+            } catch (e) { /* silencioso: nao bloquear a carga do app por causa da limpeza */ }
+        })();
+
         // Preços dos pacotes (carregados de data/precos.json quando disponível)
         const DEFAULT_PRECOS_PACOTES = {
             bronze: { caipirinha: 10, mojito: 3.43, sex_on_the_beach: 5.5, gin_tonica: 5.95, moscow_mule: 4.55, gin_tropical: 7.27, gim_tropical: 6, negroni: 7.58, aperol_spritz: 12, whisky_sour: 6.26, cosmopolitan: 4.8, caipirinha_morango: 5.73, caipirinha_limao: 4.83, caipirinha_kiwi: 9.5, pina_colada: 5.9, alexander: 5.74, tequila_sour: 5.75, tequila_sunrise: 5.73, pink_lady: 5, limonada_suica: 3.4, lagoa_azul: 4.82, caipirinha_cachaca: 3.5, caipirinha_vinho: 4, cream_pink: 6.5, cotton_fairy: 5.5, marguerita: 6, amaretto_sour: 8, hold_hup: 8.5, passion: 8.5, cookie_drink: 9.5, mirtilo_sour: 7.5, toscano: 8.5, oreo_yin: 8.5, cotton_fairy: 8, mojito_sem_alcool: 2, moscow_mule_sem_alcool: 3.5, pina_colada_sem_alcool: 3.9, sex_on_the_beach_sem_alcool: 5.5, soda_italiana_limao_siciliano_e_morango: 4 },
@@ -2876,8 +2899,10 @@
             }
 
             // Coleta dados dos drinks e outros valores numéricos (exclui campos do formulário que não são itens)
+            // Escopo em #home-page: pegar o documento inteiro capturava campos number de outras
+            // telas (ex: cerimonialistaGerarValidadeQtd) e os salvava como se fossem drinks do orçamento.
             const dados = {};
-            const todosInputs = document.querySelectorAll('input[type="number"]');
+            const todosInputs = document.querySelectorAll('#home-page input[type="number"]');
             todosInputs.forEach(input => {
                 // Ignora o campo de quantidade de convidados e o campo de valor do drink personalizado (tratado separadamente)
                 if (!input.id || input.id === 'quantidadeConvidados' || input.id === 'customDrinkValue') return;
@@ -3152,7 +3177,7 @@ html += htmlPacotes;
             const campoVoucherCodigoLimpar = document.getElementById('clienteVoucherCodigo');
             if (campoVoucherCodigoLimpar) campoVoucherCodigoLimpar.value = '';
 
-            document.querySelectorAll('input[type="number"]').forEach(input => {
+            document.querySelectorAll('#home-page input[type="number"]').forEach(input => {
                 input.value = '0';
             });
             
@@ -4303,7 +4328,7 @@ html += htmlPacotes;
                 descricaoOutro.value = orcamento.descricao || '';
             }
 
-            document.querySelectorAll('input[type="number"]').forEach(input => {
+            document.querySelectorAll('#home-page input[type="number"]').forEach(input => {
                 if (!input.id || input.id === 'quantidadeConvidados') return;
                 if (input.id === 'customDrinkValue') {
                     input.value = (orcamento.customDrink?.valor ?? orcamento.drinks?.custom_drink_personalizado) || 0;
