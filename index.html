@@ -4496,7 +4496,7 @@ html += htmlPacotes;
             if (!ctx) return;
 
             const totaisPorAno = {};
-            orcamentos.forEach(orc => {
+            orcamentos.filter(orc => orc.status === 'aceito').forEach(orc => {
                 obterListaPagamentos(orc).forEach(p => {
                     if (!p.data) return;
                     const ano = new Date(p.data).getFullYear();
@@ -4554,7 +4554,7 @@ html += htmlPacotes;
 
             const recebidoPorAno = {};
             const gastoPorAno = {};
-            orcamentos.forEach(orc => {
+            orcamentos.filter(orc => orc.status === 'aceito').forEach(orc => {
                 obterListaPagamentos(orc).forEach(p => {
                     if (!p.data) return;
                     const ano = new Date(p.data).getFullYear();
@@ -6814,7 +6814,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
         const filtro = (document.getElementById('clienteFiltroTexto')?.value || '').trim().toLowerCase();
         const anoFiltro = document.getElementById('clienteFiltroAno')?.value || '';
-        let lista = orcamentos;
+        let lista = orcamentos.filter(o => o.status === 'aceito');
         if (filtro) {
             lista = lista.filter(o => (o.cliente || '').toLowerCase().includes(filtro) || (o.telefone || '').includes(filtro));
         }
@@ -6831,7 +6831,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         if (!cont) return;
 
         if (!clienteGruposAtual.length) {
-            cont.innerHTML = `<div class="cliente-empty">👥 ${filtro ? 'Nenhum cliente encontrado para essa busca.' : 'Nenhum cliente cadastrado ainda. Clientes aparecem aqui ao criar um orçamento.'}</div>`;
+            cont.innerHTML = `<div class="cliente-empty">👥 ${filtro ? 'Nenhum cliente encontrado para essa busca.' : 'Nenhum cliente com orçamento aceito ainda.'}</div>`;
             return;
         }
 
