@@ -6882,7 +6882,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                 }
             }catch(e){ console.warn('Erro ao calcular aniversário 1 ano', e); }
             return `
-                <div class="cliente-card" onclick="clienteAbrirDetalhePorOrcamentoId(${orcamentoPrincipal.id})">
+                <div class="cliente-card" onclick="clienteAbrirDetalhePorOrcamentoId(${orcamentoPrincipal.id}, ${idx})">
                     <div class="cliente-card-nome">👤 ${grupo.nome || 'Sem nome'}</div>
                     ${dataEventoTxt ? `<div class="cliente-card-data">📅 ${dataEventoTxt}</div>` : ''}
                     <div class="cliente-card-info">
@@ -7030,10 +7030,13 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         clienteRenderizarDetalhe(grupo);
     }
 
-    function clienteAbrirDetalhePorOrcamentoId(orcamentoId) {
-        const grupo = clienteGruposAtual.find(g =>
+    function clienteAbrirDetalhePorOrcamentoId(orcamentoId, indiceFallback) {
+        let grupo = clienteGruposAtual.find(g =>
             Array.isArray(g.orcamentos) && g.orcamentos.some(orc => String(orc.id) === String(orcamentoId))
         );
+        if (!grupo && Number.isInteger(indiceFallback)) {
+            grupo = clienteGruposAtual[indiceFallback];
+        }
         if (!grupo) return;
         clienteGrupoAtualChave = grupo.chave;
         clienteRenderizarDetalhe(grupo);
