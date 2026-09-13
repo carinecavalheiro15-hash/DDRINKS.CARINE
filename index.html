@@ -4319,6 +4319,10 @@ html += htmlPacotes;
             outros: '📦 Outros'
         };
 
+        function orcamentoFoiAceito(orcamento) {
+            return String(orcamento?.status || '').trim().toLowerCase() === 'aceito';
+        }
+
         // Normaliza orc.pagamentos para uma lista de parcelas — aceita tanto o formato novo
         // (array, pagamento parcelado) quanto o formato antigo (um único objeto {valor,forma,...},
         // de antes de suportar parcelas), pra não perder o histórico de orçamentos já salvos.
@@ -4496,7 +4500,7 @@ html += htmlPacotes;
             if (!ctx) return;
 
             const totaisPorAno = {};
-            orcamentos.filter(orc => orc.status === 'aceito').forEach(orc => {
+            orcamentos.filter(orcamentoFoiAceito).forEach(orc => {
                 obterListaPagamentos(orc).forEach(p => {
                     if (!p.data) return;
                     const ano = new Date(p.data).getFullYear();
@@ -4554,7 +4558,7 @@ html += htmlPacotes;
 
             const recebidoPorAno = {};
             const gastoPorAno = {};
-            orcamentos.filter(orc => orc.status === 'aceito').forEach(orc => {
+            orcamentos.filter(orcamentoFoiAceito).forEach(orc => {
                 obterListaPagamentos(orc).forEach(p => {
                     if (!p.data) return;
                     const ano = new Date(p.data).getFullYear();
@@ -4617,7 +4621,7 @@ html += htmlPacotes;
                 orcamentos = JSON.parse(orcamentosSalvos);
             }
 
-            const aceitos = orcamentos.filter(o => o.status === 'aceito');
+            const aceitos = orcamentos.filter(orcamentoFoiAceito);
             const container = document.getElementById('clientes-aceitos-container');
 
             // Calcula estatísticas
@@ -6801,7 +6805,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
     function clienteTotaisFinanceiros(grupo) {
         let totalAceito = 0, totalPago = 0;
-        grupo.orcamentos.filter(o => o.status === 'aceito').forEach(o => {
+        grupo.orcamentos.filter(orcamentoFoiAceito).forEach(o => {
             totalAceito += Number(o.valor) || 0;
             totalPago += calcularTotalPago(o);
         });
@@ -6814,7 +6818,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
         const filtro = (document.getElementById('clienteFiltroTexto')?.value || '').trim().toLowerCase();
         const anoFiltro = document.getElementById('clienteFiltroAno')?.value || '';
-        let lista = orcamentos.filter(o => o.status === 'aceito');
+        let lista = orcamentos.filter(orcamentoFoiAceito);
         if (filtro) {
             lista = lista.filter(o => (o.cliente || '').toLowerCase().includes(filtro) || (o.telefone || '').includes(filtro));
         }
@@ -6854,7 +6858,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         });
 
         function grupoCardHtml(grupo, idx, isRealizado) {
-            const aceitos = grupo.orcamentos.filter(o => o.status === 'aceito').length;
+            const aceitos = grupo.orcamentos.filter(orcamentoFoiAceito).length;
             const pendentes = grupo.orcamentos.filter(o => o.status === 'pendente').length;
             const totais = clienteTotaisFinanceiros(grupo);
             const vouchers = clienteVouchersComoIndicador(grupo);
@@ -7080,7 +7084,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
         const orcamentosOrdenados = [...grupo.orcamentos].sort((a, b) => new Date(b.dataCriacao || b.data || 0) - new Date(a.dataCriacao || a.data || 0));
         const totais = clienteTotaisFinanceiros(grupo);
-        const aceitosParaPagamento = orcamentosOrdenados.filter(o => o.status === 'aceito');
+        const aceitosParaPagamento = orcamentosOrdenados.filter(orcamentoFoiAceito);
         const vouchersIndicador = clienteVouchersComoIndicador(grupo);
         const orcamentosComoIndicado = orcamentosOrdenados.filter(o => o.voucherCodigoIndicacao);
 
