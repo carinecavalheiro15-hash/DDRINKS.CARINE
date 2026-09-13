@@ -2280,19 +2280,36 @@
                         <span style="font-size:1.6rem;">🧾</span> Fornecedores
                     </h2>
                     <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cadastre e gerencie seus fornecedores de serviços e insumos.</p>
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:14px;margin-bottom:2px;">📝 Cadastro de Fornecedor</h3>
                     <div class="cliente-search-row" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
                         <form id="fornecedorForm" onsubmit="return fornecedorSalvar(event)" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;width:100%;">
                             <input type="text" id="fornecedorNome" class="form-input" placeholder="Nome do fornecedor" style="min-width:220px;" required />
                             <input type="text" id="fornecedorTelefone" class="form-input" placeholder="Telefone" style="max-width:160px;" />
                             <input type="email" id="fornecedorEmail" class="form-input" placeholder="Email" style="max-width:200px;" />
                             <input type="text" id="fornecedorEndereco" class="form-input" placeholder="Endereço" style="min-width:260px;" />
-                            <input type="text" id="fornecedorServico" class="form-input" placeholder="Serviço/Produto" style="max-width:200px;" />
+                            <select id="fornecedorServico" class="form-input" style="max-width:200px;" onchange="fornecedorToggleOutro()">
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Gelo">Gelo</option>
+                                <option value="Gelo Personalizado">Gelo Personalizado</option>
+                                <option value="Decoração">Decoração</option>
+                                <option value="Copos">Copos</option>
+                                <option value="Estrutura Bar">Estrutura Bar</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Frete">Frete</option>
+                                <option value="Flores Comestíveis">Flores Comestíveis</option>
+                                <option value="Papelaria">Papelaria</option>
+                                <option value="Papel Arroz">Papel Arroz</option>
+                                <option value="Caixa Térmica">Caixa Térmica</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                            <input type="text" id="fornecedorServicoOutro" class="form-input" placeholder="Descreva o serviço..." style="max-width:220px;display:none;" />
                             <button class="btn btn-primary" type="submit" id="btnSalvarFornecedor">Salvar</button>
                             <button type="button" class="btn btn-secondary" onclick="fornecedorLimparForm()">Limpar</button>
                         </form>
                     </div>
                 </div>
-                <div style="margin-top:1rem;display:flex;gap:8px;align-items:center;">
+                <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:1.25rem;margin-bottom:2px;">📋 Fornecedores Cadastrados</h3>
+                <div style="margin-top:0.5rem;display:flex;gap:8px;align-items:center;">
                     <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome ou serviço (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
                     <button class="btn btn-secondary" type="button" onclick="document.getElementById('fornecedorSearch').value=''; fornecedorRenderGrid();">Limpar</button>
                 </div>
@@ -6980,6 +6997,16 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         `).join('') + '</div>';
     }
 
+    const FORNECEDOR_SERVICOS_FIXOS = ['Bebidas','Gelo','Gelo Personalizado','Decoração','Copos','Estrutura Bar','Transporte','Frete','Flores Comestíveis','Papelaria','Papel Arroz','Caixa Térmica'];
+
+    function fornecedorToggleOutro(){
+        const select = document.getElementById('fornecedorServico');
+        const outro = document.getElementById('fornecedorServicoOutro');
+        if(!select || !outro) return;
+        outro.style.display = select.value === 'Outros' ? '' : 'none';
+        if(select.value !== 'Outros') outro.value = '';
+    }
+
     let fornecedorEditingIndex = null;
     function fornecedorSalvar(ev){
         ev.preventDefault();
@@ -6987,10 +7014,13 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const telefone = (document.getElementById('fornecedorTelefone')?.value||'').trim();
         const email = (document.getElementById('fornecedorEmail')?.value||'').trim();
         const endereco = (document.getElementById('fornecedorEndereco')?.value||'').trim();
-        const servico = (document.getElementById('fornecedorServico')?.value||'').trim();
+        const servicoTipo = (document.getElementById('fornecedorServico')?.value||'').trim();
+        const servicoDetalhe = (document.getElementById('fornecedorServicoOutro')?.value||'').trim();
         if(!nome) return alert('Nome é obrigatório');
+        if(servicoTipo === 'Outros' && !servicoDetalhe) return alert('Descreva o serviço no campo de observação');
+        const servico = servicoTipo === 'Outros' ? servicoDetalhe : servicoTipo;
         fornecedores = fornecedorLoad();
-        const item = { nome, telefone, email, endereco, servico, criadoEm: new Date().toISOString() };
+        const item = { nome, telefone, email, endereco, servico, servicoTipo, servicoDetalhe, criadoEm: new Date().toISOString() };
         if(fornecedorEditingIndex !== null){
             fornecedores[fornecedorEditingIndex] = Object.assign({}, fornecedores[fornecedorEditingIndex], item);
             fornecedorEditingIndex = null;
@@ -7013,7 +7043,18 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         document.getElementById('fornecedorTelefone').value = f.telefone || '';
         document.getElementById('fornecedorEmail').value = f.email || '';
         document.getElementById('fornecedorEndereco').value = f.endereco || '';
-        document.getElementById('fornecedorServico').value = f.servico || '';
+        // Reconstrói tipo/observação: usa servicoTipo salvo, ou tenta migrar cadastros
+        // antigos (campo livre) para uma das opções fixas / "Outros".
+        let tipo = f.servicoTipo;
+        let detalhe = f.servicoDetalhe || '';
+        if(!tipo){
+            const match = FORNECEDOR_SERVICOS_FIXOS.find(op => op.toLowerCase() === (f.servico||'').toLowerCase());
+            if(match){ tipo = match; detalhe = ''; }
+            else { tipo = 'Outros'; detalhe = f.servico || ''; }
+        }
+        document.getElementById('fornecedorServico').value = tipo;
+        document.getElementById('fornecedorServicoOutro').value = detalhe;
+        fornecedorToggleOutro();
         // scroll to form
         document.getElementById('fornecedorNome')?.scrollIntoView({behavior:'smooth',block:'center'});
     }
@@ -7029,7 +7070,10 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
     function fornecedorLimparForm(){
         fornecedorEditingIndex = null;
-        ['fornecedorNome','fornecedorTelefone','fornecedorEmail','fornecedorServico'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+        ['fornecedorNome','fornecedorTelefone','fornecedorEmail','fornecedorServicoOutro'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+        const select = document.getElementById('fornecedorServico');
+        if(select) select.selectedIndex = 0;
+        fornecedorToggleOutro();
     }
 
     // Exponha a página de fornecedores quando necessário
