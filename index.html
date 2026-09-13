@@ -4320,7 +4320,8 @@ html += htmlPacotes;
         };
 
         function orcamentoFoiAceito(orcamento) {
-            return String(orcamento?.status || '').trim().toLowerCase() === 'aceito';
+            const status = String(orcamento?.status || '').trim().toLowerCase();
+            return status === 'aceito' || Boolean(orcamento?.pacoteAceito);
         }
 
         // Normaliza orc.pagamentos para uma lista de parcelas — aceita tanto o formato novo
