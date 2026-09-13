@@ -6971,10 +6971,17 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
     }
 
     // Fornecedores: simples CRUD em localStorage
-    function fornecedorLoad() {
-        try { return JSON.parse(localStorage.getItem('fornecedores')||'[]'); } catch(e){return []}
-    }
     function fornecedorSaveToStorage(list){ localStorage.setItem('fornecedores', JSON.stringify(list || [])); }
+    function fornecedorLoad() {
+        try {
+            const list = JSON.parse(localStorage.getItem('fornecedores')||'[]');
+            // migra cadastros antigos sem id estável (evita Editar/Excluir errarem o alvo ao filtrar a busca)
+            let changed = false;
+            list.forEach(f => { if(!f.id){ f.id = Date.now() + Math.floor(Math.random()*100000); changed = true; } });
+            if (changed) fornecedorSaveToStorage(list);
+            return list;
+        } catch(e){return []}
+    }
     let fornecedores = fornecedorLoad();
 
     function fornecedorRenderGrid(){
@@ -6985,15 +6992,39 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const q = (document.getElementById('fornecedorSearch')?.value || '').trim().toLowerCase();
         const listaFiltrada = q ? fornecedores.filter(f => ((f.nome||'').toLowerCase().includes(q) || (f.servico||'').toLowerCase().includes(q))) : fornecedores;
         if(!listaFiltrada.length){ cont.innerHTML = '<div class="cliente-empty">Nenhum fornecedor encontrado.</div>'; return; }
-        cont.innerHTML = '<div class="cliente-grid">' + listaFiltrada.map((f, i)=>`
+        cont.innerHTML = '<div class="cliente-grid">' + listaFiltrada.map((f)=>`
             <div class="cliente-card">
                 <div class="cliente-card-nome">${f.nome || '—'}</div>
                 <div class="cliente-card-data">${f.servico ? '🛠 '+f.servico : ''}</div>
                 <div class="cliente-card-info" style="margin-top:8px;">📞 ${f.telefone||'—'} • ✉️ ${f.email||'—'}</div>
                 <div class="cliente-card-info" style="margin-top:6px;color:var(--gray-600);">📍 ${f.endereco||'—'}</div>
                 <div class="cliente-card-stats" style="margin-top:8px;gap:8px;">
-                    <button class="btn btn-sm btn-secondary" onclick="fornecedorEditar(${i})">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="fornecedorExcluir(${i})">Excluir</button>
+                    <button class="btn btn-sm btn-secondary" onclick="fornecedorEditar(${f.id})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="fornecedorExcluir(${f.id})">Excluir</button>
+                </div>
+                <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-200);">
+                    ${(f.documentos && f.documentos.length) ? `
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            ${f.documentos.map((d, di) => `
+                                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+                                    <div style="font-size:.8rem;color:var(--gray-700);">📄 <strong>${d.nome}</strong> <span style="color:var(--gray-500);">— anexado em ${new Date(d.dataUpload).toLocaleDateString('pt-BR')}</span></div>
+                                    <div style="display:flex;gap:6px;">
+                                        <button class="btn btn-sm btn-secondary" onclick="fornecedorBaixarDocumento(${f.id}, ${di})">⬇️ Baixar</button>
+                                        <button class="btn btn-sm btn-danger" onclick="fornecedorRemoverDocumento(${f.id}, ${di})">🗑️ Remover</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <label class="btn btn-sm btn-secondary" style="cursor:pointer;display:inline-flex;">
+                                ➕ Adicionar mais
+                                <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="fornecedorAnexarDocumento(${f.id}, this)" multiple />
+                            </label>
+                        </div>
+                    ` : `
+                        <label class="btn btn-sm btn-secondary" style="cursor:pointer;display:inline-flex;">
+                            📎 Anexar Documentos
+                            <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="fornecedorAnexarDocumento(${f.id}, this)" multiple />
+                        </label>
+                    `}
                 </div>
             </div>
         `).join('') + '</div>';
@@ -7009,7 +7040,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         if(select.value !== 'Outros') outro.value = '';
     }
 
-    let fornecedorEditingIndex = null;
+    let fornecedorEditingId = null;
     function fornecedorSalvar(ev){
         ev.preventDefault();
         const nome = (document.getElementById('fornecedorNome')?.value||'').trim();
@@ -7023,10 +7054,12 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const servico = servicoTipo === 'Outros' ? servicoDetalhe : servicoTipo;
         fornecedores = fornecedorLoad();
         const item = { nome, telefone, email, endereco, servico, servicoTipo, servicoDetalhe, criadoEm: new Date().toISOString() };
-        if(fornecedorEditingIndex !== null){
-            fornecedores[fornecedorEditingIndex] = Object.assign({}, fornecedores[fornecedorEditingIndex], item);
-            fornecedorEditingIndex = null;
+        if(fornecedorEditingId !== null){
+            const idx = fornecedores.findIndex(f => f.id === fornecedorEditingId);
+            if (idx >= 0) fornecedores[idx] = Object.assign({}, fornecedores[idx], item);
+            fornecedorEditingId = null;
         } else {
+            item.id = Date.now() + Math.floor(Math.random()*100000);
             fornecedores.push(item);
         }
         fornecedorSaveToStorage(fornecedores);
@@ -7036,11 +7069,11 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         return false;
     }
 
-    function fornecedorEditar(idx){
+    function fornecedorEditar(id){
         fornecedores = fornecedorLoad();
-        const f = fornecedores[idx];
+        const f = fornecedores.find(x => x.id === id);
         if(!f) return;
-        fornecedorEditingIndex = idx;
+        fornecedorEditingId = id;
         document.getElementById('fornecedorNome').value = f.nome || '';
         document.getElementById('fornecedorTelefone').value = f.telefone || '';
         document.getElementById('fornecedorEmail').value = f.email || '';
@@ -7061,17 +7094,86 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         document.getElementById('fornecedorNome')?.scrollIntoView({behavior:'smooth',block:'center'});
     }
 
-    function fornecedorExcluir(idx){
+    function fornecedorExcluir(id){
         if(!confirm('Excluir este fornecedor?')) return;
         fornecedores = fornecedorLoad();
-        fornecedores.splice(idx,1);
+        fornecedores = fornecedores.filter(f => f.id !== id);
         fornecedorSaveToStorage(fornecedores);
         fornecedorRenderGrid();
         showNotification('Fornecedor excluído','error');
     }
 
+    // Anexa documentos (portfólio, contratos, referências etc.) ao fornecedor, em base64 no localStorage.
+    const FORNECEDOR_DOC_LIMITE_MB = 4;
+    async function fornecedorAnexarDocumento(id, inputEl){
+        const files = inputEl.files || [];
+        if (!files.length) return;
+        const arquivos = Array.from(files);
+        for (const arquivo of arquivos) {
+            if (arquivo.size > FORNECEDOR_DOC_LIMITE_MB * 1024 * 1024) {
+                showNotification(`Arquivo "${arquivo.name}" muito grande (máx. ${FORNECEDOR_DOC_LIMITE_MB}MB).`, 'warning');
+                inputEl.value = '';
+                return;
+            }
+        }
+        fornecedores = fornecedorLoad();
+        const f = fornecedores.find(x => x.id === id);
+        if (!f) return;
+        f.documentos = f.documentos || [];
+        try {
+            const readers = arquivos.map(file => new Promise((res, rej) => {
+                const r = new FileReader();
+                r.onload = () => res({ nome: file.name, tipo: file.type, tamanho: file.size, dados: r.result, dataUpload: new Date().toISOString() });
+                r.onerror = () => rej(new Error('Erro lendo arquivo'));
+                r.readAsDataURL(file);
+            }));
+            const results = await Promise.all(readers);
+            f.documentos.push(...results);
+            try {
+                fornecedorSaveToStorage(fornecedores);
+            } catch (e) {
+                f.documentos.splice(-results.length, results.length);
+                showNotification('Não foi possível salvar o(s) arquivo(s) — armazenamento do navegador excedido.', 'error');
+                inputEl.value = '';
+                return;
+            }
+            showNotification(`Anexado(s) ${results.length} arquivo(s) com sucesso!`, 'success');
+            fornecedorRenderGrid();
+        } catch (e) {
+            showNotification('Erro ao ler o(s) arquivo(s) selecionado(s).', 'error');
+        }
+        inputEl.value = '';
+    }
+
+    function fornecedorBaixarDocumento(id, index){
+        fornecedores = fornecedorLoad();
+        const f = fornecedores.find(x => x.id === id);
+        if (!f) return;
+        const item = (f.documentos || [])[index];
+        if (!item) return;
+        const a = document.createElement('a');
+        a.href = item.dados;
+        a.download = item.nome || 'documento';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    function fornecedorRemoverDocumento(id, index){
+        fornecedores = fornecedorLoad();
+        const f = fornecedores.find(x => x.id === id);
+        if (!f) return;
+        const item = (f.documentos || [])[index];
+        if (!item) return;
+        if (!confirm(`Remover o documento "${item.nome}"? Essa ação não pode ser desfeita.`)) return;
+        f.documentos.splice(index, 1);
+        fornecedorSaveToStorage(fornecedores);
+        showNotification('Documento removido.', 'warning');
+        fornecedorRenderGrid();
+    }
+
     function fornecedorLimparForm(){
-        fornecedorEditingIndex = null;
+        fornecedorEditingId = null;
         ['fornecedorNome','fornecedorTelefone','fornecedorEmail','fornecedorServicoOutro'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
         const select = document.getElementById('fornecedorServico');
         if(select) select.selectedIndex = 0;
