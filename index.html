@@ -7168,6 +7168,15 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                 const pagamentos = obterListaPagamentos(orc);
                 const valorPago = calcularTotalPago(orc);
                 const valorRestante = (Number(orc.valor) || 0) - valorPago;
+                const gastos = obterListaGastos(orc);
+                const gastosHtml = !gastos.length ? `
+                    <div style="font-size:.78rem;color:var(--gray-500);padding:6px 0;">Nenhum gasto registrado ainda.</div>
+                ` : gastos.map((g, idx) => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:.8rem;">
+                        <div><strong>${CATEGORIAS_GASTO[g.categoria] || '📦 Outros'}</strong> — ${formatarValorBR(Number(g.valor) || 0)}<div style="color:var(--gray-500);font-size:.75rem;">${g.data ? new Date(g.data).toLocaleDateString('pt-BR') : '—'}${g.descricao ? ' · ' + g.descricao : ''}</div></div>
+                        <button class="btn btn-sm btn-danger" onclick="clienteExcluirGasto(${orc.id}, ${idx})" title="Excluir gasto">🗑️</button>
+                    </div>
+                `).join('');
                 const historicoHtml = !pagamentos.length ? `
                     <div style="font-size:.78rem;color:var(--gray-500);padding:6px 0;">Nenhum pagamento registrado ainda.</div>
                 ` : pagamentos.map((p, idx) => `
@@ -7210,6 +7219,32 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                             <textarea id="cliObs-${orc.id}" class="form-input" style="resize:vertical;min-height:50px;" placeholder="Observações (opcional)..."></textarea>
                         </div>
                         <button class="btn btn-success" style="width:100%;" onclick="clienteSalvarPagamento(${orc.id})">✓ Adicionar Pagamento</button>
+                        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--gray-200);">
+                            <div style="font-weight:600;color:var(--gray-700);margin-bottom:6px;">💸 Gastos deste Evento</div>
+                            <div style="background:white;border:1px solid var(--gray-200);border-radius:.5rem;padding:2px 12px;margin-bottom:10px;">${gastosHtml}</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label class="form-label">Categoria do Gasto</label>
+                                    <select id="cliCategoriaGasto-${orc.id}" class="form-input">
+                                        <option value="">Selecione...</option>
+                                        ${Object.entries(CATEGORIAS_GASTO).map(([chave, label]) => `<option value="${chave}">${label}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Data do Gasto</label>
+                                    <input type="date" id="cliDataGasto-${orc.id}" class="form-input" value="${new Date().toISOString().slice(0, 10)}" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Valor do Gasto (R$)</label>
+                                <input type="number" id="cliValorGasto-${orc.id}" class="form-input" step="0.01" placeholder="0.00" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Descrição</label>
+                                <textarea id="cliObsGasto-${orc.id}" class="form-input" style="resize:vertical;min-height:50px;" placeholder="Descrição (opcional)..."></textarea>
+                            </div>
+                            <button class="btn btn-danger" style="width:100%;" onclick="clienteSalvarGasto(${orc.id})">✓ Adicionar Gasto</button>
+                        </div>
                     </div>
                 `;
             }).join('')}
@@ -7452,6 +7487,51 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         showNotification('Pagamento excluído.', 'warning');
         clienteRenderGrid();
         clienteReabrirDetalheAtual();
+    }
+
+    function clienteSalvarGasto(orcamentoId) {
+        const orcamento = orcamentos.find(o => o.id === orcamentoId);
+        if (!orcamento) return;
+        const categoria = document.getElementById(`cliCategoriaGasto-${orcamentoId}`).value;
+        const valor = parseFloat(document.getElementById(`cliValorGasto-${orcamentoId}`).value) || 0;
+        const dataInput = document.getElementById(`cliDataGasto-${orcamentoId}`).value;
+        const descricao = document.getElementById(`cliObsGasto-${orcamentoId}`).value.trim();
+
+        if (!categoria) {
+            showNotification('Selecione uma categoria de gasto!', 'warning');
+            return;
+        }
+        if (valor <= 0) {
+            showNotification('Digite um valor válido!', 'warning');
+            return;
+        }
+
+        const gastos = obterListaGastos(orcamento);
+        gastos.push({
+            categoria,
+            valor,
+            descricao,
+            data: dataInput ? new Date(dataInput + 'T12:00:00').toISOString() : new Date().toISOString()
+        });
+        orcamento.gastos = gastos;
+        localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+        clienteRenderGrid();
+        clienteReabrirDetalheAtual();
+        showNotification('Gasto adicionado com sucesso! ✓', 'success');
+    }
+
+    function clienteExcluirGasto(orcamentoId, indice) {
+        const orcamento = orcamentos.find(o => o.id === orcamentoId);
+        if (!orcamento) return;
+        const gastos = obterListaGastos(orcamento);
+        if (!gastos[indice]) return;
+        if (!confirm('Excluir este gasto? Essa ação não pode ser desfeita.')) return;
+        gastos.splice(indice, 1);
+        orcamento.gastos = gastos;
+        localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+        clienteRenderGrid();
+        clienteReabrirDetalheAtual();
+        showNotification('Gasto excluído.', 'warning');
     }
 
     function clienteFecharVer() {
