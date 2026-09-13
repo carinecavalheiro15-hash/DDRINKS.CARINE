@@ -4110,8 +4110,11 @@ html += htmlPacotes;
         }, 100);
 
         // Checa lembretes de degustação e marca realizados ao carregar e a cada 60 minutos
-        checkDegustacaoReminders();
-        degMarkRealizados();
+        // Adiado para o evento 'load': checkDegustacaoReminders/degMarkRealizados só são
+        // definidas no <script> seguinte, então chamar direto aqui lança ReferenceError e
+        // interrompe o restante deste bloco (quebrando CATEGORIAS_GASTO e outras consts
+        // declaradas depois — isso impedia o modal de detalhe do cliente de abrir com os dados).
+        window.addEventListener('load', () => { checkDegustacaoReminders(); degMarkRealizados(); });
         setInterval(() => { checkDegustacaoReminders(); degMarkRealizados(); }, 1000 * 60 * 60);
 
         function naoAceitouPacote(id) {
