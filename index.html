@@ -5440,9 +5440,9 @@ html += htmlPacotes;
         const lista = degOrcamentosLoad();
         const hoje = new Date(); hoje.setHours(0,0,0,0);
 
-        // Eventos próximos (data em o.data) — 1 mês (30 dias)
+        // Eventos próximos (data em o.data) — 1 mês (30 dias) — apenas orçamentos aceitos
         const limiteEventos = new Date(hoje.getTime() + 1000*60*60*24*30);
-        const eventos = lista.filter(o => o.data).map(o=>({id:o.id, cliente:o.cliente, data:o.data})).filter(e=>{
+        const eventos = lista.filter(o => o.data && orcamentoFoiAceito(o)).map(o=>({id:o.id, cliente:o.cliente, data:o.data})).filter(e=>{
             const d = new Date(e.data);
             return d >= hoje && d <= limiteEventos;
         }).sort((a,b)=>new Date(a.data)-new Date(b.data));
