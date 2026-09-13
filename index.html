@@ -5402,10 +5402,10 @@ html += htmlPacotes;
         lista.sort((a,b)=> new Date(a.data) - new Date(b.data));
         const proximas = lista.slice(0,6).map(it=>{
             const d = new Date(it.data);
-            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:white;">
-                <div style="font-size:.9rem;font-weight:600;">${it.cliente || 'Cliente'}</div>
-                <div style="font-size:.85rem;color:var(--gray-600);">${d.toLocaleDateString('pt-BR')}</div>
-                <div style="display:flex;gap:6px;">
+            return `<div style="display:flex;align-items:center;gap:12px;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:white;">
+                <div style="flex:1;min-width:0;font-size:.9rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.cliente || 'Cliente'}</div>
+                <div style="width:90px;flex-shrink:0;text-align:center;font-size:.85rem;color:var(--gray-600);">${d.toLocaleDateString('pt-BR')}</div>
+                <div style="display:flex;gap:6px;flex-shrink:0;">
                     <button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button>
                     <button class="btn btn-sm btn-danger" onclick="degExcluirAgendamento(${it.id})">🗑 Excluir</button>
                 </div>
@@ -5423,10 +5423,10 @@ html += htmlPacotes;
         lista.sort((a,b)=> new Date(b.data || 0) - new Date(a.data || 0));
         const html = lista.slice(0,10).map(it=>{
             const d = it.data ? new Date(it.data) : null;
-            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:#f8fafc;">
-                <div style="font-size:.9rem;font-weight:600;">${it.cliente || 'Cliente'}</div>
-                <div style="font-size:.85rem;color:var(--gray-600);">${d?d.toLocaleDateString('pt-BR'):'--'}</div>
-                <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button></div>
+            return `<div style="display:flex;align-items:center;gap:12px;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:#f8fafc;">
+                <div style="flex:1;min-width:0;font-size:.9rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.cliente || 'Cliente'}</div>
+                <div style="width:90px;flex-shrink:0;text-align:center;font-size:.85rem;color:var(--gray-600);">${d?d.toLocaleDateString('pt-BR'):'--'}</div>
+                <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button></div>
             </div>`;
         }).join('');
         cont.innerHTML = html;
