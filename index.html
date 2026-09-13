@@ -7835,7 +7835,15 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         // Drinks sem ficha (ids não encontrados)
         const drinksSemFicha = Object.keys(drinks).filter(did => !fichas.find(f => f.id === did) && (Number(drinks[did]) || 0) > 0);
 
-        const itens = Object.values(agg).sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
+        // Compara cada ingrediente necessário com o estoque atual, pra saber o que falta comprar
+        const estoquePorId = {};
+        estLoad().forEach(it => { estoquePorId[it.id] = it; });
+        const itens = Object.entries(agg).map(([id, ing]) => {
+            const estoqueItem = estoquePorId[id];
+            const emEstoque = estoqueItem ? Number(estoqueItem.quantidade) || 0 : 0;
+            const faltante = estR2(ing.total - emEstoque);
+            return { id, ...ing, emEstoque, faltante };
+        }).sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'));
 
         const modal = document.getElementById('insumosModal');
         document.getElementById('insumosModalTitle').textContent = `Insumos — ${orc.nome || orc.cliente || 'Orçamento #'+orcId}`;
@@ -7854,27 +7862,43 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             document.getElementById('insumosModalBody').innerHTML =
                 '<p style="color:var(--gray-400);text-align:center;padding:2rem;">Nenhum ingrediente encontrado. Verifique as fichas técnicas dos drinks deste orçamento.</p>';
         } else {
+            const totalComprar = itens.filter(ing => ing.faltante > 0).length;
             document.getElementById('insumosModalBody').innerHTML = `
-                <table style="width:100%;border-collapse:collapse;">
+                <div style="font-size:.8rem;color:${totalComprar ? 'var(--warning-color)' : 'var(--success-color)'};font-weight:600;margin-bottom:10px;">
+                    ${totalComprar ? `🛒 ${totalComprar} ingrediente${totalComprar>1?'s':''} precisa${totalComprar>1?'m':''} de compra` : '✅ Estoque cobre tudo — nenhuma compra necessária'}
+                </div>
+                <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;min-width:520px;">
                     <thead>
                         <tr style="border-bottom:2px solid #e2e8f0;">
                             <th style="text-align:left;padding:8px 10px;font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;">Ingrediente</th>
-                            <th style="text-align:right;padding:8px 10px;font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;">Quantidade Total</th>
+                            <th style="text-align:right;padding:8px 10px;font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;">Necessário</th>
+                            <th style="text-align:right;padding:8px 10px;font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;">Em Estoque</th>
+                            <th style="text-align:right;padding:8px 10px;font-size:.78rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;">Comprar?</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${itens.map((ing,i) => `
                         <tr style="border-bottom:1px solid #f1f5f9;background:${i%2===0?'white':'#fafafa'};">
-                            <td style="padding:9px 10px;font-size:.88rem;display:flex;align-items:center;gap:8px;">
+                            <td style="padding:9px 10px;font-size:.88rem;white-space:nowrap;">
                                 <span style="font-size:1.1rem;">${ing.icone}</span>
                                 <span style="color:var(--gray-800);font-weight:500;">${ing.nome}</span>
                             </td>
-                            <td style="padding:9px 10px;text-align:right;font-weight:700;color:#ef4444;font-size:.92rem;white-space:nowrap;">
-                                ${ing.total % 1 ? ing.total.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) : ing.total.toLocaleString('pt-BR')} ${ing.unidade}
+                            <td style="padding:9px 10px;text-align:right;font-weight:700;color:var(--gray-700);font-size:.9rem;white-space:nowrap;">
+                                ${estFmt(ing.total, ing.unidade)}
+                            </td>
+                            <td style="padding:9px 10px;text-align:right;color:var(--gray-600);font-size:.88rem;white-space:nowrap;">
+                                ${estFmt(ing.emEstoque, ing.unidade)}
+                            </td>
+                            <td style="padding:9px 10px;text-align:right;white-space:nowrap;">
+                                ${ing.faltante > 0
+                                    ? `<span style="font-weight:700;color:#ef4444;font-size:.88rem;">🛒 Comprar ${estFmt(ing.faltante, ing.unidade)}</span>`
+                                    : `<span style="font-weight:600;color:var(--success-color);font-size:.85rem;">✅ Em estoque — não precisa comprar</span>`}
                             </td>
                         </tr>`).join('')}
                     </tbody>
                 </table>
+                </div>
                 ${drinksSemFicha.length ? `<p style="font-size:.75rem;color:var(--gray-400);margin-top:10px;">⚠️ Drinks sem ficha técnica cadastrada: ${drinksSemFicha.join(', ')}</p>` : ''}`;
         }
 
@@ -7889,7 +7913,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
     <!-- Modal: Ver Insumos do Orçamento -->
     <div id="insumosModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5000;align-items:center;justify-content:center;padding:1rem;">
-        <div style="background:white;border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+        <div style="background:white;border-radius:16px;width:100%;max-width:760px;max-height:88vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;">
             <div style="padding:18px 22px 12px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:sticky;top:0;background:white;z-index:1;border-radius:16px 16px 0 0;">
                 <div>
                     <div style="font-weight:700;font-size:1.05rem;color:#0f172a;" id="insumosModalTitle">Insumos</div>
