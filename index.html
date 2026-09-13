@@ -7131,6 +7131,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                     <button class="btn btn-sm btn-secondary" onclick="clienteVerOrcamento(${orc.id})">Ver</button>
                     <button class="btn btn-sm btn-primary" style="background:var(--error-color);color:#fff;" onclick="gerarPDFOrcamento(${orc.id})">PDF</button>
                     ${orc.status === 'aceito' ? `<button class="btn btn-sm" style="background:#10b981;color:white;" onclick="verInsumos(${orc.id})">Insumos</button>` : ''}
+                    ${orc.degustacao && orc.degustacao.dataDegustacao && Object.values(orc.degustacao.drinks || {}).some(d => (d.obs || '').trim()) ? `<button class="btn btn-sm btn-secondary" onclick="degAbrirModal(${orc.id})">🍹 Ver Degustação</button>` : ''}
                     <button class="btn btn-sm btn-danger" onclick="clienteExcluirOrcamento(${orc.id})">Excluir</button>
                 </div>
                 <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-200);">
