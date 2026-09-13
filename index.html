@@ -776,6 +776,10 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="17" cy="8.5" r="2.3" stroke="currentColor" stroke-width="1.2"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
                     Clientes
                 </button>
+                <button class="sidebar-item" onclick="showPage('fornecedores')" id="nav-fornecedores">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a4 4 0 110 8 4 4 0 010-8zm0 10c-4.418 0-8 2.239-8 5v3h16v-3c0-2.761-3.582-5-8-5z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+                    Fornecedores
+                </button>
                 <button class="sidebar-item" onclick="showPage('financeiro')" id="nav-financeiro" style="display:none;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/></svg>
                     Financeiro
@@ -791,6 +795,10 @@
                 <button class="sidebar-item" onclick="showPage('degustacao')" id="nav-degustacao" style="display:none;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3h12l-1.2 8.4a5 5 0 01-4.95 4.1h-.7a5 5 0 01-4.95-4.1L6 3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M12 15.5V21M9 21h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                     Degustação
+                </button>
+                <button class="sidebar-item" onclick="showPage('alertas')" id="nav-alertas" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s8-4 8-10V7l-8-4-8 4v5c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M12 8v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Alertas
                 </button>
                 <button class="sidebar-item" onclick="showPage('promocoes')" id="nav-promocoes" style="display:none;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 12l-7.5 7.5a2 2 0 01-2.8 0L4 13.8a2 2 0 010-2.8L11.5 3.5H18a2 2 0 012 2v6.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><circle cx="15" cy="8" r="1.3" fill="currentColor"/></svg>
@@ -870,7 +878,7 @@
 
         <!-- Página de Configurações -->
         <div id="config-page" class="page">
-            <div class="card" style="max-width: 560px; margin: 2rem auto;">
+            <div class="card" style="max-width: 700px; margin: 2rem auto;">
                 <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
                     <h2 class="card-title">
                         <span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
@@ -1013,6 +1021,11 @@
                             </div>
                             <input type="hidden" id="dataEventoISO">
                             <small id="dataEventoPreview" style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);font-weight:600;"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="dataDegustacaoForm" class="form-label">Agendar Degustação</label>
+                            <input type="date" id="dataDegustacaoForm" class="form-input" style="max-width:220px;" />
+                            <small style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);">Opcional — alerta 2 dias antes</small>
                         </div>
                         <div class="form-group">
                             <label for="quantidadeConvidados" class="form-label">Convidados *</label>
@@ -1575,6 +1588,9 @@
                             <option value="11">Novembro</option>
                             <option value="12">Dezembro</option>
                         </select>
+                        <select id="filtroAno" class="form-input" style="max-width: 140px;">
+                            <option value="">Todos os anos</option>
+                        </select>
                         <select id="filtroStatus" class="form-input" style="max-width: 160px;">
                             <option value="todos">Todos os Status</option>
                             <option value="pendente">Pendentes</option>
@@ -1992,10 +2008,43 @@
                     </h2>
                     <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Anote observações sobre os drinks de cada orçamento para saber o que precisa ser ajustado antes do evento.</p>
                 </div>
+                <div style="margin-bottom:14px;">
+                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Próximas Degustações</h3>
+                    <div id="degProximas" style="margin-bottom:8px;"></div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Degustações Realizadas</h3>
+                    <div id="degRealizadas" style="margin-bottom:8px;color:var(--gray-600);"></div>
+                </div>
                 <div id="degLista"></div>
             </div>
         </div>
         <!-- FIM PÁGINA DEGUSTAÇÃO -->
+
+        <!-- Página de Alertas -->
+        <div id="alertas-page" class="page">
+            <div class="deg-wrap">
+                <div style="margin-bottom:20px;">
+                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;"><span style="font-size:1.6rem;">🔔</span> Alertas</h2>
+                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Eventos e degustações próximas. Eventos: avisos com até 1 mês de antecedência. Degustações: avisos com até 1 semana.</p>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Eventos Próximos (1 mês)</h3>
+                    <div id="alertEventos" style="margin-bottom:8px;"></div>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Degustações Próximas (1 semana)</h3>
+                    <div id="alertDegustacoes" style="margin-bottom:8px;"></div>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Aniversários de 1 ano (lembrar 1 semana antes)</h3>
+                    <div id="alertAniversario1" style="margin-bottom:8px;color:var(--gray-600);"></div>
+                </div>
+            </div>
+        </div>
 
         <!-- ===== PÁGINA DE PACOTES PROMOCIONAIS ===== -->
         <div id="promocoes-page" class="page">
@@ -2151,6 +2200,8 @@
                 .cliente-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-top:18px; }
                 .cliente-card { background:white; border:1px solid var(--gray-200); border-radius:14px; padding:18px; box-shadow:var(--shadow); cursor:pointer; transition:transform .15s, box-shadow .15s; display:flex; flex-direction:column; gap:10px; }
                 .cliente-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.12); border-color:var(--primary-color); }
+                .cliente-card-actions { margin-top:8px; display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+                .cliente-card { position:relative; overflow:hidden; }
                 .cliente-card-nome { font-weight:700; font-size:1.05rem; color:var(--gray-900); display:flex; align-items:center; gap:8px; }
                 .cliente-card-data { font-weight:700; font-size:1.05rem; color:var(--primary-color); margin-top:2px; }
                 .cliente-card-info { font-size:.8rem; color:var(--gray-600); display:flex; flex-direction:column; gap:3px; }
@@ -2187,8 +2238,11 @@
                         <span style="font-size:1.6rem;">👥</span> Clientes
                     </h2>
                     <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Visão única de cada cliente: clique no card para ver orçamentos, financeiro e vouchers.</p>
-                    <div class="cliente-search-row">
+                    <div class="cliente-search-row" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
                         <input type="text" id="clienteFiltroTexto" class="form-input" placeholder="Buscar por nome ou telefone..." oninput="clienteRenderGrid()" />
+                        <select id="clienteFiltroAno" class="form-input" style="max-width:140px;">
+                            <option value="">Todos os anos</option>
+                        </select>
                     </div>
                 </div>
                 <div id="clienteGrid"></div>
@@ -2217,6 +2271,34 @@
             </div>
         </div>
         <!-- FIM PÁGINA CLIENTES -->
+
+        <!-- Página de Fornecedores -->
+        <div id="fornecedores-page" class="page">
+            <div class="cliente-wrap">
+                <div class="cliente-toolbar">
+                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.6rem;">🧾</span> Fornecedores
+                    </h2>
+                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cadastre e gerencie seus fornecedores de serviços e insumos.</p>
+                    <div class="cliente-search-row" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                        <form id="fornecedorForm" onsubmit="return fornecedorSalvar(event)" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;width:100%;">
+                            <input type="text" id="fornecedorNome" class="form-input" placeholder="Nome do fornecedor" style="min-width:220px;" required />
+                            <input type="text" id="fornecedorTelefone" class="form-input" placeholder="Telefone" style="max-width:160px;" />
+                            <input type="email" id="fornecedorEmail" class="form-input" placeholder="Email" style="max-width:200px;" />
+                            <input type="text" id="fornecedorEndereco" class="form-input" placeholder="Endereço" style="min-width:260px;" />
+                            <input type="text" id="fornecedorServico" class="form-input" placeholder="Serviço/Produto" style="max-width:200px;" />
+                            <button class="btn btn-primary" type="submit" id="btnSalvarFornecedor">Salvar</button>
+                            <button type="button" class="btn btn-secondary" onclick="fornecedorLimparForm()">Limpar</button>
+                        </form>
+                    </div>
+                </div>
+                <div style="margin-top:1rem;display:flex;gap:8px;align-items:center;">
+                    <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome ou serviço (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
+                    <button class="btn btn-secondary" type="button" onclick="document.getElementById('fornecedorSearch').value=''; fornecedorRenderGrid();">Limpar</button>
+                </div>
+                <div id="fornecedorGrid" style="margin-top:0.75rem;"></div>
+            </div>
+        </div>
 
         <!-- Página de Cerimonialistas Parceiras -->
         <div id="cerimonialistas-page" class="page">
@@ -2465,10 +2547,14 @@
                 degRenderLista();
             } else if (pageId === 'promocoes') {
                 promoRender();
+            } else if (pageId === 'alertas') {
+                alertRender();
             } else if (pageId === 'vouchers') {
                 voucherRender();
             } else if (pageId === 'clientes') {
                 clienteRenderGrid();
+            } else if (pageId === 'fornecedores') {
+                fornecedorRenderGrid();
             } else if (pageId === 'cerimonialistas') {
                 cerimonialistaRender();
             }
@@ -2487,11 +2573,13 @@
                 document.getElementById('nav-agenda').style.display = 'flex';
                 document.getElementById('nav-calendar').style.display = 'flex';
                 document.getElementById('nav-clientes').style.display = 'flex';
+                document.getElementById('nav-fornecedores').style.display = 'flex';
                 document.getElementById('nav-financeiro').style.display = 'flex';
                 document.getElementById('nav-config').style.display = 'flex';
                 document.getElementById('nav-estoque').style.display = 'flex';
                 document.getElementById('nav-degustacao').style.display = 'flex';
                 document.getElementById('nav-promocoes').style.display = 'flex';
+                document.getElementById('nav-alertas').style.display = 'flex';
                 document.getElementById('nav-vouchers').style.display = 'flex';
                 document.getElementById('nav-cerimonialistas').style.display = 'flex';
                 document.getElementById('nav-logout').style.display = 'flex';
@@ -2502,10 +2590,12 @@
                 document.getElementById('nav-agenda').style.display = 'none';
                 document.getElementById('nav-calendar').style.display = 'none';
                 document.getElementById('nav-clientes').style.display = 'none';
+                document.getElementById('nav-fornecedores').style.display = 'none';
                 document.getElementById('nav-financeiro').style.display = 'none';
                 document.getElementById('nav-config').style.display = 'none';
                 document.getElementById('nav-estoque').style.display = 'none';
                 document.getElementById('nav-degustacao').style.display = 'none';
+                document.getElementById('nav-alertas').style.display = 'none';
                 document.getElementById('nav-promocoes').style.display = 'none';
                 document.getElementById('nav-vouchers').style.display = 'none';
                 document.getElementById('nav-cerimonialistas').style.display = 'none';
@@ -2943,6 +3033,17 @@
             orcamentoParaSalvar.totaisPorPacote = totaisPorPacote;
             orcamentoParaSalvar.nomesItens = nomesItens;
             orcamentoParaSalvar.drinksDegustacao = drinkIdsParaDegustacao;
+
+            // se preenchido o campo de degustação no formulário, salvar a data
+            const dataDegForm = (document.getElementById('dataDegustacaoForm')?.value || '').trim();
+            if (dataDegForm) {
+                const parsed = parseFlexibleDate(dataDegForm);
+                if (parsed) {
+                    if (!orcamentoParaSalvar.degustacao) orcamentoParaSalvar.degustacao = { drinks: {} };
+                    orcamentoParaSalvar.degustacao.dataDegustacao = parsed.toISOString();
+                    orcamentoParaSalvar.degustacao.reminderSentTwoDays = false;
+                }
+            }
 
             // Mantém observações de degustação já existentes (edição) e cria entradas para os drinks novos
             if (!orcamentoParaSalvar.degustacao) orcamentoParaSalvar.degustacao = { drinks: {} };
@@ -3858,6 +3959,7 @@ html += htmlPacotes;
             const lista = document.getElementById('orcamentos-lista');
             const nomeFiltro = (document.getElementById('filtroNomeCliente')?.value || '').toLowerCase();
             const mesFiltro = document.getElementById('filtroMes')?.value || '';
+            const anoFiltro = document.getElementById('filtroAno')?.value || '';
             const statusFiltro = document.getElementById('filtroStatus')?.value || 'todos';
             let orcamentosFiltrados = [...orcamentos];
             if (nomeFiltro) {
@@ -3869,6 +3971,13 @@ html += htmlPacotes;
                     // data formato YYYY-MM-DD
                     const mes = data.split('-')[1];
                     return mes === mesFiltro;
+                });
+            }
+            if (anoFiltro) {
+                orcamentosFiltrados = orcamentosFiltrados.filter(o => {
+                    const data = o.data || '';
+                    const ano = data.split('-')[0];
+                    return ano === anoFiltro;
                 });
             }
             if (statusFiltro !== 'todos') {
@@ -3968,11 +4077,42 @@ html += htmlPacotes;
         }
         // Atualiza a lista ao carregar a agenda
         setTimeout(() => {
+            // popula os filtros de anos (2028 até 2058)
+            const startYear = 2028;
+            const endYear = 2058;
+            const anoSelect = document.getElementById('filtroAno');
+            if (anoSelect) {
+                for (let y = startYear; y <= endYear; y++) {
+                    const opt = document.createElement('option');
+                    opt.value = String(y);
+                    opt.text = String(y);
+                    anoSelect.appendChild(opt);
+                }
+            }
+            const clienteAnoSelect = document.getElementById('clienteFiltroAno');
+            if (clienteAnoSelect) {
+                for (let y = startYear; y <= endYear; y++) {
+                    const opt = document.createElement('option');
+                    opt.value = String(y);
+                    opt.text = String(y);
+                    clienteAnoSelect.appendChild(opt);
+                }
+            }
+
             filtrarOrcamentos();
             document.getElementById('btnBuscarOrcamento')?.addEventListener('click', filtrarOrcamentos);
             document.getElementById('filtroMes')?.addEventListener('change', filtrarOrcamentos);
             document.getElementById('filtroStatus')?.addEventListener('change', filtrarOrcamentos);
+            document.getElementById('filtroAno')?.addEventListener('change', filtrarOrcamentos);
+            document.getElementById('clienteFiltroAno')?.addEventListener('change', clienteRenderGrid);
+            // se o cliente estiver na página de clientes, atualiza o grid com o filtro
+            document.getElementById('clienteFiltroAno')?.addEventListener('change', () => clienteRenderGrid());
         }, 100);
+
+        // Checa lembretes de degustação e marca realizados ao carregar e a cada 60 minutos
+        checkDegustacaoReminders();
+        degMarkRealizados();
+        setInterval(() => { checkDegustacaoReminders(); degMarkRealizados(); }, 1000 * 60 * 60);
 
         function naoAceitouPacote(id) {
             const orcamento = orcamentos.find(o => o.id === id);
@@ -5198,27 +5338,221 @@ html += htmlPacotes;
 
     // --- Lista (página Degustação) ---
     function degRenderLista(){
+        // mostrar apenas orçamentos com drinks que AINDA precisam ser agendados
         const lista = degOrcamentosLoad()
-            .filter(o => degDrinkIds(o).length > 0)
+            .filter(o => degDrinkIds(o).length > 0 && (!o.degustacao || !o.degustacao.dataDegustacao))
             .sort((a, b) => (b.id || 0) - (a.id || 0));
+        // atualizar painel de próximas degustações
+        degMarkRealizados();
+        degRenderProximas();
+        degRenderRealizadas();
         const cont = document.getElementById('degLista');
-        if (!lista.length) { cont.innerHTML = '<div class="deg-empty">🍹 Nenhum orçamento com drinks ainda. Gere um orçamento para começar a degustação.</div>'; return; }
+        if (!lista.length) { cont.innerHTML = '<div class="deg-empty">🍹 Nenhum orçamento pendente de agendamento. Use o botão "Agendar Degustação" nos orçamentos para marcar uma data.</div>'; return; }
         cont.innerHTML = lista.map(o => {
             const ids = degDrinkIds(o);
             const deg = (o.degustacao && o.degustacao.drinks) || {};
             const revisados = ids.filter(id => deg[id] && deg[id].feito).length;
+            // se já ocorreu
+            const isRealizado = !!(o.degustacao && (o.degustacao.realizado === true || (o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) < new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()))));
             let badgeCls = 'pendente', badgeTxt = `🕓 0/${ids.length} revisados`;
-            if (revisados > 0 && revisados === ids.length) { badgeCls = 'completo'; badgeTxt = `✅ ${revisados}/${ids.length} revisados`; }
+            if (isRealizado) { badgeCls = 'realizado'; badgeTxt = `🎉 Realizado`; }
+            else if (revisados > 0 && revisados === ids.length) { badgeCls = 'completo'; badgeTxt = `✅ ${revisados}/${ids.length} revisados`; }
             else if (revisados > 0) { badgeCls = 'parcial'; badgeTxt = `⏳ ${revisados}/${ids.length} revisados`; }
+            const hasDate = !!(o.degustacao && o.degustacao.dataDegustacao);
             return `<div class="deg-list-card" onclick="degAbrirModal(${o.id})">
                 <div>
                     <div class="deg-list-cliente">${o.cliente || 'Cliente'}</div>
                     <div class="deg-list-meta">${o.dataFormatada || o.data || ''} · ${ids.length} drink(s)</div>
                 </div>
-                <span class="deg-progress-badge ${badgeCls}">${badgeTxt}</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <span class="deg-progress-badge ${badgeCls}">${badgeTxt}</span>
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); degAgendarInline(${o.id});">📅 Agendar Degustação</button>
+                    ${hasDate ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); degExcluirAgendamento(${o.id});">🗑 Excluir</button>` : ''}
+                </div>
             </div>`;
         }).join('');
     }
+
+    function degRenderProximas(){
+        const cont = document.getElementById('degProximas');
+        if(!cont) return;
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const lista = degOrcamentosLoad().filter(o => o.degustacao && o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) >= todayStart).map(o=>({id:o.id, cliente:o.cliente, data:o.degustacao.dataDegustacao}));
+        if(!lista.length){ cont.innerHTML = '<div style="color:var(--gray-500);">Nenhuma degustação agendada.</div>'; return; }
+        // sort ascending
+        lista.sort((a,b)=> new Date(a.data) - new Date(b.data));
+        const proximas = lista.slice(0,6).map(it=>{
+            const d = new Date(it.data);
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:white;">
+                <div style="font-size:.9rem;font-weight:600;">${it.cliente || 'Cliente'}</div>
+                <div style="font-size:.85rem;color:var(--gray-600);">${d.toLocaleDateString('pt-BR')}</div>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button>
+                    <button class="btn btn-sm btn-danger" onclick="degExcluirAgendamento(${it.id})">🗑 Excluir</button>
+                </div>
+            </div>`;
+        }).join('');
+        cont.innerHTML = proximas;
+    }
+
+    function degRenderRealizadas(){
+        const cont = document.getElementById('degRealizadas');
+        if(!cont) return;
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const lista = degOrcamentosLoad().filter(o => o.degustacao && (o.degustacao.realizado === true || (o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) < todayStart)) ).map(o=>({id:o.id, cliente:o.cliente, data:o.degustacao.dataDegustacao, realizado:o.degustacao.realizado}));
+        if(!lista.length){ cont.innerHTML = '<div style="color:var(--gray-500);">Nenhuma degustação realizada ainda.</div>'; return; }
+        lista.sort((a,b)=> new Date(b.data || 0) - new Date(a.data || 0));
+        const html = lista.slice(0,10).map(it=>{
+            const d = it.data ? new Date(it.data) : null;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:#f8fafc;">
+                <div style="font-size:.9rem;font-weight:600;">${it.cliente || 'Cliente'}</div>
+                <div style="font-size:.85rem;color:var(--gray-600);">${d?d.toLocaleDateString('pt-BR'):'--'}</div>
+                <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button></div>
+            </div>`;
+        }).join('');
+        cont.innerHTML = html;
+    }
+
+    // ===== ALERTAS =====
+    function alertRender(){
+        const contEventos = document.getElementById('alertEventos');
+        const contDeg = document.getElementById('alertDegustacoes');
+        if(!contEventos || !contDeg) return;
+        const lista = degOrcamentosLoad();
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+        // Eventos próximos (data em o.data) — 1 mês (30 dias)
+        const limiteEventos = new Date(hoje.getTime() + 1000*60*60*24*30);
+        const eventos = lista.filter(o => o.data).map(o=>({id:o.id, cliente:o.cliente, data:o.data})).filter(e=>{
+            const d = new Date(e.data);
+            return d >= hoje && d <= limiteEventos;
+        }).sort((a,b)=>new Date(a.data)-new Date(b.data));
+
+        if(!eventos.length) contEventos.innerHTML = '<div style="color:var(--gray-500);">Nenhum evento nos próximos 30 dias.</div>';
+        else contEventos.innerHTML = eventos.map(ev=>{
+            const d = new Date(ev.data);
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:8px;background:white;">
+                <div style="font-weight:700">${ev.cliente || 'Cliente'}</div>
+                <div style="color:var(--gray-600)">${d.toLocaleDateString('pt-BR')}</div>
+                <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button></div>
+            </div>`;
+        }).join('');
+
+        // Degustações próximas (o.degustacao.dataDegustacao) — 1 semana (7 dias)
+        const limiteDeg = new Date(hoje.getTime() + 1000*60*60*24*7);
+        const degs = lista.filter(o => o.degustacao && o.degustacao.dataDegustacao).map(o=>({id:o.id, cliente:o.cliente, data:o.degustacao.dataDegustacao})).filter(e=>{
+            const d = new Date(e.data);
+            return d >= hoje && d <= limiteDeg;
+        }).sort((a,b)=>new Date(a.data)-new Date(b.data));
+
+        if(!degs.length) contDeg.innerHTML = '<div style="color:var(--gray-500);">Nenhuma degustação nos próximos 7 dias.</div>';
+        else contDeg.innerHTML = degs.map(ev=>{
+            const d = new Date(ev.data);
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:8px;background:white;">
+                <div style="font-weight:700">${ev.cliente || 'Cliente'}</div>
+                <div style="color:var(--gray-600)">${d.toLocaleDateString('pt-BR')}</div>
+                <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" onclick="degAbrirModal(${ev.id})">Abrir</button></div>
+            </div>`;
+        }).join('');
+
+        // Aniversários de 1 ano: lembrar 1 semana antes
+        const contAniv = document.getElementById('alertAniversario1');
+        if(contAniv){
+            const limiteAniv = new Date(hoje.getTime() + 1000*60*60*24*7);
+            const anivs = lista.filter(o => o.data).map(o=>{
+                const d = parseFlexibleDate(o.data);
+                if(!d || isNaN(d.getTime())) return null;
+                const aniv = new Date(d.getFullYear()+1, d.getMonth(), d.getDate());
+                return { id: o.id, cliente: o.cliente, dataEvento: d, dataAniversario: aniv };
+            }).filter(x=>x).filter(a => {
+                const d = new Date(a.dataAniversario.getFullYear(), a.dataAniversario.getMonth(), a.dataAniversario.getDate());
+                return d >= hoje && d <= limiteAniv;
+            }).sort((a,b)=>a.dataAniversario - b.dataAniversario);
+
+            if(!anivs.length) contAniv.innerHTML = '<div style="color:var(--gray-500);">Nenhum aniversário de 1 ano nos próximos 7 dias.</div>';
+            else contAniv.innerHTML = anivs.map(ev=>{
+                const d = ev.dataAniversario;
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:8px;background:white;">
+                    <div style="font-weight:700">${ev.cliente || 'Cliente'}</div>
+                    <div style="color:var(--gray-600)">${d.toLocaleDateString('pt-BR')}</div>
+                    <div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button><button class="btn btn-sm btn-primary" onclick="enviarParabensAniversario(${ev.id})">Enviar Parabéns</button></div>
+                </div>`;
+            }).join('');
+        }
+    }
+
+    // Abre a página de Clientes e abre o detalhe do cliente referente ao orçamento informado
+    function abrirClientePorOrcamentoId(orcId){
+        if(!orcId) return showNotification('Orçamento inválido', 'error');
+        // Vai para a página de clientes
+        showPage('clientes');
+        // Garante que o grid foi renderizado antes de abrir o detalhe
+        setTimeout(()=>{
+            try{
+                // clienteGruposAtual é recalculado por clienteRenderGrid(); procurar grupo com orcamento
+                const idx = clienteGruposAtual.findIndex(g => Array.isArray(g.orcamentos) && g.orcamentos[0] && g.orcamentos[0].id === orcId);
+                if (idx >= 0) {
+                    clienteAbrirDetalhe(idx);
+                    // rolar até o card (opcional): tentar localizar elemento e scroll
+                    const el = document.querySelectorAll('.cliente-card')[idx];
+                    if (el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'});
+                } else {
+                    // Se não encontrou, refaz o grid e tenta localizar novamente
+                    clienteRenderGrid();
+                    const idx2 = clienteGruposAtual.findIndex(g => Array.isArray(g.orcamentos) && g.orcamentos[0] && g.orcamentos[0].id === orcId);
+                    if (idx2 >= 0) clienteAbrirDetalhe(idx2);
+                    else showNotification('Cliente do orçamento não encontrado.', 'error');
+                }
+            }catch(e){ console.warn(e); showNotification('Erro ao abrir cliente.', 'error'); }
+        }, 250);
+    }
+
+    // Envia mensagem pronta de pesquisa de satisfação via WhatsApp
+    function enviarPesquisaSatisfacao(orcamentoId){
+        try{
+            const orcamentosSalvos = localStorage.getItem('orcamentos');
+            const lista = orcamentosSalvos ? JSON.parse(orcamentosSalvos) : [];
+            const orc = lista.find(o=>o.id === orcamentoId);
+            if(!orc) return showNotification('Orçamento não encontrado para enviar pesquisa.','error');
+            let telefone = (orc.telefone || '').toString().replace(/\D/g,'');
+            if(!telefone) return showNotification('Telefone do cliente não informado.','error');
+            // Se não tiver código do país, assume Brasil (+55)
+            if(telefone.length <= 11) telefone = '55' + telefone;
+            const nome = orc.cliente || '';
+            const dataTxt = orc.dataFormatada || (orc.data ? new Date(orc.data).toLocaleDateString('pt-BR') : 'o evento');
+            const mensagem = `🍹✨ Queremos saber como foi sua experiência!
+
+Foi um prazer fazer parte de um momento tão especial. 💜
+Agora queremos ouvir você: como foi sua experiência com a DDrinks?
+
+Sua opinião é muito importante para nós e nos ajuda a continuar oferecendo um serviço cada vez melhor. 🥂
+
+Avalie nosso atendimento e conte para nós o que achou!
+Agradecemos pela confiança e por escolher a DDrinks. ✨`;
+            const url = `https://api.whatsapp.com/send?phone=${telefone}&text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+            showNotification('Abrindo WhatsApp para enviar pesquisa...','success');
+        }catch(e){ console.error(e); showNotification('Erro ao tentar enviar pesquisa.','error'); }
+    }
+
+    // Envia mensagem de parabéns pelo 1 ano de casamento via WhatsApp
+    function enviarParabensAniversario(orcamentoId){
+        try{
+            const orcamentosSalvos = localStorage.getItem('orcamentos');
+            const lista = orcamentosSalvos ? JSON.parse(orcamentosSalvos) : [];
+            const orc = lista.find(o=>o.id === orcamentoId);
+            if(!orc) return showNotification('Orçamento não encontrado para enviar parabéns.','error');
+            let telefone = (orc.telefone || '').toString().replace(/\D/g,'');
+            if(!telefone) return showNotification('Telefone do cliente não informado.','error');
+            if(telefone.length <= 11) telefone = '55' + telefone;
+            const mensagem = `🥂✨ Feliz 1 ano de casamento!\n\nHoje faz 1 ano que tivemos a alegria de fazer parte desse momento tão especial da vida de vocês. 💜\n\nDesejamos que esse novo ano seja repleto de amor, cumplicidade, felicidade e muitos momentos inesquecíveis juntos! ✨\n\nFoi um prazer celebrar esse dia com vocês.\nCom carinho, equipe DDrinks. 🍹💕`;
+            const url = `https://api.whatsapp.com/send?phone=${telefone}&text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+            showNotification('Abrindo WhatsApp para enviar parabéns...','success');
+        }catch(e){ console.error(e); showNotification('Erro ao tentar enviar parabéns.','error'); }
+    }
+
+    function degAbrirFromProxima(id){ degAbrirModal(id); }
 
     // --- Modal (abrir / fechar / salvar) ---
     function degAbrirModal(orcamentoId){
@@ -5233,7 +5567,15 @@ html += htmlPacotes;
         const body = document.getElementById('degModalBody');
         if (!ids.length) { body.innerHTML = '<div class="deg-empty">Nenhum drink neste orçamento.</div>'; }
         else {
-            body.innerHTML = ids.map(id => {
+            // date control for degustation
+            const dataDeg = (orcamento.degustacao && orcamento.degustacao.dataDegustacao) || '';
+            let dateControl = `<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+                    <label style="font-weight:600;min-width:120px;">Data da Degustação</label>
+                    <input type=\"date\" id=\"degModalDate\" value=\"${dataDeg ? dataDeg.substring(0,10) : ''}\" class=\"form-input\" style=\"max-width:200px;\" />
+                    <small style=\"color:var(--gray-500);font-size:.85rem;\">Alerta 2 dias antes</small>
+                </div>`;
+
+            body.innerHTML = dateControl + ids.map(id => {
                 const info = deg[id] || { obs: '', feito: false };
                 const nome = degNomeDrink(orcamento, id);
                 const qtd = (orcamento.drinks || {})[id];
@@ -5266,6 +5608,24 @@ html += htmlPacotes;
             const feito = el.querySelector('input[type="checkbox"]').checked;
             orcamento.degustacao.drinks[id] = { obs, feito };
         });
+        // salvar data da degustação (se houver) - aceita vários formatos
+        const dataDegElem = document.getElementById('degModalDate');
+        if (dataDegElem) {
+            const val = (dataDegElem.value || '').trim();
+            if (val) {
+                const parsed = parseFlexibleDate(val);
+                if (!parsed) return showNotification('Formato de data inválido.', 'warning');
+                const iso = parsed.toISOString();
+                // se data mudou, resetar flag de notificação para que novo alerta seja enviado
+                if (!orcamento.degustacao.dataDegustacao || orcamento.degustacao.dataDegustacao !== iso) {
+                    orcamento.degustacao.reminderSentTwoDays = false;
+                }
+                orcamento.degustacao.dataDegustacao = iso;
+            } else {
+                delete orcamento.degustacao.dataDegustacao;
+                delete orcamento.degustacao.reminderSentTwoDays;
+            }
+        }
         orcamento.degustacao.atualizadoEm = new Date().toISOString();
         lista[idx] = orcamento;
         degOrcamentosSave(lista);
@@ -5273,6 +5633,119 @@ html += htmlPacotes;
         degFecharModal();
         const pagDeg = document.getElementById('degustacao-page');
         if (pagDeg && pagDeg.classList.contains('active')) degRenderLista();
+    }
+
+    // Agendamento rápido via prompt (botão na lista)
+    function degAgendarInline(orcamentoId){
+        const lista = degOrcamentosLoad();
+        const idx = lista.findIndex(o => o.id === orcamentoId);
+        if (idx < 0) return showNotification('Orçamento não encontrado', 'error');
+        const orc = lista[idx];
+        const current = (orc.degustacao && orc.degustacao.dataDegustacao) ? orc.degustacao.dataDegustacao.substring(0,10) : '';
+        const input = prompt('Informe a data da degustação (ex: 15/09/2026 ou 15092026 ou 2026-09-15):', current);
+        if (!input) return;
+        const parsed = parseFlexibleDate(input);
+        if (!parsed) return showNotification('Formato inválido. Use DD/MM/AAAA ou DDMMAAAA ou AAAA-MM-DD.', 'warning');
+        const iso = parsed.toISOString();
+        if (!orc.degustacao) orc.degustacao = { drinks: {} };
+        orc.degustacao.dataDegustacao = iso;
+        orc.degustacao.reminderSentTwoDays = false;
+        lista[idx] = orc;
+        degOrcamentosSave(lista);
+        showNotification('Degustação agendada para ' + new Date(iso).toLocaleDateString('pt-BR'), 'success');
+        if (document.getElementById('degustacao-page')?.classList.contains('active')) { degRenderLista(); degRenderProximas(); }
+    }
+
+    // Excluir agendamento de degustação (remove data e flag de reminder)
+    function degExcluirAgendamento(orcamentoId){
+        if(!confirm('Deseja realmente excluir o agendamento desta degustação?')) return;
+        const lista = degOrcamentosLoad();
+        const idx = lista.findIndex(o => o.id === orcamentoId);
+        if (idx < 0) return showNotification('Orçamento não encontrado', 'error');
+        const orc = lista[idx];
+        if (orc.degustacao) {
+            // apenas remover a data e flag, manter notas/observações
+            delete orc.degustacao.dataDegustacao;
+            delete orc.degustacao.reminderSentTwoDays;
+            lista[idx] = orc;
+            degOrcamentosSave(lista);
+            showNotification('Agendamento de degustação removido (apenas data).', 'warning');
+            if (document.getElementById('degustacao-page')?.classList.contains('active')) { degRenderLista(); degRenderProximas(); degRenderRealizadas(); }
+        } else {
+            showNotification('Nenhum agendamento encontrado neste orçamento.', 'info');
+        }
+    }
+
+    // Marca automaticamente degustações passadas como realizadas
+    function degMarkRealizados(){
+        const lista = degOrcamentosLoad();
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        let changed = false;
+        lista.forEach(o => {
+            const d = o.degustacao && o.degustacao.dataDegustacao;
+            if (!d) return;
+            const data = new Date(d);
+            if (data < todayStart && !(o.degustacao && o.degustacao.realizado)) {
+                if (!o.degustacao) o.degustacao = {};
+                o.degustacao.realizado = true;
+                o.degustacao.realizadoEm = new Date().toISOString();
+                changed = true;
+            }
+        });
+        if (changed) degOrcamentosSave(lista);
+    }
+
+    // Parse flexible date inputs: YYYY-MM-DD, DD/MM/YYYY, DDM MYYYY (15092026)
+    function parseFlexibleDate(input){
+        if(!input) return null;
+        input = (''+input).trim();
+        // ISO YYYY-MM-DD or YYYY/MM/DD
+        if (/^\d{4}[\/-]\d{1,2}[\/-]\d{1,2}$/.test(input)){
+            const d = new Date(input.replace(/\//g,'-') + 'T00:00:00');
+            if (!isNaN(d)) return d;
+        }
+        // DD/MM/YYYY or D/M/YYYY
+        const m1 = input.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        if(m1){
+            const day = parseInt(m1[1],10), mon = parseInt(m1[2],10)-1, year = parseInt(m1[3],10);
+            const d = new Date(year, mon, day);
+            if (!isNaN(d)) return d;
+        }
+        // DDMMAAAA (15092026)
+        const m2 = input.match(/^(\d{2})(\d{2})(\d{4})$/);
+        if(m2){
+            const day = parseInt(m2[1],10), mon = parseInt(m2[2],10)-1, year = parseInt(m2[3],10);
+            const d = new Date(year, mon, day);
+            if (!isNaN(d)) return d;
+        }
+        // fallback
+        const d = new Date(input);
+        if (!isNaN(d)) return d;
+        return null;
+    }
+
+    // Verifica degustações com data marcada e notifica 2 dias antes
+    function checkDegustacaoReminders(){
+        try{
+            const hoje = new Date();
+            const lista = degOrcamentosLoad();
+            let changed = false;
+            lista.forEach(o => {
+                const d = o.degustacao && o.degustacao.dataDegustacao;
+                if (!d) return;
+                const data = new Date(d);
+                // reset timezone issues by using local midnight
+                const diffMs = data.setHours(0,0,0,0) - new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()).getTime();
+                const days = Math.ceil(diffMs / (1000*60*60*24));
+                if (days <= 2 && days >= 0 && !o.degustacao.reminderSentTwoDays) {
+                    const nome = o.cliente || 'Cliente';
+                    showNotification(`Lembrete: Degustação de ${nome} em ${data.toLocaleDateString('pt-BR')} — preparar (faltam ${days} dia${days!==1?'s':''}).`, 'warning');
+                    o.degustacao.reminderSentTwoDays = true;
+                    changed = true;
+                }
+            });
+            if (changed) degOrcamentosSave(lista);
+        }catch(e){console.warn('Erro ao checar lembretes de degustação', e)}
     }
     // ==================== FIM DEGUSTAÇÃO ====================
 
@@ -6340,9 +6813,17 @@ html += htmlPacotes;
         if (orcamentosSalvos) orcamentos = JSON.parse(orcamentosSalvos);
 
         const filtro = (document.getElementById('clienteFiltroTexto')?.value || '').trim().toLowerCase();
+        const anoFiltro = document.getElementById('clienteFiltroAno')?.value || '';
         let lista = orcamentos;
         if (filtro) {
             lista = lista.filter(o => (o.cliente || '').toLowerCase().includes(filtro) || (o.telefone || '').includes(filtro));
+        }
+        if (anoFiltro) {
+            lista = lista.filter(o => {
+                const data = o.data || o.dataCriacao || '';
+                const ano = data.split('-')[0];
+                return ano === anoFiltro;
+            });
         }
 
         clienteGruposAtual = clienteAgrupar(lista);
@@ -6354,7 +6835,25 @@ html += htmlPacotes;
             return;
         }
 
-        cont.innerHTML = `<div class="cliente-grid">${clienteGruposAtual.map((grupo, idx) => {
+        // Separe grupos em eventos futuros/próximos e eventos já realizados
+        const hoje = new Date();
+        hoje.setHours(0,0,0,0);
+        const futuros = [];
+        const realizados = [];
+        clienteGruposAtual.forEach(g => {
+            const orc = g.orcamentos[0];
+            if (!orc || !orc.data) {
+                // sem data: trate como futuro (aparece na grade principal ao final)
+                futuros.push(g);
+                return;
+            }
+            const d = new Date(orc.data);
+            d.setHours(0,0,0,0);
+            if (d < hoje) realizados.push(g);
+            else futuros.push(g);
+        });
+
+        function grupoCardHtml(grupo, idx, isRealizado) {
             const aceitos = grupo.orcamentos.filter(o => o.status === 'aceito').length;
             const pendentes = grupo.orcamentos.filter(o => o.status === 'pendente').length;
             const totais = clienteTotaisFinanceiros(grupo);
@@ -6362,6 +6861,26 @@ html += htmlPacotes;
             const vouchersUsados = vouchers.filter(v => v.status === 'usado').length;
             const orcamentoPrincipal = grupo.orcamentos[0];
             const dataEventoTxt = orcamentoPrincipal ? (orcamentoPrincipal.dataFormatada || formatarData(orcamentoPrincipal.data)) : '';
+            // Verifica se hoje é 1 ano da data do evento
+            let isAniversario1Ano = false;
+            try{
+                // Tenta parsear data do orçamento com várias fontes (data ISO, dataFormatada)
+                let dataEvento = null;
+                if(orcamentoPrincipal){
+                    if(orcamentoPrincipal.data) dataEvento = parseFlexibleDate(orcamentoPrincipal.data);
+                    if(!dataEvento && orcamentoPrincipal.dataFormatada) dataEvento = parseFlexibleDate(orcamentoPrincipal.dataFormatada);
+                    if(!dataEvento && orcamentoPrincipal.dataCriacao) dataEvento = parseFlexibleDate(orcamentoPrincipal.dataCriacao);
+                }
+                const hoje = new Date();
+                if(dataEvento && !isNaN(dataEvento.getTime())){
+                    // Compare dia e mês; aniversário de 1 ano quando diferença de ano é 1
+                    const dEvento = new Date(dataEvento.getFullYear(), dataEvento.getMonth(), dataEvento.getDate());
+                    const dHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                    if(dEvento.getDate() === dHoje.getDate() && dEvento.getMonth() === dHoje.getMonth() && (dHoje.getFullYear() - dEvento.getFullYear() === 1)){
+                        isAniversario1Ano = true;
+                    }
+                }
+            }catch(e){ console.warn('Erro ao calcular aniversário 1 ano', e); }
             return `
                 <div class="cliente-card" onclick="clienteAbrirDetalhe(${idx})">
                     <div class="cliente-card-nome">👤 ${grupo.nome || 'Sem nome'}</div>
@@ -6375,17 +6894,129 @@ html += htmlPacotes;
                         ${aceitos ? `<span class="cliente-chip aceito">✅ ${aceitos} aceito${aceitos > 1 ? 's' : ''}</span>` : ''}
                         ${pendentes ? `<span class="cliente-chip pendente">🕓 ${pendentes} pendente${pendentes > 1 ? 's' : ''}</span>` : ''}
                         ${vouchers.length ? `<span class="cliente-chip voucher">🎟️ ${vouchersUsados}/${vouchers.length}</span>` : ''}
-                        ${grupo.orcamentos.some(o => o.contratoAnexo) ? `<span class="cliente-chip">📎 Contrato</span>` : ''}
+                        ${grupo.orcamentos.some(o => o.contratoAnexo || (o.contratos && o.contratos.length)) ? `<span class="cliente-chip">📎 Contrato</span>` : ''}
                     </div>
                     ${totais.totalAceito ? `
                         <div style="font-size:.8rem;color:var(--gray-600);border-top:1px solid var(--gray-100);padding-top:8px;margin-top:2px;">
                             💰 ${formatarValorBR(totais.totalAceito)} · Pago ${formatarValorBR(totais.totalPago)}
                         </div>
                     ` : ''}
+                    ${isRealizado ? `
+                        <div class="cliente-card-actions">
+                            ${isAniversario1Ano ? `<button type="button" class="btn btn-sm btn-primary" onclick="(function(e){e && e.stopPropagation(); enviarParabensAniversario(${orcamentoPrincipal.id});})(event)">🎉 Enviar Parabéns 1 ano</button>` : ''}
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="(function(e){e && e.stopPropagation(); enviarPesquisaSatisfacao(${orcamentoPrincipal.id});})(event)">📲 Enviar Pesquisa</button>
+                        </div>
+                    ` : ''}
                 </div>
             `;
-        }).join('')}</div>`;
+        }
+
+        // Render principal: eventos futuros/próximos
+        let html = '';
+        html += `<div class="cliente-grid">` + futuros.map((g) => {
+            const globalIdx = clienteGruposAtual.indexOf(g);
+            return grupoCardHtml(g, globalIdx, false);
+        }).join('') + `</div>`;
+
+        // Render seção de realizados, se houver
+        if (realizados.length) {
+            html += `<h3 style="font-size:1.05rem;margin-top:18px;color:var(--gray-700);">📌 Eventos Realizados</h3>`;
+            // Use estilo mais suave para realizados
+            html += `<div class="cliente-grid" style="opacity:.85;filter:grayscale(.02);">` + realizados.map((g) => {
+                // Ao mapear realizados, use o índice global para abrir detalhe e marque como realizado
+                const globalIdx = clienteGruposAtual.indexOf(g);
+                return grupoCardHtml(g, globalIdx, true);
+            }).join('') + `</div>`;
+        }
+
+        cont.innerHTML = html;
     }
+
+    // Fornecedores: simples CRUD em localStorage
+    function fornecedorLoad() {
+        try { return JSON.parse(localStorage.getItem('fornecedores')||'[]'); } catch(e){return []}
+    }
+    function fornecedorSaveToStorage(list){ localStorage.setItem('fornecedores', JSON.stringify(list || [])); }
+    let fornecedores = fornecedorLoad();
+
+    function fornecedorRenderGrid(){
+        fornecedores = fornecedorLoad();
+        const cont = document.getElementById('fornecedorGrid');
+        if(!cont) return;
+        // aplicar filtro de busca (nome ou serviço)
+        const q = (document.getElementById('fornecedorSearch')?.value || '').trim().toLowerCase();
+        const listaFiltrada = q ? fornecedores.filter(f => ((f.nome||'').toLowerCase().includes(q) || (f.servico||'').toLowerCase().includes(q))) : fornecedores;
+        if(!listaFiltrada.length){ cont.innerHTML = '<div class="cliente-empty">Nenhum fornecedor encontrado.</div>'; return; }
+        cont.innerHTML = '<div class="cliente-grid">' + listaFiltrada.map((f, i)=>`
+            <div class="cliente-card">
+                <div class="cliente-card-nome">${f.nome || '—'}</div>
+                <div class="cliente-card-data">${f.servico ? '🛠 '+f.servico : ''}</div>
+                <div class="cliente-card-info" style="margin-top:8px;">📞 ${f.telefone||'—'} • ✉️ ${f.email||'—'}</div>
+                <div class="cliente-card-info" style="margin-top:6px;color:var(--gray-600);">📍 ${f.endereco||'—'}</div>
+                <div class="cliente-card-stats" style="margin-top:8px;gap:8px;">
+                    <button class="btn btn-sm btn-secondary" onclick="fornecedorEditar(${i})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="fornecedorExcluir(${i})">Excluir</button>
+                </div>
+            </div>
+        `).join('') + '</div>';
+    }
+
+    let fornecedorEditingIndex = null;
+    function fornecedorSalvar(ev){
+        ev.preventDefault();
+        const nome = (document.getElementById('fornecedorNome')?.value||'').trim();
+        const telefone = (document.getElementById('fornecedorTelefone')?.value||'').trim();
+        const email = (document.getElementById('fornecedorEmail')?.value||'').trim();
+        const endereco = (document.getElementById('fornecedorEndereco')?.value||'').trim();
+        const servico = (document.getElementById('fornecedorServico')?.value||'').trim();
+        if(!nome) return alert('Nome é obrigatório');
+        fornecedores = fornecedorLoad();
+        const item = { nome, telefone, email, endereco, servico, criadoEm: new Date().toISOString() };
+        if(fornecedorEditingIndex !== null){
+            fornecedores[fornecedorEditingIndex] = Object.assign({}, fornecedores[fornecedorEditingIndex], item);
+            fornecedorEditingIndex = null;
+        } else {
+            fornecedores.push(item);
+        }
+        fornecedorSaveToStorage(fornecedores);
+        fornecedorLimparForm();
+        fornecedorRenderGrid();
+        showNotification('Fornecedor salvo','success');
+        return false;
+    }
+
+    function fornecedorEditar(idx){
+        fornecedores = fornecedorLoad();
+        const f = fornecedores[idx];
+        if(!f) return;
+        fornecedorEditingIndex = idx;
+        document.getElementById('fornecedorNome').value = f.nome || '';
+        document.getElementById('fornecedorTelefone').value = f.telefone || '';
+        document.getElementById('fornecedorEmail').value = f.email || '';
+        document.getElementById('fornecedorEndereco').value = f.endereco || '';
+        document.getElementById('fornecedorServico').value = f.servico || '';
+        // scroll to form
+        document.getElementById('fornecedorNome')?.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    function fornecedorExcluir(idx){
+        if(!confirm('Excluir este fornecedor?')) return;
+        fornecedores = fornecedorLoad();
+        fornecedores.splice(idx,1);
+        fornecedorSaveToStorage(fornecedores);
+        fornecedorRenderGrid();
+        showNotification('Fornecedor excluído','error');
+    }
+
+    function fornecedorLimparForm(){
+        fornecedorEditingIndex = null;
+        ['fornecedorNome','fornecedorTelefone','fornecedorEmail','fornecedorServico'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    }
+
+    // Exponha a página de fornecedores quando necessário
+    document.addEventListener('DOMContentLoaded', ()=>{
+        fornecedorRenderGrid();
+    });
 
     function clienteFecharDetalhe() {
         document.getElementById('clienteDetalheModal').classList.remove('open');
@@ -6457,18 +7088,26 @@ html += htmlPacotes;
                     <button class="btn btn-sm btn-danger" onclick="clienteExcluirOrcamento(${orc.id})">Excluir</button>
                 </div>
                 <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-200);">
-                    ${orc.contratoAnexo ? `
-                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-                            <div style="font-size:.8rem;color:var(--gray-700);">📄 <strong>${orc.contratoAnexo.nome}</strong> <span style="color:var(--gray-500);">— anexado em ${new Date(orc.contratoAnexo.dataUpload).toLocaleDateString('pt-BR')}</span></div>
-                            <div style="display:flex;gap:6px;">
-                                <button class="btn btn-sm btn-secondary" onclick="clienteBaixarContrato(${orc.id})">⬇️ Baixar</button>
-                                <button class="btn btn-sm btn-danger" onclick="clienteRemoverContrato(${orc.id})">🗑️ Remover</button>
-                            </div>
+                    ${((orc.contratos && orc.contratos.length) || orc.contratoAnexo) ? `
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            ${((orc.contratos && orc.contratos.length) ? orc.contratos : (orc.contratoAnexo ? [orc.contratoAnexo] : [])).map((c, idx) => `
+                                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+                                    <div style="font-size:.8rem;color:var(--gray-700);">📄 <strong>${c.nome}</strong> <span style="color:var(--gray-500);">— anexado em ${new Date(c.dataUpload).toLocaleDateString('pt-BR')}</span></div>
+                                    <div style="display:flex;gap:6px;">
+                                        <button class="btn btn-sm btn-secondary" onclick="clienteBaixarContrato(${orc.id}, ${idx})">⬇️ Baixar</button>
+                                        <button class="btn btn-sm btn-danger" onclick="clienteRemoverContrato(${orc.id}, ${idx})">🗑️ Remover</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <label class="btn btn-sm btn-secondary" style="cursor:pointer;display:inline-flex;">
+                                ➕ Adicionar mais
+                                <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="clienteAnexarContrato(${orc.id}, this)" multiple />
+                            </label>
                         </div>
                     ` : `
                         <label class="btn btn-sm btn-secondary" style="cursor:pointer;display:inline-flex;">
                             📎 Anexar Contrato
-                            <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="clienteAnexarContrato(${orc.id}, this)" />
+                            <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;" onchange="clienteAnexarContrato(${orc.id}, this)" multiple />
                         </label>
                     `}
                 </div>
@@ -6616,57 +7255,102 @@ html += htmlPacotes;
 
     // Anexa o contrato (PDF/imagem/doc) ao orçamento, guardado como base64 no localStorage.
     const CONTRATO_LIMITE_MB = 4;
-    function clienteAnexarContrato(orcamentoId, inputEl) {
-        const arquivo = inputEl.files && inputEl.files[0];
-        if (!arquivo) return;
-        if (arquivo.size > CONTRATO_LIMITE_MB * 1024 * 1024) {
-            showNotification(`Arquivo muito grande (máx. ${CONTRATO_LIMITE_MB}MB para não sobrecarregar o navegador). Tente compactar o arquivo ou enviar uma foto do contrato.`, 'warning');
-            inputEl.value = '';
-            return;
+    async function clienteAnexarContrato(orcamentoId, inputEl) {
+        const files = inputEl.files || [];
+        if (!files.length) return;
+        const arquivos = Array.from(files);
+        // size check per file
+        for (const arquivo of arquivos) {
+            if (arquivo.size > CONTRATO_LIMITE_MB * 1024 * 1024) {
+                showNotification(`Arquivo "${arquivo.name}" muito grande (máx. ${CONTRATO_LIMITE_MB}MB).`, 'warning');
+                inputEl.value = '';
+                return;
+            }
         }
-        const leitor = new FileReader();
-        leitor.onload = () => {
-            const orcamento = orcamentos.find(o => o.id === orcamentoId);
-            if (!orcamento) return;
-            const anterior = orcamento.contratoAnexo;
-            orcamento.contratoAnexo = {
-                nome: arquivo.name,
-                tipo: arquivo.type,
-                tamanho: arquivo.size,
-                dados: leitor.result,
-                dataUpload: new Date().toISOString()
-            };
+
+        const orcamento = orcamentos.find(o => o.id === orcamentoId);
+        if (!orcamento) return;
+
+        // ensure contratos array, migrate legacy if needed
+        if (!Array.isArray(orcamento.contratos) && orcamento.contratoAnexo) {
+            orcamento.contratos = [orcamento.contratoAnexo];
+            delete orcamento.contratoAnexo;
+        }
+        orcamento.contratos = orcamento.contratos || [];
+
+        // read files as data URLs
+        try {
+            const readers = arquivos.map(f => new Promise((res, rej) => {
+                const r = new FileReader();
+                r.onload = () => res({ nome: f.name, tipo: f.type, tamanho: f.size, dados: r.result, dataUpload: new Date().toISOString() });
+                r.onerror = () => rej(new Error('Erro lendo arquivo'));
+                r.readAsDataURL(f);
+            }));
+            const results = await Promise.all(readers);
+            // append
+            orcamento.contratos.push(...results);
+            // try save
             try {
                 localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
             } catch (e) {
-                orcamento.contratoAnexo = anterior;
-                showNotification('Não foi possível salvar o contrato — o arquivo é grande demais para o armazenamento do navegador. Tente um arquivo menor.', 'error');
+                // rollback
+                orcamento.contratos.splice(-results.length, results.length);
+                showNotification('Não foi possível salvar o(s) arquivo(s) — armazenamento do navegador excedido.', 'error');
+                inputEl.value = '';
                 return;
             }
-            showNotification(`Contrato "${arquivo.name}" anexado com sucesso!`, 'success');
+            showNotification(`Anexado(s) ${results.length} arquivo(s) com sucesso!`, 'success');
             clienteRenderGrid();
             clienteReabrirDetalheAtual();
-        };
-        leitor.onerror = () => showNotification('Erro ao ler o arquivo selecionado.', 'error');
-        leitor.readAsDataURL(arquivo);
+        } catch (e) {
+            showNotification('Erro ao ler o(s) arquivo(s) selecionado(s).', 'error');
+        }
+        inputEl.value = '';
     }
 
-    function clienteBaixarContrato(orcamentoId) {
+    function clienteBaixarContrato(orcamentoId, index = 0) {
         const orcamento = orcamentos.find(o => o.id === orcamentoId);
-        if (!orcamento || !orcamento.contratoAnexo) return;
+        if (!orcamento) return;
+        // support legacy single attachment
+        if (!Array.isArray(orcamento.contratos) && orcamento.contratoAnexo) {
+            const a = document.createElement('a');
+            a.href = orcamento.contratoAnexo.dados;
+            a.download = orcamento.contratoAnexo.nome || 'contrato';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            return;
+        }
+        const lista = orcamento.contratos || [];
+        const item = lista[index];
+        if (!item) return;
         const a = document.createElement('a');
-        a.href = orcamento.contratoAnexo.dados;
-        a.download = orcamento.contratoAnexo.nome || 'contrato';
+        a.href = item.dados;
+        a.download = item.nome || 'contrato';
         document.body.appendChild(a);
         a.click();
         a.remove();
     }
 
-    function clienteRemoverContrato(orcamentoId) {
+    function clienteRemoverContrato(orcamentoId, index = 0) {
         const orcamento = orcamentos.find(o => o.id === orcamentoId);
-        if (!orcamento || !orcamento.contratoAnexo) return;
-        if (!confirm(`Remover o contrato "${orcamento.contratoAnexo.nome}"? Essa ação não pode ser desfeita.`)) return;
-        delete orcamento.contratoAnexo;
+        if (!orcamento) return;
+        // legacy single
+        if (!Array.isArray(orcamento.contratos) && orcamento.contratoAnexo) {
+            if (!confirm(`Remover o contrato "${orcamento.contratoAnexo.nome}"? Essa ação não pode ser desfeita.`)) return;
+            delete orcamento.contratoAnexo;
+            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+            showNotification('Contrato removido.', 'warning');
+            clienteRenderGrid();
+            clienteReabrirDetalheAtual();
+            return;
+        }
+        const lista = orcamento.contratos || [];
+        const item = lista[index];
+        if (!item) return;
+        if (!confirm(`Remover o contrato "${item.nome}"? Essa ação não pode ser desfeita.`)) return;
+        lista.splice(index, 1);
+        if (lista.length === 0) delete orcamento.contratos;
         localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
         showNotification('Contrato removido.', 'warning');
         clienteRenderGrid();
