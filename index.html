@@ -2665,6 +2665,7 @@
         }
 
         function removerFotoLogin() {
+            if (!confirm('Remover a foto de perfil?')) return;
             localStorage.removeItem('loginFoto');
             document.getElementById('config-preview-container').style.display = 'none';
             document.getElementById('config-sem-foto').style.display = 'block';
@@ -2737,6 +2738,7 @@
         function removerDrinkCustomizado(id) {
             let drinks = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
             const drink = drinks.find(d => d.id === id);
+            if (!confirm(`Remover o drink "${drink ? drink.nome : ''}"? Essa ação não pode ser desfeita.`)) return;
             drinks = drinks.filter(d => d.id !== id);
             localStorage.setItem('drinksCustomizados', JSON.stringify(drinks));
             // Remove do precosPacotes
