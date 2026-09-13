@@ -7890,12 +7890,12 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                             <td style="padding:9px 10px;text-align:right;color:var(--gray-600);font-size:.88rem;white-space:nowrap;">
                                 ${estFmt(ing.emEstoque, ing.unidade)}
                             </td>
-                            <td style="padding:9px 10px;text-align:right;white-space:nowrap;">
+                            <td style="padding:9px 10px;text-align:center;white-space:nowrap;">
                                 ${ing.faltante > 0
                                     ? (ing.emEstoque > 0
-                                        ? `<span style="font-weight:700;color:var(--success-color);font-size:.88rem;">🟢 Comprar ${estFmt(ing.faltante, ing.unidade)}</span>`
-                                        : `<span style="font-weight:700;color:#ef4444;font-size:.88rem;">🔴 Comprar ${estFmt(ing.faltante, ing.unidade)}</span>`)
-                                    : `<span style="font-weight:600;color:var(--success-color);font-size:.85rem;">✅ Em estoque — não precisa comprar</span>`}
+                                        ? `<span style="font-weight:700;color:#ef4444;font-size:.9rem;">🔴 ${estFmt(ing.faltante, ing.unidade)}</span>`
+                                        : `<span style="font-size:1.15rem;">🔴</span>`)
+                                    : `<span style="font-size:1.15rem;">🟢</span>`}
                             </td>
                         </tr>`).join('')}
                     </tbody>
