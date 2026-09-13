@@ -4373,7 +4373,7 @@ html += htmlPacotes;
             ` : pagamentos.map((p, idx) => `
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--gray-100);font-size:.85rem;">
                     <div>
-                        <div style="font-weight:600;color:var(--gray-900);">${ICONES_FORMA_PAGAMENTO[p.forma] || '💰'} ${formatarValorBR(Number(p.valor) || 0)}</div>
+                        <div style="font-weight:600;color:var(--gray-900);">${({ dinheiro: '💵', pix: '📱', credito: '💳', debito: '🏦', cheque: '📄', transferencia: '🏧' }[p.forma] || '💰')} ${formatarValorBR(Number(p.valor) || 0)}</div>
                         <div style="color:var(--gray-500);font-size:.75rem;">${p.data ? new Date(p.data).toLocaleDateString('pt-BR') : '—'}${p.observacoes ? ' · ' + p.observacoes : ''}</div>
                     </div>
                     <button class="btn btn-sm btn-danger" onclick="excluirPagamento(${orc.id}, ${idx})" title="Excluir pagamento">🗑️</button>
@@ -7143,7 +7143,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                 ` : pagamentos.map((p, idx) => `
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:.8rem;">
                         <div>
-                            <span style="font-weight:600;color:var(--gray-900);">${ICONES_FORMA_PAGAMENTO[p.forma] || '💰'} ${formatarValorBR(Number(p.valor) || 0)}</span>
+                            <span style="font-weight:600;color:var(--gray-900);">${({ dinheiro: '💵', pix: '📱', credito: '💳', debito: '🏦', cheque: '📄', transferencia: '🏧' }[p.forma] || '💰')} ${formatarValorBR(Number(p.valor) || 0)}</span>
                             <span style="color:var(--gray-500);"> — ${p.data ? new Date(p.data).toLocaleDateString('pt-BR') : '—'}${p.observacoes ? ' · ' + p.observacoes : ''}</span>
                         </div>
                         <button class="btn btn-sm btn-danger" onclick="clienteExcluirPagamento(${orc.id}, ${idx})" title="Excluir pagamento">🗑️</button>
