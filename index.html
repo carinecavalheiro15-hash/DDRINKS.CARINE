@@ -4323,7 +4323,7 @@ html += htmlPacotes;
         // (array, pagamento parcelado) quanto o formato antigo (um único objeto {valor,forma,...},
         // de antes de suportar parcelas), pra não perder o histórico de orçamentos já salvos.
         function obterListaPagamentos(orc) {
-            if (Array.isArray(orc.pagamentos)) return orc.pagamentos;
+            if (Array.isArray(orc.pagamentos)) return orc.pagamentos.filter(p => p && typeof p === 'object');
             if (orc.pagamentos && orc.pagamentos.valor) {
                 return [{
                     valor: orc.pagamentos.valor,
@@ -7027,7 +7027,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const grupo = clienteGruposAtual[idx];
         if (!grupo) return;
         clienteGrupoAtualChave = grupo.chave;
-        clienteRenderizarDetalhe(grupo);
+        clienteAbrirGrupoDetalhe(grupo);
     }
 
     function clienteAbrirDetalhePorOrcamentoId(orcamentoId, indiceFallback) {
@@ -7039,7 +7039,22 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         }
         if (!grupo) return;
         clienteGrupoAtualChave = grupo.chave;
-        clienteRenderizarDetalhe(grupo);
+        clienteAbrirGrupoDetalhe(grupo);
+    }
+
+    function clienteAbrirGrupoDetalhe(grupo) {
+        const modal = document.getElementById('clienteDetalheModal');
+        const header = document.getElementById('clienteDetalheHeaderInfo');
+        const body = document.getElementById('clienteDetalheBody');
+        if (!modal || !header || !body) return;
+        modal.classList.add('open');
+        try {
+            clienteRenderizarDetalhe(grupo);
+        } catch (error) {
+            console.error('Erro ao renderizar detalhe do cliente:', error);
+            header.innerHTML = `<div style="font-weight:700;font-size:1.2rem;color:var(--gray-900);">👤 ${grupo.nome || 'Sem nome'}</div><div style="font-size:.85rem;color:var(--gray-600);margin-top:4px;">📞 ${grupo.telefone || '—'} · 🏙️ ${grupo.cidade || '—'}</div>`;
+            body.innerHTML = '<div class="cliente-empty">Não foi possível carregar todos os detalhes deste cliente.</div>';
+        }
     }
 
     // Reabre o detalhe do cliente que estava aberto (pelo chave estável), após uma ação
