@@ -7176,6 +7176,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                     <button class="btn btn-sm btn-primary" style="background:var(--error-color);color:#fff;" onclick="gerarPDFOrcamento(${orc.id})">PDF</button>
                     ${orc.status === 'aceito' ? `<button class="btn btn-sm" style="background:#10b981;color:white;" onclick="verInsumos(${orc.id})">Insumos</button>` : ''}
                     ${orc.degustacao && orc.degustacao.dataDegustacao && Object.values(orc.degustacao.drinks || {}).some(d => (d.obs || '').trim()) ? `<button class="btn btn-sm btn-secondary" onclick="degAbrirModal(${orc.id})">🍹 Ver Degustação</button>` : ''}
+                    <button class="btn btn-sm btn-secondary" onclick="cronogramaAbrirModal(${orc.id})">🗓️ Cronograma</button>
                     <button class="btn btn-sm btn-danger" onclick="clienteExcluirOrcamento(${orc.id})">Excluir</button>
                 </div>
                 <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-200);">
@@ -7583,6 +7584,66 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         showNotification('Gasto excluído.', 'warning');
     }
 
+    // ==================== CRONOGRAMA DO EVENTO ====================
+    let _cronogramaOrcamentoId = null;
+
+    function cronogramaCriarLinha(horario, tarefa){
+        const div = document.createElement('div');
+        div.className = 'cronograma-item';
+        div.style = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;';
+        div.innerHTML = `
+            <input type="time" class="form-input" style="max-width:110px;flex-shrink:0;" value="${horario || ''}">
+            <input type="text" class="form-input" style="flex:1;" placeholder="O que precisa ser feito..." value="${(tarefa || '').replace(/"/g, '&quot;')}">
+            <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.cronograma-item').remove()">🗑️</button>
+        `;
+        return div;
+    }
+
+    function cronogramaAdicionarLinha(){
+        const cont = document.getElementById('cronogramaLinhas');
+        if (!cont) return;
+        cont.appendChild(cronogramaCriarLinha('', ''));
+    }
+
+    function cronogramaAbrirModal(orcamentoId){
+        const orcamento = orcamentos.find(o => o.id === orcamentoId);
+        if (!orcamento) { showNotification('Orçamento não encontrado', 'error'); return; }
+        _cronogramaOrcamentoId = orcamentoId;
+        document.getElementById('cronogramaModalCliente').textContent = orcamento.cliente || 'Cliente';
+        document.getElementById('cronogramaModalSub').textContent = (orcamento.dataFormatada || formatarData(orcamento.data) || '') + (orcamento.descricao ? ' · ' + orcamento.descricao : '');
+        const cont = document.getElementById('cronogramaLinhas');
+        cont.innerHTML = '';
+        const itens = [...(orcamento.cronograma || [])].sort((a, b) => (a.horario || '').localeCompare(b.horario || ''));
+        if (!itens.length) {
+            cont.appendChild(cronogramaCriarLinha('', ''));
+        } else {
+            itens.forEach(it => cont.appendChild(cronogramaCriarLinha(it.horario, it.tarefa)));
+        }
+        document.getElementById('cronogramaModal').style.display = 'flex';
+    }
+
+    function cronogramaFecharModal(){
+        document.getElementById('cronogramaModal').style.display = 'none';
+        _cronogramaOrcamentoId = null;
+    }
+
+    function cronogramaSalvarModal(){
+        const orcamento = orcamentos.find(o => o.id === _cronogramaOrcamentoId);
+        if (!orcamento) { showNotification('Orçamento não encontrado', 'error'); return; }
+        const linhas = [...document.querySelectorAll('#cronogramaLinhas .cronograma-item')];
+        const itens = linhas.map(row => {
+            const inputs = row.querySelectorAll('input');
+            return { horario: inputs[0].value, tarefa: inputs[1].value.trim() };
+        }).filter(it => it.horario || it.tarefa);
+        itens.sort((a, b) => (a.horario || '').localeCompare(b.horario || ''));
+        orcamento.cronograma = itens;
+        localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+        clienteRenderGrid();
+        clienteReabrirDetalheAtual();
+        showNotification('Cronograma salvo! ✓', 'success');
+        cronogramaFecharModal();
+    }
+
     function clienteFecharVer() {
         document.getElementById('clienteVerModal').classList.remove('open');
     }
@@ -7757,6 +7818,30 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             <div style="padding:14px 22px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:white;">
                 <button onclick="degFecharModal()" class="btn btn-secondary btn-sm">Fechar</button>
                 <button onclick="degSalvarModal()" class="btn btn-primary btn-sm" style="background:var(--error-color);color:#fff;">💾 Salvar Observações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cronograma do Evento -->
+    <div id="cronogramaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5000;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this) cronogramaFecharModal()">
+        <div style="background:white;border-radius:16px;width:100%;max-width:620px;max-height:88vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+            <div style="padding:18px 22px 12px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:sticky;top:0;background:white;z-index:1;border-radius:16px 16px 0 0;">
+                <div>
+                    <div style="font-weight:700;font-size:1.05rem;color:#0f172a;">🗓️ Cronograma — <span id="cronogramaModalCliente">Cliente</span></div>
+                    <div style="font-size:.78rem;color:#64748b;margin-top:3px;" id="cronogramaModalSub"></div>
+                </div>
+                <button onclick="cronogramaFecharModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:1.5rem;line-height:1;padding:0 4px;flex-shrink:0;">×</button>
+            </div>
+            <div style="padding:16px 22px 8px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:.8rem;color:#475569;">
+                Monte o passo a passo do evento: horário de início de cada etapa e o que precisa ser feito.
+            </div>
+            <div style="padding:16px 22px;" id="cronogramaModalBody">
+                <div id="cronogramaLinhas"></div>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="cronogramaAdicionarLinha()">➕ Adicionar Horário</button>
+            </div>
+            <div style="padding:14px 22px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:white;">
+                <button onclick="cronogramaFecharModal()" class="btn btn-secondary btn-sm">Fechar</button>
+                <button onclick="cronogramaSalvarModal()" class="btn btn-primary btn-sm" style="background:var(--error-color);color:#fff;">💾 Salvar Cronograma</button>
             </div>
         </div>
     </div>
