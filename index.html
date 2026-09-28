@@ -7215,12 +7215,12 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         }
     }
 
-    // Monta o card ilustrado (QR + instrução de leitura + marca D'Drinks) que é baixado
-    // como imagem — pronto pra imprimir ou enviar, em vez do QR Code cru.
-    // Recebe o QR já como blob: URL local (ver cardapioMontarQrCanvas) — carregar a imagem
-    // direto da api.qrserver.com aqui dentro faz o html2canvas exportar o quadrado em branco,
-    // porque é uma imagem de outro domínio (problema de CORS ao "fotografar" o card).
-    function cardapioMontarQrCardHtml(orc, qrSrc) {
+    // Monta o card ilustrado (instrução de leitura + marca D'Drinks) que é baixado como
+    // imagem — pronto pra imprimir ou enviar, em vez do QR Code cru. O espaço do QR fica
+    // vazio de propósito: o html2canvas tem bug pra desenhar imagem de outro domínio
+    // (api.qrserver.com), então o QR é desenhado por cima depois, direto no canvas
+    // (ver cardapioMontarQrCanvas).
+    function cardapioMontarQrCardHtml(orc) {
         const nome = (orc.cliente || orc.nome || 'Seu evento').replace(/</g, '&lt;');
         const dataEventoTxt = orc.dataFormatada || formatarData(orc.data) || '';
         return `
@@ -7232,7 +7232,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                 ${dataEventoTxt ? `<div style="font-size:11.5px;color:#f5c451;margin-bottom:18px;">📅 ${dataEventoTxt}</div>` : '<div style="margin-bottom:18px;"></div>'}
 
                 <div style="display:inline-block;background:#fff;border-radius:16px;padding:14px;margin-bottom:20px;">
-                    <img src="${qrSrc}" width="240" height="240" style="display:block;" />
+                    <div id="cardapioQrSlot" style="width:240px;height:240px;"></div>
                 </div>
 
                 <div style="font-size:14px;font-weight:700;color:#fff;">📱 Aponte a câmera do celular para o QR Code</div>
@@ -7247,24 +7247,38 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
     async function cardapioMontarQrCanvas(orc, link) {
         await promoCarregarFontes();
 
-        // Baixa o QR Code como blob local antes de desenhar o card — evita o quadrado em
-        // branco que dá quando o html2canvas tenta capturar uma imagem de outro domínio.
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&data=${encodeURIComponent(link)}`;
-        const qrResp = await fetch(qrUrl);
-        const qrBlob = await qrResp.blob();
-        const qrBlobUrl = URL.createObjectURL(qrBlob);
-
         const tempDiv = document.createElement('div');
         tempDiv.style.position = 'absolute';
         tempDiv.style.left = '-9999px';
         tempDiv.style.top = '0';
-        tempDiv.innerHTML = cardapioMontarQrCardHtml(orc, qrBlobUrl);
+        tempDiv.innerHTML = cardapioMontarQrCardHtml(orc);
         document.body.appendChild(tempDiv);
-        const imgs = Array.from(tempDiv.querySelectorAll('img'));
-        await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; })));
-        const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#000000' });
+
+        const scale = 2;
+        const canvas = await html2canvas(tempDiv, { scale, useCORS: true, allowTaint: true, backgroundColor: '#000000' });
+
+        // Calcula onde fica o espaço reservado do QR dentro do canvas já renderizado,
+        // pra desenhar o QR exatamente ali por cima (canvas 2D puro, sem passar pelo
+        // carregador de imagem do html2canvas).
+        const slot = tempDiv.querySelector('#cardapioQrSlot');
+        const slotRect = slot.getBoundingClientRect();
+        const divRect = tempDiv.getBoundingClientRect();
+        const x = (slotRect.left - divRect.left) * scale;
+        const y = (slotRect.top - divRect.top) * scale;
+        const w = slotRect.width * scale;
+        const h = slotRect.height * scale;
         document.body.removeChild(tempDiv);
-        URL.revokeObjectURL(qrBlobUrl);
+
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&data=${encodeURIComponent(link)}`;
+        const qrImg = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Não foi possível carregar o QR Code.'));
+            img.src = qrUrl;
+        });
+
+        canvas.getContext('2d').drawImage(qrImg, x, y, w, h);
         return canvas;
     }
 
