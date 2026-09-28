@@ -7090,19 +7090,61 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         localStorage.setItem('ddrinksCardapioBaseUrl', baseUrl);
     }
 
-    // Extrai só os nomes dos drinks escolhidos no orçamento (sem preço/quantidade),
-    // pra exibir num cardápio voltado ao convidado.
-    function cardapioListaDrinks(orc) {
+    // Campos de "Outros Gastos" que ficam salvos dentro de orcamento.drinks junto com as
+    // quantidades de drinks de verdade (mesmo objeto, chaves misturadas). Precisam ficar de
+    // fora do cardápio do convidado, senão viram "drinks" tipo Gelo, Gasolina, Decoração etc.
+    const CARDAPIO_CAMPOS_NAO_DRINK = new Set([
+        'gelo', 'copos', 'decoracao', 'carretinha', 'funcionarios', 'alimentacao',
+        'estrutura_bar', 'flores', 'papelaria', 'canudos', 'gasolina',
+        'custom_drink_personalizado', 'custom_drink_personalizado_nome'
+    ]);
+
+    // Nomes "bonitos" (com acento) dos drinks padrão do sistema, copiados dos rótulos da
+    // tela Criar Orçamento — evita cair no nome cru do id (ex: "caipirinha_cachaca").
+    const CARDAPIO_NOMES_DRINK_PADRAO = {
+        mojito: 'Mojito', moscow_mule: 'Moscow Mule', whisky_sour: 'Whisky Sour',
+        cosmopolitan: 'Cosmopolitan', caipirinha_limao: 'Caipirinha de Limão',
+        tequila_sour: 'Tequila Sour', pink_lady: 'Pink Lady', tequila_sunrise: 'Tequila Sunrise',
+        caipirinha_cachaca: 'Caipirinha de Cachaça', marguerita: 'Marguerita',
+        amaretto_sour: 'Amaretto Sour', mirtilo_sour: 'Mirtilo Sour',
+        caipirinha: 'Caipirinha de Vinho', sex_on_the_beach: 'Sex on the Beach',
+        gim_tropical: 'Gim Tropical', caipirinha_morango: 'Caipirinha de Morango',
+        caipirinha_kiwi: 'Caipirinha de Kiwi', gin_tropical: 'Gin Tropical',
+        soda_italiana_limao_siciliano_e_morango: 'Soda Italiana (Limão Siciliano / Morango)',
+        lagoa_azul: 'Lagoa Azul', caipirinha_vinho: 'Caipirinha de Vinho',
+        cotton_fairy: 'Cotton Fairy', hold_hup: 'Hold Hup', passion: 'Passion',
+        negroni: 'Negroni', aperol_spritz: 'Aperol Spritz', toscano: 'Toscano',
+        gin_tonica: 'Gin Tônica', pina_colada: 'Piña Colada', alexander: 'Alexander',
+        limonada_suica: 'Limonada Suíça', cream_pink: 'Cream Pink',
+        cookie_drink: 'Cookie Drink', oreo_yin: 'Oreo Yin'
+    };
+
+    function cardapioNomeDrink(id) {
+        if (CARDAPIO_NOMES_DRINK_PADRAO[id]) return CARDAPIO_NOMES_DRINK_PADRAO[id];
+        const custom = (JSON.parse(localStorage.getItem('drinksCustomizados') || '[]')).find(d => d.id === id);
+        if (custom) return custom.nome;
+        const ficha = ftLoad().find(f => f.id === id);
+        if (ficha) return ficha.nome;
+        return id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    // Monta a lista de drinks do orçamento (nome + insumos da ficha técnica), já excluindo
+    // os campos de "Outros Gastos" que não são drinks.
+    function cardapioMontarCardapio(orc) {
         const drinks = orc.drinks || orc.drinksSelecionados || {};
-        const nomes = [];
-        Object.keys(drinks).forEach(item => {
-            if (item === 'custom_drink_personalizado' || item === 'custom_drink_personalizado_nome') return;
-            const quantidade = Number(drinks[item]) || 0;
-            if (quantidade > 0) nomes.push(item.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+        const fichas = ftLoad();
+        const itens = [];
+        Object.keys(drinks).forEach(id => {
+            if (CARDAPIO_CAMPOS_NAO_DRINK.has(id)) return;
+            const quantidade = Number(drinks[id]) || 0;
+            if (quantidade <= 0) return;
+            const ficha = fichas.find(f => f.id === id);
+            const insumos = ficha ? ficha.ingredientes.filter(i => i.nome).map(i => i.nome) : [];
+            itens.push({ nome: cardapioNomeDrink(id), insumos });
         });
         const nomeCustom = orc.customDrink?.nome || drinks.custom_drink_personalizado_nome;
-        if (nomeCustom) nomes.push(nomeCustom);
-        return nomes;
+        if (nomeCustom) itens.push({ nome: nomeCustom, insumos: [] });
+        return itens;
     }
 
     // Codifica um objeto em base64 seguro pra URL (sem +, / ou =), preservando acentos.
@@ -7120,9 +7162,9 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         if (!orc) { showNotification('Orçamento não encontrado.', 'error'); return; }
         _cardapioOrcAtualId = orcamentoId;
 
-        const drinksNomes = cardapioListaDrinks(orc);
-        document.getElementById('cardapioListaDrinksPreview').innerHTML = drinksNomes.length
-            ? drinksNomes.map(n => `🍹 ${n}`).join('<br/>')
+        const itensCardapio = cardapioMontarCardapio(orc);
+        document.getElementById('cardapioListaDrinksPreview').innerHTML = itensCardapio.length
+            ? itensCardapio.map(d => `🍹 <strong>${d.nome}</strong>${d.insumos.length ? ` — <span style="color:var(--gray-500);">${d.insumos.join(', ')}</span>` : ''}`).join('<br/>')
             : 'Nenhum drink selecionado neste orçamento ainda.';
 
         document.getElementById('cardapioFotoUrl').value = orc.cardapioFotoUrl || '';
@@ -7145,7 +7187,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const dados = {
             nome: orc.cliente || orc.nome || 'Casal',
             data: orc.dataFormatada || formatarData(orc.data) || '',
-            drinks: cardapioListaDrinks(orc),
+            drinks: cardapioMontarCardapio(orc),
             foto: fotoUrl || '',
             instagram: instagramUrl,
             whats: DDRINKS_WHATSAPP_NUMERO,

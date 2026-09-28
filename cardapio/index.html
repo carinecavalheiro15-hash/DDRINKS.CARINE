@@ -5,105 +5,145 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cardápio Digital · D'Drinks</title>
 <meta name="description" content="Cardápio de drinks do seu evento, por D'Drinks.">
+<link rel="icon" href="logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root{
         --accent:#ef4444;
-        --gold:#f59e0b;
+        --gold:#f5c451;
         --bg:#0a0a0a;
-        --card:#151515;
+        --card:#151313;
     }
     *{box-sizing:border-box;}
+    html,body{ margin:0; padding:0; }
     body{
-        margin:0;
         font-family:'Poppins',Arial,sans-serif;
-        background:radial-gradient(circle at 50% 0%, #2a0a0a 0%, #000000 60%);
+        background:
+            radial-gradient(circle at 15% 0%, rgba(245,196,81,.08) 0%, transparent 45%),
+            radial-gradient(circle at 85% 15%, rgba(239,68,68,.10) 0%, transparent 50%),
+            radial-gradient(circle at 50% 100%, #2a0a0a 0%, #000000 65%);
+        background-color:#000;
         color:#f5f5f5;
         min-height:100vh;
         display:flex;
         justify-content:center;
-        padding:32px 16px 60px;
+        padding:28px 16px 50px;
     }
-    .wrap{ width:100%; max-width:420px; }
-    .brand{
-        text-align:center;
+    .wrap{ width:100%; max-width:430px; animation:subir .5s ease both; }
+    @keyframes subir{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+
+    .topo{
+        display:flex; align-items:center; justify-content:center; gap:10px;
+        margin-bottom:26px;
+    }
+    .topo img{ width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid rgba(245,196,81,.5); background:#111; }
+    .topo .marca{
         font-family:'Playfair Display',Georgia,serif;
-        font-weight:800;
-        font-size:15px;
-        letter-spacing:.14em;
-        color:#fff;
-        margin-bottom:22px;
+        font-weight:800; font-size:15px; letter-spacing:.16em; color:#fff;
     }
-    .brand span{ color:var(--accent); }
+    .topo .marca span{ color:var(--accent); }
+
+    .ornamento{
+        display:flex; align-items:center; justify-content:center; gap:10px;
+        margin:4px 0 22px; color:var(--gold); opacity:.55;
+    }
+    .ornamento .linha{ height:1px; width:46px; background:linear-gradient(90deg,transparent,currentColor,transparent); }
+    .ornamento .diamante{ width:5px;height:5px;border:1px solid currentColor;transform:rotate(45deg); }
+
+    .foto-wrap{ position:relative; width:196px; height:196px; margin:0 auto 20px; }
     .foto{
-        width:180px;height:180px;border-radius:50%;object-fit:cover;
-        display:block;margin:0 auto 18px;
+        width:196px;height:196px;border-radius:50%;object-fit:cover;
+        display:block;
         border:3px solid var(--gold);
-        box-shadow:0 8px 30px rgba(0,0,0,.5);
+        box-shadow:0 10px 34px rgba(0,0,0,.55), 0 0 0 8px rgba(245,196,81,.06);
         background:#111;
     }
+    .foto-selo{
+        position:absolute; right:-4px; bottom:-4px;
+        width:46px;height:46px;border-radius:50%;
+        background:#0a0a0a; border:2px solid var(--gold);
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 4px 14px rgba(0,0,0,.5);
+    }
+    .foto-selo img{ width:30px;height:30px;border-radius:50%;object-fit:cover; }
+
     .nome{
         text-align:center;
         font-family:'Playfair Display',Georgia,serif;
         font-style:italic;
         font-weight:700;
-        font-size:24px;
+        font-size:25px;
         color:#fff;
-        margin-bottom:4px;
+        margin-bottom:6px;
+        line-height:1.25;
     }
     .data{
         text-align:center;
         font-size:12.5px;
         color:var(--gold);
-        letter-spacing:.04em;
-        margin-bottom:26px;
+        letter-spacing:.05em;
+        margin-bottom:28px;
+        font-weight:500;
     }
+
     .card{
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
-        border-radius:18px;
-        padding:22px 22px 24px;
-        margin-bottom:16px;
+        border-radius:20px;
+        padding:24px 22px 22px;
+        margin-bottom:18px;
+        box-shadow:0 12px 30px rgba(0,0,0,.35);
     }
     .card h2{
         font-size:11px;
         text-transform:uppercase;
-        letter-spacing:.14em;
+        letter-spacing:.16em;
         color:#9ca3af;
         font-weight:700;
-        margin:0 0 14px;
+        margin:0 0 16px;
         text-align:center;
     }
-    .drinks-list{ list-style:none; margin:0; padding:0; }
-    .drinks-list li{
-        display:flex;align-items:center;gap:10px;
-        font-size:15px;font-weight:500;color:#f5f5f5;
-        padding:10px 4px;
-        border-bottom:1px solid rgba(255,255,255,.06);
+    .drink-item{ padding:13px 2px; border-bottom:1px solid rgba(255,255,255,.07); }
+    .drink-item:last-child{ border-bottom:none; padding-bottom:2px; }
+    .drink-item:first-child{ padding-top:2px; }
+    .drink-nome{
+        display:flex;align-items:center;gap:9px;
+        font-size:15.5px;font-weight:600;color:#f8f8f8;
     }
-    .drinks-list li:last-child{ border-bottom:none; }
+    .drink-nome .glass{ font-size:15px; flex-shrink:0; }
+    .drink-insumos{
+        font-size:11.5px;color:#9a9a9a;margin:4px 0 0 24px;
+        font-style:italic;line-height:1.45;
+    }
     .vazio{ text-align:center;color:#9ca3af;font-size:13px;padding:8px 0; }
+
     .desconto-box{
         text-align:center;
         border:1px solid var(--gold);
-        border-radius:16px;
-        padding:20px 18px;
-        background:rgba(245,158,11,.06);
-        margin-bottom:16px;
+        border-radius:18px;
+        padding:24px 20px 22px;
+        background:linear-gradient(180deg, rgba(245,196,81,.09), rgba(245,196,81,.02));
+        margin-bottom:18px;
+        position:relative;
+    }
+    .desconto-box .selo-topo{
+        font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);
+        font-weight:700;margin-bottom:6px;
     }
     .desconto-box .pct{
         font-family:'Playfair Display',Georgia,serif;
         font-weight:800;
-        font-size:34px;
+        font-size:38px;
         color:var(--gold);
+        line-height:1.1;
     }
     .desconto-box p{
-        font-size:12.5px;color:#d1d5db;margin:6px 0 16px;line-height:1.5;
+        font-size:12.5px;color:#d1d5db;margin:8px 0 18px;line-height:1.55;
     }
     .btn{
-        display:flex;align-items:center;justify-content:center;gap:8px;
+        display:flex;align-items:center;justify-content:center;gap:9px;
         width:100%;
         padding:14px 18px;
         border-radius:12px;
@@ -114,29 +154,36 @@
         text-decoration:none;
         cursor:pointer;
         margin-bottom:10px;
+        transition:transform .15s;
     }
+    .btn:active{ transform:scale(.98); }
     .btn:last-child{ margin-bottom:0; }
+    .btn svg{ flex-shrink:0; }
     .btn-whats{ background:#25D366; color:#053b1a; }
     .btn-insta{
         background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7);
         color:#fff;
     }
+
     .footer{
         text-align:center;
         font-size:10.5px;
         color:#6b7280;
-        margin-top:22px;
-        line-height:1.6;
+        margin-top:24px;
+        line-height:1.7;
     }
-    .erro{
-        text-align:center;padding:60px 20px;color:#e5e7eb;
-    }
-    .erro img{ width:120px;opacity:.85;margin-bottom:18px;border-radius:16px; }
+    .footer strong{ color:#9ca3af; }
+
+    .erro{ text-align:center;padding:70px 20px;color:#e5e7eb; }
+    .erro img{ width:110px;border-radius:50%;opacity:.9;margin-bottom:20px;border:2px solid var(--gold); }
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
-    <div class="brand">D<span>'</span>DRINKS</div>
+    <div class="topo">
+        <img src="logo.jpg" alt="" onerror="this.style.display='none'"/>
+        <div class="marca">D<span>'</span>DRINKS</div>
+    </div>
     <div class="erro" id="carregando">Carregando cardápio…</div>
 </div>
 
@@ -155,9 +202,15 @@
         }[c]));
     }
 
+    const ICONE_WHATS = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6 6.3A8.9 8.9 0 0012 4a9 9 0 00-7.8 13.5L3 21l3.6-1.2A9 9 0 1017.6 6.3z" stroke="#053b1a" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.5 8.7c.2-.5.5-.5.8-.5h.6c.2 0 .4 0 .6.4.2.5.7 1.6.7 1.8.1.1.1.3 0 .4-.1.2-.2.3-.3.4l-.4.5c-.1.2-.3.3-.1.6.2.4.8 1.3 1.8 2.1 1.2 1 1.2.9 1.8.9.2 0 .4-.2.5-.4l.4-.5c.2-.2.4-.2.6-.1l1.6.8c.2.1.4.2.4.4.1.5-.2 1.3-.6 1.6-.4.4-1.3.7-2.3.4-1.6-.5-3.3-1.6-4.5-2.9-1.1-1.2-1.9-2.5-2.2-3.5-.3-.9-.1-1.6.2-2z" fill="#053b1a"/></svg>`;
+    const ICONE_INSTA = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="4" stroke="#fff" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="#fff"/></svg>`;
+
     function renderErro() {
         document.getElementById('app').innerHTML = `
-            <div class="brand">D<span>'</span>DRINKS</div>
+            <div class="topo">
+                <img src="logo.jpg" alt="" onerror="this.style.display='none'"/>
+                <div class="marca">D<span>'</span>DRINKS</div>
+            </div>
             <div class="erro">
                 <img src="logo.jpg" alt="D'Drinks" onerror="this.style.display='none'"/>
                 <div style="font-weight:600;">Cardápio não encontrado.</div>
@@ -170,7 +223,10 @@
         const nome = escapeHtml(dados.nome || 'Casal');
         const data = escapeHtml(dados.data || '');
         const foto = dados.foto ? escapeHtml(dados.foto) : 'logo.jpg';
-        const drinks = Array.isArray(dados.drinks) ? dados.drinks : [];
+        const temFoto = !!dados.foto;
+        const drinksBrutos = Array.isArray(dados.drinks) ? dados.drinks : [];
+        // Compatível com formato antigo (array de strings) e novo (array de {nome, insumos}).
+        const drinks = drinksBrutos.map(d => typeof d === 'string' ? { nome: d, insumos: [] } : d);
         const instagram = dados.instagram ? escapeHtml(dados.instagram) : '';
         const whats = escapeHtml(dados.whats || '');
         const desconto = Number(dados.desconto) || 5;
@@ -179,29 +235,43 @@
         const linkWhats = whats ? `https://wa.me/${whats}?text=${encodeURIComponent(mensagemWhats)}` : '#';
 
         const listaHtml = drinks.length
-            ? drinks.map(d => `<li>🍹 ${escapeHtml(d)}</li>`).join('')
+            ? drinks.map(d => `
+                <div class="drink-item">
+                    <div class="drink-nome"><span class="glass">🍹</span> ${escapeHtml(d.nome)}</div>
+                    ${d.insumos && d.insumos.length ? `<div class="drink-insumos">${d.insumos.map(escapeHtml).join(' · ')}</div>` : ''}
+                </div>
+            `).join('')
             : '<div class="vazio">O cardápio deste evento ainda está sendo montado.</div>';
 
         document.getElementById('app').innerHTML = `
-            <div class="brand">D<span>'</span>DRINKS</div>
-            <img class="foto" src="${foto}" alt="${nome}" onerror="this.src='logo.jpg'"/>
+            <div class="topo">
+                <img src="logo.jpg" alt="" onerror="this.style.display='none'"/>
+                <div class="marca">D<span>'</span>DRINKS</div>
+            </div>
+            <div class="ornamento"><span class="linha"></span><span class="diamante"></span><span class="linha"></span></div>
+
+            <div class="foto-wrap">
+                <img class="foto" src="${foto}" alt="${nome}" onerror="this.src='logo.jpg'"/>
+                ${temFoto ? `<div class="foto-selo"><img src="logo.jpg" alt="" onerror="this.parentElement.style.display='none'"/></div>` : ''}
+            </div>
             <div class="nome">${nome}</div>
             ${data ? `<div class="data">📅 ${data}</div>` : ''}
 
             <div class="card">
                 <h2>Cardápio de Drinks do Seu Evento</h2>
-                <ul class="drinks-list">${listaHtml}</ul>
+                ${listaHtml}
             </div>
 
             <div class="desconto-box">
+                <div class="selo-topo">Benefício Exclusivo</div>
                 <div class="pct">${desconto}% OFF</div>
                 <p>Fale com a gente pelo WhatsApp e ganhe ${desconto}% de desconto na contratação do seu evento.</p>
-                <a class="btn btn-whats" href="${linkWhats}" target="_blank" rel="noopener">💬 Falar no WhatsApp</a>
-                ${instagram ? `<a class="btn btn-insta" href="${instagram}" target="_blank" rel="noopener">📸 Seguir no Instagram</a>` : ''}
+                <a class="btn btn-whats" href="${linkWhats}" target="_blank" rel="noopener">${ICONE_WHATS} Falar no WhatsApp</a>
+                ${instagram ? `<a class="btn btn-insta" href="${instagram}" target="_blank" rel="noopener">${ICONE_INSTA} Seguir no Instagram</a>` : ''}
             </div>
 
             <div class="footer">
-                D'Drinks · Especialistas em Coquetelaria para Eventos<br/>
+                <strong>D'Drinks</strong> · Especialistas em Coquetelaria para Eventos<br/>
                 Cardápio gerado especialmente para este evento.
             </div>
         `;
