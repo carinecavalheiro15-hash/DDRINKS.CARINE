@@ -13,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <!-- Configuração do PDF.js Worker -->
     <script>
@@ -7258,8 +7259,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const canvas = await html2canvas(tempDiv, { scale, useCORS: true, allowTaint: true, backgroundColor: '#000000' });
 
         // Calcula onde fica o espaço reservado do QR dentro do canvas já renderizado,
-        // pra desenhar o QR exatamente ali por cima (canvas 2D puro, sem passar pelo
-        // carregador de imagem do html2canvas).
+        // pra desenhar o QR exatamente ali por cima.
         const slot = tempDiv.querySelector('#cardapioQrSlot');
         const slotRect = slot.getBoundingClientRect();
         const divRect = tempDiv.getBoundingClientRect();
@@ -7269,16 +7269,19 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const h = slotRect.height * scale;
         document.body.removeChild(tempDiv);
 
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&data=${encodeURIComponent(link)}`;
-        const qrImg = await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error('Não foi possível carregar o QR Code.'));
-            img.src = qrUrl;
+        // Gera o QR Code 100% local (biblioteca "qrcodejs", desenha direto num canvas,
+        // sem nenhuma chamada de rede) — evita qualquer problema de CORS/imagem externa,
+        // o que é especialmente sensível rodando o app como arquivo local (file://).
+        const qrContainer = document.createElement('div');
+        new QRCode(qrContainer, {
+            text: link,
+            width: Math.round(w),
+            height: Math.round(w),
+            correctLevel: QRCode.CorrectLevel.M
         });
+        const qrCanvas = qrContainer.querySelector('canvas');
 
-        canvas.getContext('2d').drawImage(qrImg, x, y, w, h);
+        canvas.getContext('2d').drawImage(qrCanvas, x, y, w, h);
         return canvas;
     }
 
