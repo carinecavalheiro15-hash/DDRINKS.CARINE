@@ -7215,20 +7215,61 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         }
     }
 
+    // Monta o card ilustrado (QR + instrução de leitura + marca D'Drinks) que é baixado
+    // como imagem — pronto pra imprimir ou enviar, em vez do QR Code cru.
+    function cardapioMontarQrCardHtml(orc, link) {
+        const nome = (orc.cliente || orc.nome || 'Seu evento').replace(/</g, '&lt;');
+        const dataEventoTxt = orc.dataFormatada || formatarData(orc.data) || '';
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&data=${encodeURIComponent(link)}`;
+        return `
+            <div style="font-family:'Poppins',Arial,sans-serif;width:420px;background:radial-gradient(circle at 50% 0%, #2a0a0a 0%, #000000 65%);border:1px solid rgba(245,196,81,.35);border-radius:22px;padding:32px 30px 28px;color:#fff;box-sizing:border-box;text-align:center;">
+                <div style="font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:15px;letter-spacing:.16em;color:#fff;margin-bottom:4px;">D<span style="color:#ef4444;">'</span>DRINKS</div>
+                <div style="font-size:11px;color:#9ca3af;margin-bottom:20px;">Cardápio Digital do Evento</div>
+
+                <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;font-size:20px;color:#fff;margin-bottom:2px;">${nome}</div>
+                ${dataEventoTxt ? `<div style="font-size:11.5px;color:#f5c451;margin-bottom:18px;">📅 ${dataEventoTxt}</div>` : '<div style="margin-bottom:18px;"></div>'}
+
+                <div style="display:inline-block;background:#fff;border-radius:16px;padding:14px;margin-bottom:20px;">
+                    <img src="${qrUrl}" width="240" height="240" style="display:block;" crossorigin="anonymous" />
+                </div>
+
+                <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">📱 Aponte a câmera do celular para o QR Code</div>
+                <div style="font-size:11.5px;color:#c9c9c9;line-height:1.6;">e veja os drinks escolhidos para o seu evento,<br/>com um bônus especial de desconto.</div>
+
+                <div style="margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);font-size:9.5px;color:#6b7280;">
+                    D'Drinks · Especialistas em Coquetelaria para Eventos
+                </div>
+            </div>
+        `;
+    }
+
+    async function cardapioMontarQrCanvas(orc, link) {
+        await promoCarregarFontes();
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.left = '-9999px';
+        tempDiv.style.top = '0';
+        tempDiv.innerHTML = cardapioMontarQrCardHtml(orc, link);
+        document.body.appendChild(tempDiv);
+        const imgs = Array.from(tempDiv.querySelectorAll('img'));
+        await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; })));
+        const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#000000' });
+        document.body.removeChild(tempDiv);
+        return canvas;
+    }
+
     async function cardapioBaixarQr() {
         try {
+            const orc = orcamentos.find(o => o.id === _cardapioOrcAtualId);
             const link = document.getElementById('cardapioLinkGerado').value;
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(link)}`;
-            const resp = await fetch(qrUrl);
-            const blob = await resp.blob();
-            const url = URL.createObjectURL(blob);
+            const canvas = await cardapioMontarQrCanvas(orc || {}, link);
+            const url = canvas.toDataURL('image/png');
             const a = document.createElement('a');
             a.href = url;
             a.download = `qrcode-cardapio-${_cardapioOrcAtualId}.png`;
             document.body.appendChild(a);
             a.click();
             a.remove();
-            URL.revokeObjectURL(url);
             showNotification('📥 QR Code baixado!', 'success');
         } catch (e) {
             showNotification('Erro ao baixar QR Code: ' + e.message, 'error');
