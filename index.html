@@ -976,6 +976,34 @@
                     <div id="lista-drinks-config" style="margin-top:1rem;"></div>
                 </div>
             </div>
+
+            <!-- Card: Cardápio Digital / QR Code -->
+            <div class="card" style="max-width:700px; margin: 0 auto 2rem;">
+                <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                    <h2 class="card-title">
+                        <span style="vertical-align:middle;margin-right:8px;">📱</span>Cardápio Digital (QR Code)
+                    </h2>
+                    <p class="card-subtitle">Dados usados no QR Code do cardápio gerado em cada evento (tela Eventos)</p>
+                </div>
+                <div style="padding:1rem 1.2rem 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Instagram da D'Drinks (link completo)</label>
+                        <input type="url" id="cfg-cardapio-instagram" class="form-input" placeholder="https://instagram.com/seuinstagram" oninput="cardapioSalvarConfig()" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Desconto oferecido no cardápio (%)</label>
+                        <input type="number" id="cfg-cardapio-desconto" class="form-input" min="0" step="1" placeholder="5" oninput="cardapioSalvarConfig()" style="max-width:140px;" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Link base da página do cardápio (GitHub Pages)</label>
+                        <input type="text" id="cfg-cardapio-baseurl" class="form-input" oninput="cardapioSalvarConfig()" />
+                        <p style="font-size:0.75rem;color:var(--gray-500);margin-top:0.4rem;">
+                            Só muda se você mudar de repositório/domínio. Para o link funcionar para qualquer convidado, ative uma vez em
+                            GitHub → Settings → Pages → Branch <strong>main</strong> → Pasta <strong>/(root)</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Página Principal (Orçamentos) -->
@@ -2268,6 +2296,48 @@
                     <button class="btn btn-secondary btn-sm" onclick="clienteFecharVer()">✕ Fechar</button>
                 </div>
                 <div class="cliente-modal-body" id="clienteVerBody"></div>
+            </div>
+        </div>
+
+        <!-- Modal: Cardápio Digital / QR Code do evento -->
+        <div id="cardapioModal" class="cliente-modal-overlay" style="z-index:6500;" onclick="if(event.target===this) cardapioFecharModal()">
+            <div class="cliente-modal-box" style="max-width:480px;">
+                <div class="cliente-modal-header">
+                    <div style="font-weight:700;font-size:1.1rem;color:var(--gray-900);">📱 Cardápio Digital do Evento</div>
+                    <button class="btn btn-secondary btn-sm" onclick="cardapioFecharModal()">✕ Fechar</button>
+                </div>
+                <div class="cliente-modal-body">
+                    <p style="font-size:.8rem;color:var(--gray-500);margin-bottom:14px;">
+                        Gere um QR Code que leva o convidado a uma página com os drinks escolhidos, foto do casal, Instagram e um botão de WhatsApp com desconto.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">Link da foto do casal (opcional)</label>
+                        <input type="url" id="cardapioFotoUrl" class="form-input" placeholder="https://..." oninput="cardapioAtualizarPreview()" />
+                        <p style="font-size:.72rem;color:var(--gray-500);margin-top:4px;">Cole aqui o link de uma foto pública do casal. Se deixar em branco, a página usa a logo da D'Drinks.</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🍹 Drinks que vão aparecer no cardápio</label>
+                        <div id="cardapioListaDrinksPreview" style="font-size:.82rem;color:var(--gray-700);background:var(--gray-50);border-radius:10px;padding:10px 12px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Link gerado</label>
+                        <div style="display:flex;gap:6px;">
+                            <input type="text" id="cardapioLinkGerado" class="form-input" readonly style="font-size:.75rem;" />
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="cardapioCopiarLink()">📋</button>
+                        </div>
+                    </div>
+                    <div style="text-align:center;margin-top:16px;">
+                        <img id="cardapioQrImg" src="" width="220" height="220" style="border-radius:12px;background:#fff;padding:8px;border:1px solid var(--gray-200);" />
+                        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                            <a id="cardapioAbrirLink" href="#" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">👁️ Pré-visualizar</a>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="cardapioBaixarQr()">📥 Baixar QR Code</button>
+                        </div>
+                    </div>
+                    <p style="font-size:.7rem;color:var(--gray-400);margin-top:14px;">
+                        ⚠️ Para o link abrir no celular de qualquer convidado (não só neste computador), a pasta <code>cardapio/</code> deste projeto precisa estar publicada no GitHub Pages do repositório
+                        (Settings → Pages → branch <strong>main</strong> → pasta <strong>/(root)</strong>). Configure o link base em Configurações.
+                    </p>
+                </div>
             </div>
         </div>
         <!-- FIM PÁGINA CLIENTES -->
@@ -4884,6 +4954,7 @@ html += htmlPacotes;
             atualizarFotoLogin();
             carregarDrinksCustomizados();
             updateNavigation();
+            cardapioCarregarConfig();
 
             // Inicializa preços
             atualizarPrecos();
@@ -6964,12 +7035,13 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                             💰 ${formatarValorBR(totais.totalAceito)} · Pago ${formatarValorBR(totais.totalPago)}
                         </div>
                     ` : ''}
-                    ${isRealizado ? `
-                        <div class="cliente-card-actions">
+                    <div class="cliente-card-actions">
+                        <button type="button" class="btn btn-sm btn-primary" style="background:#ef4444;" onclick="(function(e){e && e.stopPropagation(); cardapioAbrirModal(${orcamentoPrincipal.id});})(event)">📱 Cardápio Digital</button>
+                        ${isRealizado ? `
                             ${isAniversario1Ano ? `<button type="button" class="btn btn-sm btn-primary" onclick="(function(e){e && e.stopPropagation(); enviarParabensAniversario(${orcamentoPrincipal.id});})(event)">🎉 Enviar Parabéns 1 ano</button>` : ''}
                             <button type="button" class="btn btn-sm btn-secondary" onclick="(function(e){e && e.stopPropagation(); enviarPesquisaSatisfacao(${orcamentoPrincipal.id});})(event)">📲 Enviar Pesquisa</button>
-                        </div>
-                    ` : ''}
+                        ` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -6994,6 +7066,137 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
         cont.innerHTML = html;
     }
+
+    // ==================== CARDÁPIO DIGITAL / QR CODE DO EVENTO ====================
+    // Landing page pública (pasta cardapio/) que precisa estar publicada via GitHub Pages
+    // para o link funcionar no celular de qualquer convidado que escaneie o QR Code.
+    const CARDAPIO_BASE_URL_PADRAO = 'https://carinecavalheiro15-hash.github.io/DDRINKS.CARINE/cardapio/';
+
+    function cardapioCarregarConfig() {
+        const instagram = document.getElementById('cfg-cardapio-instagram');
+        const desconto = document.getElementById('cfg-cardapio-desconto');
+        const baseUrl = document.getElementById('cfg-cardapio-baseurl');
+        if (instagram) instagram.value = localStorage.getItem('ddrinksInstagramUrl') || '';
+        if (desconto) desconto.value = localStorage.getItem('ddrinksCardapioDesconto') || '5';
+        if (baseUrl) baseUrl.value = localStorage.getItem('ddrinksCardapioBaseUrl') || CARDAPIO_BASE_URL_PADRAO;
+    }
+
+    function cardapioSalvarConfig() {
+        const instagram = document.getElementById('cfg-cardapio-instagram')?.value.trim() || '';
+        const desconto = document.getElementById('cfg-cardapio-desconto')?.value.trim() || '5';
+        const baseUrl = document.getElementById('cfg-cardapio-baseurl')?.value.trim() || CARDAPIO_BASE_URL_PADRAO;
+        localStorage.setItem('ddrinksInstagramUrl', instagram);
+        localStorage.setItem('ddrinksCardapioDesconto', desconto);
+        localStorage.setItem('ddrinksCardapioBaseUrl', baseUrl);
+    }
+
+    // Extrai só os nomes dos drinks escolhidos no orçamento (sem preço/quantidade),
+    // pra exibir num cardápio voltado ao convidado.
+    function cardapioListaDrinks(orc) {
+        const drinks = orc.drinks || orc.drinksSelecionados || {};
+        const nomes = [];
+        Object.keys(drinks).forEach(item => {
+            if (item === 'custom_drink_personalizado' || item === 'custom_drink_personalizado_nome') return;
+            const quantidade = Number(drinks[item]) || 0;
+            if (quantidade > 0) nomes.push(item.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+        });
+        const nomeCustom = orc.customDrink?.nome || drinks.custom_drink_personalizado_nome;
+        if (nomeCustom) nomes.push(nomeCustom);
+        return nomes;
+    }
+
+    // Codifica um objeto em base64 seguro pra URL (sem +, / ou =), preservando acentos.
+    function cardapioCodificarBase64Url(obj) {
+        const json = JSON.stringify(obj);
+        const b64 = btoa(unescape(encodeURIComponent(json)));
+        return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    let _cardapioOrcAtualId = null;
+    function cardapioAbrirModal(orcamentoId) {
+        const orcamentosSalvos = localStorage.getItem('orcamentos');
+        if (orcamentosSalvos) orcamentos = JSON.parse(orcamentosSalvos);
+        const orc = orcamentos.find(o => o.id === orcamentoId);
+        if (!orc) { showNotification('Orçamento não encontrado.', 'error'); return; }
+        _cardapioOrcAtualId = orcamentoId;
+
+        const drinksNomes = cardapioListaDrinks(orc);
+        document.getElementById('cardapioListaDrinksPreview').innerHTML = drinksNomes.length
+            ? drinksNomes.map(n => `🍹 ${n}`).join('<br/>')
+            : 'Nenhum drink selecionado neste orçamento ainda.';
+
+        document.getElementById('cardapioFotoUrl').value = orc.cardapioFotoUrl || '';
+        document.getElementById('cardapioModal').classList.add('open');
+        cardapioAtualizarPreview();
+    }
+
+    function cardapioAtualizarPreview() {
+        const orc = orcamentos.find(o => o.id === _cardapioOrcAtualId);
+        if (!orc) return;
+
+        const fotoUrl = document.getElementById('cardapioFotoUrl').value.trim();
+        orc.cardapioFotoUrl = fotoUrl || null;
+        localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+
+        const baseUrl = localStorage.getItem('ddrinksCardapioBaseUrl') || CARDAPIO_BASE_URL_PADRAO;
+        const instagramUrl = localStorage.getItem('ddrinksInstagramUrl') || '';
+        const desconto = Number(localStorage.getItem('ddrinksCardapioDesconto')) || 5;
+
+        const dados = {
+            nome: orc.cliente || orc.nome || 'Casal',
+            data: orc.dataFormatada || formatarData(orc.data) || '',
+            drinks: cardapioListaDrinks(orc),
+            foto: fotoUrl || '',
+            instagram: instagramUrl,
+            whats: DDRINKS_WHATSAPP_NUMERO,
+            desconto
+        };
+
+        const codificado = cardapioCodificarBase64Url(dados);
+        const link = `${baseUrl}?d=${codificado}`;
+
+        document.getElementById('cardapioLinkGerado').value = link;
+        document.getElementById('cardapioAbrirLink').href = link;
+        document.getElementById('cardapioQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(link)}`;
+    }
+
+    function cardapioCopiarLink() {
+        const input = document.getElementById('cardapioLinkGerado');
+        input.select();
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(input.value)
+                .then(() => showNotification('🔗 Link copiado!', 'success'))
+                .catch(() => showNotification('Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.', 'warning'));
+        } else {
+            document.execCommand('copy');
+            showNotification('🔗 Link copiado!', 'success');
+        }
+    }
+
+    async function cardapioBaixarQr() {
+        try {
+            const link = document.getElementById('cardapioLinkGerado').value;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(link)}`;
+            const resp = await fetch(qrUrl);
+            const blob = await resp.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qrcode-cardapio-${_cardapioOrcAtualId}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            showNotification('📥 QR Code baixado!', 'success');
+        } catch (e) {
+            showNotification('Erro ao baixar QR Code: ' + e.message, 'error');
+        }
+    }
+
+    function cardapioFecharModal() {
+        document.getElementById('cardapioModal').classList.remove('open');
+    }
+    // ==================== FIM CARDÁPIO DIGITAL / QR CODE ====================
 
     // Fornecedores: simples CRUD em localStorage
     function fornecedorSaveToStorage(list){ localStorage.setItem('fornecedores', JSON.stringify(list || [])); }

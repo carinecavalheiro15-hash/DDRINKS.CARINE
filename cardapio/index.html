@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardápio Digital · D'Drinks</title>
+<meta name="description" content="Cardápio de drinks do seu evento, por D'Drinks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root{
+        --accent:#ef4444;
+        --gold:#f59e0b;
+        --bg:#0a0a0a;
+        --card:#151515;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0;
+        font-family:'Poppins',Arial,sans-serif;
+        background:radial-gradient(circle at 50% 0%, #2a0a0a 0%, #000000 60%);
+        color:#f5f5f5;
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
+        padding:32px 16px 60px;
+    }
+    .wrap{ width:100%; max-width:420px; }
+    .brand{
+        text-align:center;
+        font-family:'Playfair Display',Georgia,serif;
+        font-weight:800;
+        font-size:15px;
+        letter-spacing:.14em;
+        color:#fff;
+        margin-bottom:22px;
+    }
+    .brand span{ color:var(--accent); }
+    .foto{
+        width:180px;height:180px;border-radius:50%;object-fit:cover;
+        display:block;margin:0 auto 18px;
+        border:3px solid var(--gold);
+        box-shadow:0 8px 30px rgba(0,0,0,.5);
+        background:#111;
+    }
+    .nome{
+        text-align:center;
+        font-family:'Playfair Display',Georgia,serif;
+        font-style:italic;
+        font-weight:700;
+        font-size:24px;
+        color:#fff;
+        margin-bottom:4px;
+    }
+    .data{
+        text-align:center;
+        font-size:12.5px;
+        color:var(--gold);
+        letter-spacing:.04em;
+        margin-bottom:26px;
+    }
+    .card{
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.08);
+        border-radius:18px;
+        padding:22px 22px 24px;
+        margin-bottom:16px;
+    }
+    .card h2{
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:.14em;
+        color:#9ca3af;
+        font-weight:700;
+        margin:0 0 14px;
+        text-align:center;
+    }
+    .drinks-list{ list-style:none; margin:0; padding:0; }
+    .drinks-list li{
+        display:flex;align-items:center;gap:10px;
+        font-size:15px;font-weight:500;color:#f5f5f5;
+        padding:10px 4px;
+        border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .drinks-list li:last-child{ border-bottom:none; }
+    .vazio{ text-align:center;color:#9ca3af;font-size:13px;padding:8px 0; }
+    .desconto-box{
+        text-align:center;
+        border:1px solid var(--gold);
+        border-radius:16px;
+        padding:20px 18px;
+        background:rgba(245,158,11,.06);
+        margin-bottom:16px;
+    }
+    .desconto-box .pct{
+        font-family:'Playfair Display',Georgia,serif;
+        font-weight:800;
+        font-size:34px;
+        color:var(--gold);
+    }
+    .desconto-box p{
+        font-size:12.5px;color:#d1d5db;margin:6px 0 16px;line-height:1.5;
+    }
+    .btn{
+        display:flex;align-items:center;justify-content:center;gap:8px;
+        width:100%;
+        padding:14px 18px;
+        border-radius:12px;
+        border:none;
+        font-family:'Poppins',Arial,sans-serif;
+        font-weight:700;
+        font-size:14.5px;
+        text-decoration:none;
+        cursor:pointer;
+        margin-bottom:10px;
+    }
+    .btn:last-child{ margin-bottom:0; }
+    .btn-whats{ background:#25D366; color:#053b1a; }
+    .btn-insta{
+        background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7);
+        color:#fff;
+    }
+    .footer{
+        text-align:center;
+        font-size:10.5px;
+        color:#6b7280;
+        margin-top:22px;
+        line-height:1.6;
+    }
+    .erro{
+        text-align:center;padding:60px 20px;color:#e5e7eb;
+    }
+    .erro img{ width:120px;opacity:.85;margin-bottom:18px;border-radius:16px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+    <div class="brand">D<span>'</span>DRINKS</div>
+    <div class="erro" id="carregando">Carregando cardápio…</div>
+</div>
+
+<script>
+(function(){
+    function decodificarBase64Url(b64url) {
+        let b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        const json = decodeURIComponent(escape(atob(b64)));
+        return JSON.parse(json);
+    }
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, c => ({
+            '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+        }[c]));
+    }
+
+    function renderErro() {
+        document.getElementById('app').innerHTML = `
+            <div class="brand">D<span>'</span>DRINKS</div>
+            <div class="erro">
+                <img src="logo.jpg" alt="D'Drinks" onerror="this.style.display='none'"/>
+                <div style="font-weight:600;">Cardápio não encontrado.</div>
+                <div style="font-size:12px;color:#9ca3af;margin-top:6px;">Peça um novo QR Code para quem organizou seu evento.</div>
+            </div>
+        `;
+    }
+
+    function renderPagina(dados) {
+        const nome = escapeHtml(dados.nome || 'Casal');
+        const data = escapeHtml(dados.data || '');
+        const foto = dados.foto ? escapeHtml(dados.foto) : 'logo.jpg';
+        const drinks = Array.isArray(dados.drinks) ? dados.drinks : [];
+        const instagram = dados.instagram ? escapeHtml(dados.instagram) : '';
+        const whats = escapeHtml(dados.whats || '');
+        const desconto = Number(dados.desconto) || 5;
+
+        const mensagemWhats = `Olá! Vi o cardápio do evento de ${dados.nome || ''} pelo QR Code da D'Drinks e quero saber mais sobre o desconto de ${desconto}%.`;
+        const linkWhats = whats ? `https://wa.me/${whats}?text=${encodeURIComponent(mensagemWhats)}` : '#';
+
+        const listaHtml = drinks.length
+            ? drinks.map(d => `<li>🍹 ${escapeHtml(d)}</li>`).join('')
+            : '<div class="vazio">O cardápio deste evento ainda está sendo montado.</div>';
+
+        document.getElementById('app').innerHTML = `
+            <div class="brand">D<span>'</span>DRINKS</div>
+            <img class="foto" src="${foto}" alt="${nome}" onerror="this.src='logo.jpg'"/>
+            <div class="nome">${nome}</div>
+            ${data ? `<div class="data">📅 ${data}</div>` : ''}
+
+            <div class="card">
+                <h2>Cardápio de Drinks do Seu Evento</h2>
+                <ul class="drinks-list">${listaHtml}</ul>
+            </div>
+
+            <div class="desconto-box">
+                <div class="pct">${desconto}% OFF</div>
+                <p>Fale com a gente pelo WhatsApp e ganhe ${desconto}% de desconto na contratação do seu evento.</p>
+                <a class="btn btn-whats" href="${linkWhats}" target="_blank" rel="noopener">💬 Falar no WhatsApp</a>
+                ${instagram ? `<a class="btn btn-insta" href="${instagram}" target="_blank" rel="noopener">📸 Seguir no Instagram</a>` : ''}
+            </div>
+
+            <div class="footer">
+                D'Drinks · Especialistas em Coquetelaria para Eventos<br/>
+                Cardápio gerado especialmente para este evento.
+            </div>
+        `;
+    }
+
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const d = params.get('d');
+        if (!d) { renderErro(); return; }
+        const dados = decodificarBase64Url(d);
+        renderPagina(dados);
+    } catch (e) {
+        renderErro();
+    }
+})();
+</script>
+</body>
+</html>
