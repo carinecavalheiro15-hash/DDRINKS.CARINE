@@ -7447,19 +7447,31 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const q = (document.getElementById('fornecedorSearch')?.value || '').trim().toLowerCase();
         const listaFiltrada = q ? fornecedores.filter(f => ((f.nome||'').toLowerCase().includes(q) || (f.servico||'').toLowerCase().includes(q))) : fornecedores;
         if(!listaFiltrada.length){ cont.innerHTML = '<div class="cliente-empty">Nenhum fornecedor encontrado.</div>'; return; }
-        cont.innerHTML = '<div class="cliente-grid">' + listaFiltrada.map((f)=>`
-            <div class="cliente-card">
-                <div class="cliente-card-nome">${f.nome || '—'}</div>
-                <div class="cliente-card-data">${f.servico ? '🛠 '+f.servico : ''}</div>
-                <div class="cliente-card-info" style="margin-top:8px;">📞 ${f.telefone||'—'} • ✉️ ${f.email||'—'}</div>
-                <div class="cliente-card-info" style="margin-top:6px;color:var(--gray-600);">📍 ${f.endereco||'—'}</div>
-                <div class="cliente-card-stats" style="margin-top:8px;gap:8px;">
+        cont.innerHTML = '<div class="cliente-grid">' + listaFiltrada.map((f)=>{
+            const iniciais = (f.nome || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
+            return `
+            <div class="cliente-card" style="cursor:default;">
+                <div class="cliente-card-topo">
+                    <div class="cliente-avatar">${iniciais}</div>
+                    <div class="cliente-card-nome-wrap">
+                        <div class="cliente-card-nome">${f.nome || '—'}</div>
+                        ${f.servico ? `<div class="cliente-card-data">🛠 ${f.servico}</div>` : ''}
+                    </div>
+                </div>
+                <div class="cliente-card-body">
+                    <div class="cliente-card-info">
+                        <span>📞 ${f.telefone||'—'}</span>
+                        <span>✉️ ${f.email||'—'}</span>
+                        <span>📍 ${f.endereco||'—'}</span>
+                    </div>
+                </div>
+                <div class="cliente-card-actions">
                     <button class="btn btn-sm btn-secondary" onclick="fornecedorEditar(${f.id})">Editar</button>
                     <button class="btn btn-sm btn-danger" onclick="fornecedorExcluir(${f.id})">Excluir</button>
                 </div>
-                <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-200);">
+                <div style="padding:0 18px 16px;">
                     ${(f.documentos && f.documentos.length) ? `
-                        <div style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--gray-100);">
                             ${f.documentos.map((d, di) => `
                                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
                                     <div style="font-size:.8rem;color:var(--gray-700);">📄 <strong>${d.nome}</strong> <span style="color:var(--gray-500);">— anexado em ${new Date(d.dataUpload).toLocaleDateString('pt-BR')}</span></div>
@@ -7482,7 +7494,8 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                     `}
                 </div>
             </div>
-        `).join('') + '</div>';
+        `;
+        }).join('') + '</div>';
     }
 
     const FORNECEDOR_SERVICOS_FIXOS = ['Bebidas','Gelo','Gelo Personalizado','Decoração','Copos','Estrutura Bar','Transporte','Frete','Flores Comestíveis','Papelaria','Papel Arroz','Caixa Térmica'];
