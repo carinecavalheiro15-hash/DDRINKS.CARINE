@@ -60,15 +60,6 @@
         box-shadow:0 10px 34px rgba(0,0,0,.55), 0 0 0 8px rgba(245,196,81,.06);
         background:#111;
     }
-    .foto-selo{
-        position:absolute; right:-4px; bottom:-4px;
-        width:46px;height:46px;border-radius:50%;
-        background:#0a0a0a; border:2px solid var(--gold);
-        display:flex;align-items:center;justify-content:center;
-        box-shadow:0 4px 14px rgba(0,0,0,.5);
-    }
-    .foto-selo img{ width:30px;height:30px;border-radius:50%;object-fit:cover; }
-
     .nome{
         text-align:center;
         font-family:'Playfair Display',Georgia,serif;
@@ -223,7 +214,6 @@
         const nome = escapeHtml(dados.nome || 'Casal');
         const data = escapeHtml(dados.data || '');
         const foto = dados.foto ? escapeHtml(dados.foto) : 'logo.jpg';
-        const temFoto = !!dados.foto;
         const drinksBrutos = Array.isArray(dados.drinks) ? dados.drinks : [];
         // Compatível com formato antigo (array de strings) e novo (array de {nome, insumos}).
         const drinks = drinksBrutos.map(d => typeof d === 'string' ? { nome: d, insumos: [] } : d);
@@ -252,7 +242,6 @@
 
             <div class="foto-wrap">
                 <img class="foto" src="${foto}" alt="${nome}" onerror="this.src='logo.jpg'"/>
-                ${temFoto ? `<div class="foto-selo"><img src="logo.jpg" alt="" onerror="this.parentElement.style.display='none'"/></div>` : ''}
             </div>
             <div class="nome">${nome}</div>
             ${data ? `<div class="data">📅 ${data}</div>` : ''}
