@@ -23,7 +23,9 @@ if %errorLevel% neq 0 (
 
 set NSSM="C:\Users\CarineCavalheiro\AppData\Local\ddrinks-node\nssm-2.24\win64\nssm.exe"
 set NODE="C:\Users\CarineCavalheiro\AppData\Local\ddrinks-node\node-v22.14.0-win-x64\node.exe"
-set APPDIR=%~dp0
+REM "%~dp0" termina com "\" -- colocar isso direto entre aspas gera "...\"" (barra escapa
+REM a aspas), e o caminho fica invalido. O "." no final neutraliza isso sem mudar a pasta.
+set APPDIR=%~dp0.
 set SERVICO=DDrinksServer
 
 echo Instalando o servico "%SERVICO%"...
@@ -32,8 +34,8 @@ echo Instalando o servico "%SERVICO%"...
 %NSSM% set %SERVICO% DisplayName "DDrinks - Servidor Local (MySQL)"
 %NSSM% set %SERVICO% Description "Conecta o app DDrinks ao banco MySQL local. Inicia automaticamente com o Windows."
 %NSSM% set %SERVICO% Start SERVICE_AUTO_START
-%NSSM% set %SERVICO% AppStdout "%APPDIR%service-out.log"
-%NSSM% set %SERVICO% AppStderr "%APPDIR%service-err.log"
+%NSSM% set %SERVICO% AppStdout "%~dp0service-out.log"
+%NSSM% set %SERVICO% AppStderr "%~dp0service-err.log"
 %NSSM% set %SERVICO% AppRotateFiles 1
 %NSSM% set %SERVICO% AppExit Default Restart
 
