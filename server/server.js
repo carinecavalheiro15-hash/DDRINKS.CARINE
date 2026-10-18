@@ -139,8 +139,10 @@ function salvarFotoEPublicar({ dataUrl, subpasta, nomeBase, mensagemCommit }, re
     // "-c credential.helper=" (vazio) zera qualquer helper herdado (ex: o "manager" da sua
     // conta, que tentaria abrir uma janela/navegador e travaria rodando como serviço) antes
     // de usar só o arquivo de token dedicado, pra essa chamada de push especificamente.
+    // -c user.name/user.email: rodando como LocalSystem não existe gitconfig de usuário com
+    // esses dados preenchidos, e o git recusa o commit sem eles ("Author identity unknown").
     const comandoAdd = `"${GIT_BIN}" add "${relPathGit}"`;
-    const comandoCommit = `"${GIT_BIN}" commit -m "${mensagemCommit}"`;
+    const comandoCommit = `"${GIT_BIN}" -c user.name="DDrinks Servidor" -c user.email="ddrinks-servidor@local" commit -m "${mensagemCommit}"`;
     const comandoPush = `"${GIT_BIN}" -c credential.helper= -c credential.helper="store --file=${GIT_CREDENTIALS_FILE}" push origin main`;
     exec(`${comandoAdd} && ${comandoCommit} && ${comandoPush}`, { cwd: repoDir }, (err, stdout, stderr) => {
         if (err) console.warn('⚠️  Não consegui publicar a foto automaticamente no GitHub (ela continua funcionando neste computador):', (stderr || err.message).split('\n')[0]);
