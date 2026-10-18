@@ -1993,6 +1993,17 @@
                     <div id="lista-drinks-config" style="margin-top:1rem;"></div>
                 </div>
 
+                <!-- Card: Todos os Drinks (preços e ativo/inativo) -->
+                <div class="card">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:4px;">Todos os Drinks</h3>
+                    <p class="card-subtitle" style="margin-bottom:14px;">Edite o preço de cada pacote e marque se o drink deve aparecer na tela de Criar Orçamento</p>
+                    <input type="text" id="drinksGerenciarFiltro" class="form-input" placeholder="🔍 Buscar drink..." oninput="drinksGerenciarRender()" style="margin-bottom:12px;max-width:320px;" />
+                    <div id="drinksGerenciarLista"></div>
+                    <div style="margin-top:14px;">
+                        <button type="button" class="btn btn-primary" onclick="drinksGerenciarSalvar()">💾 Salvar Alterações</button>
+                    </div>
+                </div>
+
                 <!-- Card: Fichas Técnicas -->
                 <div class="card">
                     <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:4px;">Fichas Técnicas</h3>
@@ -2719,12 +2730,50 @@
 
         let precosPacotes = DEFAULT_PRECOS_PACOTES;
 
+        // ==================== PREÇOS EDITÁVEIS E ATIVAR/INATIVAR DRINKS ====================
+        // Permite sobrescrever o preço padrão de qualquer drink (padrão ou personalizado) e
+        // escolher se ele aparece ou não na tela de Criar Orçamento, pela tela de Drinks.
+        const DRINKS_PRECOS_OVERRIDE_CHAVE = 'ddrinksPrecosOverride';
+        const DRINKS_INATIVOS_CHAVE = 'ddrinksDrinksInativos';
+
+        function drinksCarregarOverridePrecos(){
+            try { return JSON.parse(localStorage.getItem(DRINKS_PRECOS_OVERRIDE_CHAVE) || '{}'); }
+            catch(e){ return {}; }
+        }
+        function drinksCarregarInativos(){
+            try { return JSON.parse(localStorage.getItem(DRINKS_INATIVOS_CHAVE) || '[]'); }
+            catch(e){ return []; }
+        }
+        function aplicarPrecosOverride(){
+            const override = drinksCarregarOverridePrecos();
+            ['bronze','prata','ouro'].forEach(p => {
+                if (!precosPacotes[p]) precosPacotes[p] = {};
+                Object.assign(precosPacotes[p], override[p] || {});
+            });
+        }
+        aplicarPrecosOverride();
+
+        // Esconde (ou mostra) o campo de cada drink na tela de Criar Orçamento conforme
+        // marcado como inativo na tela de Drinks. Chamado depois que os drinks padrão e os
+        // personalizados já estão no DOM.
+        function aplicarDrinksAtivos(){
+            const inativos = new Set(drinksCarregarInativos());
+            const ids = new Set(Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}));
+            (JSON.parse(localStorage.getItem('drinksCustomizados') || '[]')).forEach(d => ids.add(d.id));
+            ids.forEach(id => {
+                const input = document.getElementById(id);
+                const wrap = input ? input.closest('.form-group') : null;
+                if (wrap) wrap.style.display = inativos.has(id) ? 'none' : '';
+            });
+        }
+
         (async function loadPrecos(){
             try {
                 const res = await fetch('precos/precos.json');
                 if (res.ok) {
                     const data = await res.json();
                     precosPacotes = data;
+                    aplicarPrecosOverride();
                     console.log('Preços carregados de data/precos.json');
                     if (typeof atualizarPrecos === 'function') atualizarPrecos();
                 } else {
@@ -2764,10 +2813,12 @@
                 if (orcamentosSalvos) {
                     orcamentos = JSON.parse(orcamentosSalvos);
                 }
+                aplicarDrinksAtivos();
             } else if (pageId === 'config') {
                 atualizarConfigPreview();
             } else if (pageId === 'drinks') {
                 renderizarListaDrinksConfig();
+                drinksGerenciarRender();
                 ftRender('');
                 if (document.getElementById('ftSearch')) document.getElementById('ftSearch').value = '';
             } else if (pageId === 'estoque') {
@@ -2946,6 +2997,7 @@
             document.getElementById('cfg-drink-ouro').value = '';
             showNotification(`Drink "${nome}" cadastrado com sucesso!`, 'success');
             renderizarListaDrinksConfig();
+            drinksGerenciarRender();
             carregarDrinksCustomizados();
         }
 
@@ -2959,6 +3011,7 @@
             ['bronze', 'prata', 'ouro'].forEach(p => { delete precosPacotes[p][id]; });
             if (drink) showNotification(`Drink "${drink.nome}" removido.`, 'success');
             renderizarListaDrinksConfig();
+            drinksGerenciarRender();
             carregarDrinksCustomizados();
         }
 
@@ -2997,6 +3050,82 @@
                         </tr>`).join('')}
                     </tbody>
                 </table>`;
+        }
+
+        // ==================== TODOS OS DRINKS (preço editável + ativar/inativar) ====================
+        function drinksGerenciarListaCompleta(){
+            const customizados = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+            const padroes = Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}).map(id => ({
+                id,
+                nome: CARDAPIO_NOMES_DRINK_PADRAO[id] || id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                tipo: 'padrao'
+            }));
+            const customs = customizados.map(d => ({ id: d.id, nome: d.nome, tipo: 'personalizado' }));
+            return [...padroes, ...customs].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        }
+
+        function drinksGerenciarRender(){
+            const cont = document.getElementById('drinksGerenciarLista');
+            if (!cont) return;
+            const inativos = new Set(drinksCarregarInativos());
+            const filtro = (document.getElementById('drinksGerenciarFiltro')?.value || '').trim().toLowerCase();
+            let lista = drinksGerenciarListaCompleta();
+            if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro));
+
+            if (!lista.length) {
+                cont.innerHTML = '<div class="cliente-empty">Nenhum drink encontrado.</div>';
+                return;
+            }
+
+            cont.innerHTML = `
+                <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:620px;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--gray-200);">
+                            <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);">Drink</th>
+                            <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);">🥉 Bronze</th>
+                            <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);">🥈 Prata</th>
+                            <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);">🥇 Ouro</th>
+                            <th style="text-align:center;padding:8px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);">Ativo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${lista.map(d => {
+                            const precoB = (precosPacotes.bronze && precosPacotes.bronze[d.id]) || 0;
+                            const precoP = (precosPacotes.prata && precosPacotes.prata[d.id]) || 0;
+                            const precoO = (precosPacotes.ouro && precosPacotes.ouro[d.id]) || 0;
+                            const ativo = !inativos.has(d.id);
+                            return `
+                            <tr data-drink-id="${d.id}" style="border-bottom:1px solid var(--gray-100);${ativo ? '' : 'opacity:.5;'}">
+                                <td style="padding:8px 10px;color:var(--gray-900);font-weight:600;">${d.nome}${d.tipo === 'personalizado' ? ' <span style="font-size:.66rem;font-weight:500;color:var(--gray-400);">(personalizado)</span>' : ''}</td>
+                                <td style="padding:6px 8px;"><input type="number" class="form-input dg-preco" data-pacote="bronze" min="0" step="0.01" value="${precoB}" style="width:90px;text-align:right;padding:6px 8px;" /></td>
+                                <td style="padding:6px 8px;"><input type="number" class="form-input dg-preco" data-pacote="prata" min="0" step="0.01" value="${precoP}" style="width:90px;text-align:right;padding:6px 8px;" /></td>
+                                <td style="padding:6px 8px;"><input type="number" class="form-input dg-preco" data-pacote="ouro" min="0" step="0.01" value="${precoO}" style="width:90px;text-align:right;padding:6px 8px;" /></td>
+                                <td style="padding:6px 8px;text-align:center;"><input type="checkbox" class="dg-ativo" ${ativo ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer;" onchange="this.closest('tr').style.opacity=this.checked?'1':'.5';" /></td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+                </div>
+            `;
+        }
+
+        function drinksGerenciarSalvar(){
+            const linhas = document.querySelectorAll('#drinksGerenciarLista tr[data-drink-id]');
+            const override = { bronze: {}, prata: {}, ouro: {} };
+            const inativos = [];
+            linhas.forEach(tr => {
+                const id = tr.dataset.drinkId;
+                tr.querySelectorAll('.dg-preco').forEach(inp => {
+                    override[inp.dataset.pacote][id] = parseFloat(inp.value) || 0;
+                });
+                if (!tr.querySelector('.dg-ativo').checked) inativos.push(id);
+            });
+            localStorage.setItem(DRINKS_PRECOS_OVERRIDE_CHAVE, JSON.stringify(override));
+            localStorage.setItem(DRINKS_INATIVOS_CHAVE, JSON.stringify(inativos));
+            aplicarPrecosOverride();
+            aplicarDrinksAtivos();
+            showNotification('💾 Preços e disponibilidade dos drinks salvos!', 'success');
         }
 
         function atualizarConfigPreview() {
@@ -5074,6 +5203,7 @@ html += htmlPacotes;
 
             atualizarFotoLogin();
             carregarDrinksCustomizados();
+            aplicarDrinksAtivos();
             updateNavigation();
             cardapioCarregarConfig();
 
@@ -7342,7 +7472,9 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         negroni: 'Negroni', aperol_spritz: 'Aperol Spritz', toscano: 'Toscano',
         gin_tonica: 'Gin Tônica', pina_colada: 'Piña Colada', alexander: 'Alexander',
         limonada_suica: 'Limonada Suíça', cream_pink: 'Cream Pink',
-        cookie_drink: 'Cookie Drink', oreo_yin: 'Oreo Yin'
+        cookie_drink: 'Cookie Drink', oreo_yin: 'Oreo Yin',
+        mojito_sem_alcool: 'Mojito (Sem Álcool)', moscow_mule_sem_alcool: 'Moscow Mule (Sem Álcool)',
+        sex_on_the_beach_sem_alcool: 'Sex on the Beach (Sem Álcool)', pina_colada_sem_alcool: 'Piña Colada (Sem Álcool)'
     };
 
     function cardapioNomeDrink(id) {
