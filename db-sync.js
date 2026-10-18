@@ -13,7 +13,17 @@
 // só que sem salvar no banco (como era antes) — nunca trava por causa disso.
 // ============================================================
 (function () {
-    var API_BASE = 'http://localhost:3300/api';
+    // Tenta "localhost" primeiro (quando quem abre o app é o próprio computador que roda o
+    // servidor) e, se não responder, cai pro IP da rede Wi-Fi local — assim tablets, celulares
+    // e outros computadores NA MESMA REDE também conseguem salvar no banco. Isso só funciona
+    // dentro dessa rede; de fora (ex: dados móveis), ainda não alcança.
+    // Se o IP da rede do computador mudar (reiniciar o roteador, trocar de rede etc.), essa
+    // lista precisa ser atualizada.
+    var API_BASE_CANDIDATOS = [
+        'http://localhost:3300/api',
+        'http://192.168.3.20:3300/api'
+    ];
+    var API_BASE = API_BASE_CANDIDATOS[0];
 
     // localStorage key -> onde isso vive na API
     var SYNC_KEYS = {
@@ -44,11 +54,15 @@
     }
 
     var online = false;
-    try {
-        syncRequest('GET', API_BASE + '/health');
-        online = true;
-    } catch (e) {
-        online = false;
+    for (var i = 0; i < API_BASE_CANDIDATOS.length; i++) {
+        try {
+            API_BASE = API_BASE_CANDIDATOS[i];
+            syncRequest('GET', API_BASE + '/health');
+            online = true;
+            break;
+        } catch (e) {
+            online = false;
+        }
     }
     window.__ddrinksDbOnline = online;
 
@@ -89,7 +103,7 @@
             }
         });
     } else {
-        console.warn('DDrinks: servidor do banco (http://localhost:3300) não respondeu — rodando só com este navegador, como antes. Abra server/start.bat pra salvar no MySQL.');
+        console.warn('DDrinks: servidor do banco não respondeu em nenhum endereço (' + API_BASE_CANDIDATOS.join(', ') + ') — rodando só com este navegador, como antes.');
     }
 
     // ---- A partir daqui, espelha toda escrita no localStorage pro banco ----
