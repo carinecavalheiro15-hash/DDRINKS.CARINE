@@ -100,40 +100,67 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// ---- Foto do casal do cardápio digital ----
-// Salva a imagem como arquivo de verdade em cardapio/fotos/ (em vez de embutir a foto no
+// ---- Fotos do cardápio digital (casal e drinks) ----
+// Salva a imagem como arquivo de verdade dentro de cardapio/ (em vez de embutir a foto no
 // link do QR Code, o que deixaria o QR grande demais pra escanear) e tenta publicar no
 // GitHub automaticamente — se não conseguir (sem internet, repo não configurado etc.), a
 // foto continua funcionando normalmente neste computador, só não fica visível pra quem
 // escanear o QR Code longe daqui até alguém publicar manualmente.
+function salvarFotoEPublicar({ dataUrl, subpasta, nomeBase, mensagemCommit }, res) {
+    const match = /^data:image\/(png|jpe?g|webp);base64,(.+)$/i.exec(dataUrl);
+    if (!match) {
+        res.status(400).json({ error: 'Formato de imagem não suportado (use JPG, PNG ou WEBP).' });
+        return;
+    }
+    const ext = match[1].toLowerCase() === 'jpeg' ? 'jpg' : match[1].toLowerCase();
+    const buffer = Buffer.from(match[2], 'base64');
+
+    const repoDir = path.join(__dirname, '..');
+    const destDir = path.join(repoDir, 'cardapio', ...subpasta);
+    fs.mkdirSync(destDir, { recursive: true });
+
+    const filename = `${nomeBase}.${ext}`;
+    fs.writeFileSync(path.join(destDir, filename), buffer);
+    const caminhoRelativo = [...subpasta, filename].join('/');
+
+    res.json({ ok: true, caminho: caminhoRelativo });
+
+    const relPathGit = ['cardapio', ...subpasta, filename].join('/');
+    exec(`git add "${relPathGit}" && git commit -m "${mensagemCommit}" && git push origin main`, { cwd: repoDir }, (err, stdout, stderr) => {
+        if (err) console.warn('⚠️  Não consegui publicar a foto automaticamente no GitHub (ela continua funcionando neste computador):', (stderr || err.message).split('\n')[0]);
+        else console.log('✓ Foto publicada no GitHub:', filename);
+    });
+}
+
 app.post('/api/cardapio/foto', (req, res) => {
     try {
         const { orcamentoId, dataUrl } = req.body || {};
         if (!orcamentoId || !dataUrl) {
             return res.status(400).json({ error: 'orcamentoId e dataUrl são obrigatórios.' });
         }
-        const match = /^data:image\/(png|jpe?g|webp);base64,(.+)$/i.exec(dataUrl);
-        if (!match) {
-            return res.status(400).json({ error: 'Formato de imagem não suportado (use JPG, PNG ou WEBP).' });
+        salvarFotoEPublicar({
+            dataUrl,
+            subpasta: ['fotos'],
+            nomeBase: String(orcamentoId),
+            mensagemCommit: `Adiciona foto do casal (evento ${orcamentoId})`
+        }, res);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/cardapio/foto-drink', (req, res) => {
+    try {
+        const { drinkId, dataUrl } = req.body || {};
+        if (!drinkId || !dataUrl) {
+            return res.status(400).json({ error: 'drinkId e dataUrl são obrigatórios.' });
         }
-        const ext = match[1].toLowerCase() === 'jpeg' ? 'jpg' : match[1].toLowerCase();
-        const buffer = Buffer.from(match[2], 'base64');
-
-        const repoDir = path.join(__dirname, '..');
-        const fotosDir = path.join(repoDir, 'cardapio', 'fotos');
-        fs.mkdirSync(fotosDir, { recursive: true });
-
-        const filename = `${orcamentoId}.${ext}`;
-        fs.writeFileSync(path.join(fotosDir, filename), buffer);
-        const caminhoRelativo = `fotos/${filename}`;
-
-        res.json({ ok: true, caminho: caminhoRelativo });
-
-        const relPath = `cardapio/fotos/${filename}`;
-        exec(`git add "${relPath}" && git commit -m "Adiciona foto do casal (evento ${orcamentoId})" && git push origin main`, { cwd: repoDir }, (err, stdout, stderr) => {
-            if (err) console.warn('⚠️  Não consegui publicar a foto automaticamente no GitHub (ela continua funcionando neste computador):', (stderr || err.message).split('\n')[0]);
-            else console.log('✓ Foto publicada no GitHub:', filename);
-        });
+        salvarFotoEPublicar({
+            dataUrl,
+            subpasta: ['fotos', 'drinks'],
+            nomeBase: String(drinkId),
+            mensagemCommit: `Adiciona foto do drink (${drinkId})`
+        }, res);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

@@ -2006,6 +2006,19 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label class="form-label">Foto do drink (opcional)</label>
+                            <input type="hidden" id="ftFotoPath" />
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <img id="ftFotoPreviewImg" src="" alt="" style="display:none;width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid var(--gray-200);" />
+                                <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                                    📎 Anexar foto
+                                    <input type="file" id="ftFotoArquivo" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="ftAnexarFoto(event)" />
+                                </label>
+                                <button type="button" class="btn btn-secondary btn-sm" id="ftFotoRemoverBtn" style="display:none;" onclick="ftRemoverFoto()">🗑️ Remover</button>
+                            </div>
+                            <p style="font-size:.72rem;color:var(--gray-500);margin-top:6px;" id="ftFotoStatus">Sem foto — o cardápio digital mostra um ícone de coquetel no lugar.</p>
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">Ingredientes *</label>
                             <div class="ft-ing-editor" id="ftIngEditor"></div>
                             <button type="button" class="est-btn-rem" style="margin-top:8px;padding:6px 12px;border-radius:7px;font-size:.78rem;flex:none;width:auto;" onclick="ftAddRow()">+ Ingrediente</button>
@@ -5425,22 +5438,95 @@ html += htmlPacotes;
         document.getElementById('ftNome').value='';
         document.getElementById('ftCategoria').value='Alcoólico';
         document.getElementById('ftIngEditor').innerHTML='';
+        document.getElementById('ftFotoPath').value='';
+        let fotoAtual='';
         if(id){
             const f=ftLoad().find(x=>x.id===id);
             if(f){
                 document.getElementById('ftNome').value=f.nome;
                 document.getElementById('ftCategoria').value=f.categoria;
                 f.ingredientes.forEach(i=>ftAddRow(i.nome,i.qty));
+                fotoAtual=f.foto||'';
+                document.getElementById('ftFotoPath').value=fotoAtual;
             }
         } else {
             ftAddRow();ftAddRow();
         }
+        ftAtualizarStatusFoto(fotoAtual);
         document.getElementById('ftModal').classList.add('open');
     }
 
     function ftEditar(id){ftAbrirModal(id);}
 
     function ftFecharModal(){document.getElementById('ftModal').classList.remove('open');}
+
+    function ftAtualizarStatusFoto(valor){
+        const statusEl=document.getElementById('ftFotoStatus');
+        const imgEl=document.getElementById('ftFotoPreviewImg');
+        const removerBtn=document.getElementById('ftFotoRemoverBtn');
+        if(valor){
+            statusEl.textContent='✅ Foto anexada.';
+            imgEl.src=cardapioResolverFotoSrc(valor);
+            imgEl.style.display='inline-block';
+            removerBtn.style.display='';
+        } else {
+            statusEl.textContent='Sem foto — o cardápio digital mostra um ícone de coquetel no lugar.';
+            imgEl.style.display='none';
+            imgEl.src='';
+            removerBtn.style.display='none';
+        }
+    }
+
+    async function ftAnexarFoto(event){
+        const file=event.target.files[0];
+        if(!file) return;
+        if(!window.__ddrinksDbOnline){
+            showNotification('Para anexar foto é preciso que o servidor local esteja rodando (server/start.bat).','warning');
+            event.target.value='';
+            return;
+        }
+        let drinkId=document.getElementById('ftEditId').value;
+        if(!drinkId){
+            const nome=document.getElementById('ftNome').value.trim();
+            if(!nome){
+                showNotification('Digite o nome do drink antes de anexar a foto.','warning');
+                event.target.value='';
+                return;
+            }
+            drinkId=nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now();
+            document.getElementById('ftEditId').value=drinkId;
+        }
+        const statusEl=document.getElementById('ftFotoStatus');
+        statusEl.textContent='⏳ Enviando foto...';
+        try{
+            const dataUrl=await new Promise((resolve,reject)=>{
+                const reader=new FileReader();
+                reader.onload=()=>resolve(reader.result);
+                reader.onerror=()=>reject(new Error('Não foi possível ler o arquivo.'));
+                reader.readAsDataURL(file);
+            });
+            const resp=await fetch('http://localhost:3300/api/cardapio/foto-drink',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({drinkId,dataUrl})
+            });
+            const data=await resp.json();
+            if(!resp.ok) throw new Error(data.error||'Falha ao enviar a foto.');
+            document.getElementById('ftFotoPath').value=data.caminho;
+            ftAtualizarStatusFoto(data.caminho);
+            showNotification('📷 Foto anexada!','success');
+        }catch(e){
+            statusEl.textContent='❌ Erro ao enviar foto: '+e.message;
+            showNotification('Erro ao enviar foto: '+e.message,'error');
+        }finally{
+            event.target.value='';
+        }
+    }
+
+    function ftRemoverFoto(){
+        document.getElementById('ftFotoPath').value='';
+        ftAtualizarStatusFoto('');
+    }
 
     function ftAddRow(nome,qty){
         const ed=document.getElementById('ftIngEditor');
@@ -5454,18 +5540,20 @@ html += htmlPacotes;
         const nome=document.getElementById('ftNome').value.trim();
         if(!nome){estToast('Informe o nome do drink','error');return;}
         const cat=document.getElementById('ftCategoria').value;
+        const foto=document.getElementById('ftFotoPath').value||null;
         const rows=document.querySelectorAll('#ftIngEditor .ft-ing-row');
         const ings=[];
         rows.forEach(r=>{const n=r.querySelector('.fting-nome').value.trim(),q=r.querySelector('.fting-qty').value.trim();if(n)ings.push({nome:n,qty:q});});
         if(!ings.length){estToast('Adicione ao menos um ingrediente','error');return;}
         const fichas=ftLoad();
         const editId=document.getElementById('ftEditId').value;
-        if(editId){
-            const idx=fichas.findIndex(f=>f.id===editId);
-            if(idx!==-1)fichas[idx]={...fichas[idx],nome,categoria:cat,ingredientes:ings};
+        const idx=editId?fichas.findIndex(f=>f.id===editId):-1;
+        if(idx!==-1){
+            fichas[idx]={...fichas[idx],nome,categoria:cat,ingredientes:ings,foto};
         } else {
-            const nid=nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now();
-            fichas.push({id:nid,nome,categoria:cat,ingredientes:ings});
+            // editId pode já vir preenchido se uma foto foi anexada antes de salvar
+            const nid=editId||(nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now());
+            fichas.push({id:nid,nome,categoria:cat,ingredientes:ings,foto});
         }
         ftSave(fichas);
         ftFecharModal();
@@ -7266,10 +7354,10 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             if (quantidade <= 0) return;
             const ficha = fichas.find(f => f.id === id);
             const insumos = ficha ? ficha.ingredientes.filter(i => i.nome).map(i => i.nome) : [];
-            itens.push({ nome: cardapioNomeDrink(id), insumos });
+            itens.push({ nome: cardapioNomeDrink(id), insumos, foto: ficha?.foto || null });
         });
         const nomeCustom = orc.customDrink?.nome || drinks.custom_drink_personalizado_nome;
-        if (nomeCustom) itens.push({ nome: nomeCustom, insumos: [] });
+        if (nomeCustom) itens.push({ nome: nomeCustom, insumos: [], foto: null });
         return itens;
     }
 
