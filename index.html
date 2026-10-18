@@ -77,6 +77,29 @@
             box-sizing: border-box;
         }
 
+        /* ===== Padrão de cabeçalho de tela (usado em todas as páginas) ===== */
+        .page-wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+        .ph-card {
+            background:#fff; border:1px solid var(--gray-200); border-radius:16px;
+            padding:22px 26px; margin-bottom:22px; box-shadow:var(--shadow);
+        }
+        .ph-top { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+        .ph-icon {
+            width:46px; height:46px; border-radius:12px; flex-shrink:0;
+            background:rgba(239,68,68,.1); color:var(--error-color);
+            display:flex; align-items:center; justify-content:center; font-size:1.3rem;
+        }
+        .ph-titulo {
+            font-family:'Playfair Display',Georgia,serif; font-weight:700; font-size:1.4rem;
+            color:var(--gray-900); margin:0; line-height:1.2;
+        }
+        .ph-sub { color:var(--gray-500); font-size:.82rem; margin-top:3px; }
+        .ph-stats { display:flex; gap:32px; margin-top:18px; padding-top:18px; border-top:1px solid var(--gray-100); flex-wrap:wrap; }
+        .ph-stat-num { font-family:'Playfair Display',Georgia,serif; font-weight:700; font-size:1.25rem; color:var(--gray-900); line-height:1; }
+        .ph-stat-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--gray-500); margin-top:5px; }
+        .ph-search-row { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+        .ph-search-row input, .ph-search-row select { flex:1; min-width:220px; }
+
         .btn-primary {
             background: var(--primary-color);
             color: white;
@@ -880,16 +903,18 @@
 
         <!-- Página de Configurações -->
         <div id="config-page" class="page">
-            <div class="card" style="max-width: 700px; margin: 2rem auto;">
-                <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
-                    <h2 class="card-title">
-                        <span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </span>Configurações
-                    </h2>
-                    <p class="card-subtitle">Personalize a aparência da tela de login</p>
+            <div class="page-wrap" style="padding-bottom:0;max-width:700px;">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">⚙️</div>
+                        <div>
+                            <h2 class="ph-titulo">Configurações</h2>
+                            <p class="ph-sub">Personalize a aparência da tela de login e os dados do cardápio digital</p>
+                        </div>
+                    </div>
                 </div>
-
+            </div>
+            <div class="card" style="max-width: 700px; margin: 0 auto 2rem;">
                 <div style="padding: 1rem 1.2rem 1.5rem;">
                     <h3 style="font-size:1rem;font-weight:600;color:var(--gray-800);margin-bottom:1rem;">Foto da Tela de Login</h3>
 
@@ -1010,6 +1035,17 @@
 
         <!-- Página Principal (Orçamentos) -->
         <div id="home-page" class="page">
+            <div class="page-wrap" style="padding-bottom:0;">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">🧮</div>
+                        <div>
+                            <h2 class="ph-titulo">Criar Orçamento</h2>
+                            <p class="ph-sub">Preencha os dados do evento e os drinks escolhidos para calcular o orçamento</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Formulário de Informações do Cliente -->
             <div class="card">
                 <div class="card-header">
@@ -1024,7 +1060,7 @@
                         <p class="card-subtitle" style="align-self: center;">Preencha os dados básicos do evento</p>
                     </div>
                 </div>
-                
+
                 <form>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
@@ -1396,18 +1432,14 @@
         <!-- Página da Agenda -->
         <div id="agenda-page" class="page">
             <div class="card">
-                <div class="card-header">
-                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                        <h2 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                                    <path d="M3 3h18v4H3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                                    <path d="M7 11h3v8H7zM12 8h3v11h-3zM17 14h3v5h-3z" fill="currentColor"/>
-                                </svg>
-                            </span>Dashboard de Eventos</h2>
-                        <p class="card-subtitle" style="align-self: center;">Gerencie seus orçamentos e eventos</p>
+                <div class="ph-top" style="margin-bottom:1.5rem;">
+                    <div class="ph-icon">📊</div>
+                    <div>
+                        <h2 class="ph-titulo">Dashboard de Eventos</h2>
+                        <p class="ph-sub">Gerencie seus orçamentos e eventos</p>
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-3 gap-4 mb-6">
                     <div class="card">
                         <div class="flex items-center gap-3">
@@ -1652,18 +1684,14 @@
         <!-- Página do Calendário -->
         <div id="calendar-page" class="page">
             <div class="card mb-8">
-                <div class="card-header">
-                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                        <h2 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
-                                    <path d="M16 3v4M8 3v4M3 11h18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                </svg>
-                            </span>Calendário de Eventos</h2>
-                        <p class="card-subtitle" style="align-self: center;">Visualize seus eventos em formato de calendário</p>
+                <div class="ph-top" style="margin-bottom:1.5rem;">
+                    <div class="ph-icon">📅</div>
+                    <div>
+                        <h2 class="ph-titulo">Calendário de Eventos</h2>
+                        <p class="ph-sub">Visualize seus eventos em formato de calendário</p>
                     </div>
                 </div>
-                
+
                 <div class="calendar-controls mb-6">
                     <button class="btn btn-secondary" onclick="mudarMes(-1)">← Mês Anterior</button>
                     <div class="month-year" id="monthYear"></div>
@@ -1857,11 +1885,14 @@
     </style>
 
             <div class="est-wrap">
-                <div style="margin-bottom:20px;">
-                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:1.6rem;">📦</span> Controle de Estoque
-                    </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;" id="estSubtitulo">Carregando insumos...</p>
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">📦</div>
+                        <div>
+                            <h2 class="ph-titulo">Estoque</h2>
+                            <p class="ph-sub" id="estSubtitulo">Carregando insumos...</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Alerta -->
@@ -2032,11 +2063,14 @@
                 }
             </style>
             <div class="deg-wrap">
-                <div style="margin-bottom:20px;">
-                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:1.6rem;">🍹</span> Degustação
-                    </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Anote observações sobre os drinks de cada orçamento para saber o que precisa ser ajustado antes do evento.</p>
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">🍹</div>
+                        <div>
+                            <h2 class="ph-titulo">Degustação</h2>
+                            <p class="ph-sub">Anote observações sobre os drinks de cada orçamento para saber o que precisa ser ajustado antes do evento.</p>
+                        </div>
+                    </div>
                 </div>
                 <div style="margin-bottom:14px;">
                     <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Próximas Degustações</h3>
@@ -2054,9 +2088,14 @@
         <!-- Página de Alertas -->
         <div id="alertas-page" class="page">
             <div class="deg-wrap">
-                <div style="margin-bottom:20px;">
-                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;"><span style="font-size:1.6rem;">🔔</span> Alertas</h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Eventos e degustações próximas. Eventos: avisos com até 1 mês de antecedência. Degustações: avisos com até 1 semana.</p>
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">🔔</div>
+                        <div>
+                            <h2 class="ph-titulo">Alertas</h2>
+                            <p class="ph-sub">Eventos e degustações próximas. Eventos: avisos com até 1 mês de antecedência. Degustações: avisos com até 1 semana.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="margin-bottom:14px;">
@@ -2107,14 +2146,17 @@
                 }
             </style>
             <div class="promo-wrap">
-                <div class="promo-toolbar">
-                    <div>
-                        <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:1.6rem;">🎁</span> Pacotes Promocionais
-                        </h2>
-                        <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Pacotes prontos para empresas e eventos em geral, sem precisar de dados de cliente. Guarde e envie quando quiser.</p>
+                <div class="ph-card">
+                    <div class="ph-top" style="justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div class="ph-icon">🎁</div>
+                            <div>
+                                <h2 class="ph-titulo">Pacotes Promocionais</h2>
+                                <p class="ph-sub">Pacotes prontos para empresas e eventos em geral, sem precisar de dados de cliente. Guarde e envie quando quiser.</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" style="background:var(--error-color);color:#fff;" onclick="promoAbrirModal()">+ Novo Pacote</button>
                     </div>
-                    <button class="btn btn-primary btn-sm" style="background:var(--error-color);color:#fff;" onclick="promoAbrirModal()">+ Novo Pacote</button>
                 </div>
                 <div class="promo-grid" id="promoGrid"></div>
             </div>
@@ -2146,12 +2188,17 @@
                 @media(max-width:600px) { .voucher-casal-grid { grid-template-columns:1fr 1fr; } }
             </style>
             <div class="voucher-wrap">
-                <div class="voucher-toolbar">
-                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:1.6rem;">🎟️</span> Vouchers de Indicação
-                    </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cada casal com pacote aceito recebe 5 vouchers para indicar amigos. Quem for indicado e fechar contrato ganha 5% de desconto na hora. Já o casal indicador recebe um crédito por indicação fechada, conforme o porte do evento indicado: até 60 convidados = R$250 · 61 a 120 = R$300 · acima de 120 = R$500. O crédito só é repassado ao casal após a realização do casamento do indicado.</p>
-                    <div class="form-group" style="max-width:420px;margin-top:16px;margin-bottom:0;">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">🎟️</div>
+                        <div>
+                            <h2 class="ph-titulo">Vouchers de Indicação</h2>
+                            <p class="ph-sub">Cada casal com pacote aceito recebe 5 vouchers para indicar amigos. Quem for indicado e fechar contrato ganha 5% de desconto na hora. Já o casal indicador recebe um crédito por indicação fechada, conforme o porte do evento indicado: até 60 convidados = R$250 · 61 a 120 = R$300 · acima de 120 = R$500. O crédito só é repassado ao casal após a realização do casamento do indicado.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="form-group" style="max-width:420px;margin-top:0;margin-bottom:0;">
                         <label class="form-label" style="font-size:.75rem;">Buscar</label>
                         <input type="text" id="voucherFiltroTexto" class="form-input" placeholder="Código do voucher, nome do cliente ou telefone..." oninput="voucherRender()" />
                     </div>
@@ -2222,24 +2269,50 @@
         <!-- Página de Clientes -->
         <div id="clientes-page" class="page">
             <style>
-                .cliente-wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
                 .cliente-toolbar { margin-bottom: 8px; }
-                .cliente-search-row { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
-                .cliente-search-row input { flex:1; min-width:220px; }
+                /* usadas em várias telas (fornecedores, financeiro, vouchers, modais) além desta */
                 .cliente-empty { text-align:center; padding:60px 20px; color:var(--gray-400); font-size:.9rem; background:white; border-radius:14px; border:1px dashed var(--gray-300); }
-                .cliente-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin-top:18px; }
-                .cliente-card { background:white; border:1px solid var(--gray-200); border-radius:14px; padding:18px; box-shadow:var(--shadow); cursor:pointer; transition:transform .15s, box-shadow .15s; display:flex; flex-direction:column; gap:10px; }
-                .cliente-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.12); border-color:var(--primary-color); }
-                .cliente-card-actions { margin-top:8px; display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
-                .cliente-card { position:relative; overflow:hidden; }
-                .cliente-card-nome { font-weight:700; font-size:1.05rem; color:var(--gray-900); display:flex; align-items:center; gap:8px; }
-                .cliente-card-data { font-weight:700; font-size:1.05rem; color:var(--primary-color); margin-top:2px; }
-                .cliente-card-info { font-size:.8rem; color:var(--gray-600); display:flex; flex-direction:column; gap:3px; }
-                .cliente-card-stats { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
-                .cliente-chip { font-size:.7rem; font-weight:600; padding:3px 9px; border-radius:20px; background:var(--gray-100); color:var(--gray-700); }
+                .cliente-section-title { display:flex; align-items:center; gap:12px; margin:30px 0 16px; color:var(--gray-500); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; }
+                .cliente-section-title::after { content:''; flex:1; height:1px; background:var(--gray-200); }
+
+                .cliente-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+                .cliente-card {
+                    background:white; border:1px solid var(--gray-200); border-radius:16px; padding:0;
+                    box-shadow:0 2px 10px rgba(15,23,42,.05); cursor:pointer;
+                    transition:transform .18s, box-shadow .18s, border-color .18s;
+                    display:flex; flex-direction:column; position:relative; overflow:hidden;
+                }
+                .cliente-card:hover { transform:translateY(-3px); box-shadow:0 16px 32px rgba(15,23,42,.14); border-color:#f5c451; }
+                .cliente-card-topo { display:flex; align-items:flex-start; gap:12px; padding:18px 18px 14px; border-bottom:1px solid var(--gray-100); }
+                .cliente-avatar {
+                    width:40px; height:40px; border-radius:50%; flex-shrink:0;
+                    background:linear-gradient(135deg,#ef4444,#9f1239); color:#fff;
+                    display:flex; align-items:center; justify-content:center;
+                    font-weight:700; font-size:.8rem; letter-spacing:.02em;
+                }
+                .cliente-card-nome-wrap { min-width:0; flex:1; }
+                .cliente-card-nome { font-weight:700; font-size:.98rem; color:var(--gray-900); font-family:'Playfair Display',Georgia,serif; line-height:1.25; overflow-wrap:anywhere; }
+                .cliente-card-data {
+                    font-size:.7rem; font-weight:700; color:#b45309; background:rgba(245,196,81,.16);
+                    display:inline-flex; align-items:center; gap:4px; padding:2px 9px; border-radius:20px; margin-top:5px;
+                }
+                .cliente-card-body { padding:14px 18px; display:flex; flex-direction:column; gap:12px; flex:1; }
+                .cliente-card-info { font-size:.78rem; color:var(--gray-600); display:flex; flex-direction:column; gap:5px; }
+                .cliente-card-info span { display:flex; align-items:center; gap:7px; }
+                .cliente-card-stats { display:flex; flex-wrap:wrap; gap:6px; }
+                .cliente-chip { font-size:.68rem; font-weight:700; padding:4px 10px; border-radius:20px; background:var(--gray-100); color:var(--gray-700); white-space:nowrap; }
                 .cliente-chip.aceito { background:rgba(16,185,129,.12); color:var(--success-color); }
-                .cliente-chip.pendente { background:rgba(245,158,11,.12); color:var(--warning-color); }
+                .cliente-chip.pendente { background:rgba(245,158,11,.14); color:var(--warning-color); }
                 .cliente-chip.voucher { background:rgba(239,68,68,.1); color:var(--error-color); }
+                .cliente-fin-box { background:var(--gray-50); border-radius:12px; padding:11px 14px; }
+                .cliente-fin-linha { display:flex; justify-content:space-between; font-size:.76rem; color:var(--gray-600); margin-bottom:7px; }
+                .cliente-fin-linha strong { color:var(--gray-900); font-weight:700; }
+                .cliente-fin-barra { height:5px; border-radius:10px; background:var(--gray-200); overflow:hidden; }
+                .cliente-fin-barra-preenchida { height:100%; border-radius:10px; background:linear-gradient(90deg,#f5c451,#ef4444); }
+                .cliente-card-actions { padding:12px 18px 16px; display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--gray-100); margin-top:auto; }
+                .cliente-card-actions .btn { flex:1; min-width:120px; font-size:.74rem; padding:8px 10px; white-space:nowrap; }
+                .cliente-btn-cardapio { background:#fff; border:1.5px solid #ef4444; color:#ef4444; font-weight:700; }
+                .cliente-btn-cardapio:hover { background:#ef4444; color:#fff; }
                 .cliente-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:5000; align-items:center; justify-content:center; padding:1rem; overflow:auto; }
                 .cliente-modal-overlay.open { display:flex; }
                 .cliente-modal-box { background:white; border-radius:18px; max-width:820px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.35); }
@@ -2262,14 +2335,18 @@
                 .cliente-ver-totais-linha { display:flex; justify-content:space-between; font-size:.85rem; color:var(--gray-600); padding:4px 0; }
                 .cliente-ver-totais-linha.total { font-size:1.05rem; font-weight:700; color:var(--gray-900); border-top:1px solid var(--gray-200); margin-top:6px; padding-top:10px; }
             </style>
-            <div class="cliente-wrap">
-                <div class="cliente-toolbar">
-                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:1.6rem;">👥</span> Eventos
-                    </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Visão única de cada cliente: clique no card para ver orçamentos, financeiro e vouchers.</p>
-                    <div class="cliente-search-row" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
-                        <input type="text" id="clienteFiltroTexto" class="form-input" placeholder="Buscar por nome ou telefone..." oninput="clienteRenderGrid()" />
+            <div class="page-wrap">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">👥</div>
+                        <div>
+                            <h2 class="ph-titulo">Eventos</h2>
+                            <p class="ph-sub">Visão única de cada cliente: clique no card para ver orçamentos, financeiro e vouchers.</p>
+                        </div>
+                    </div>
+                    <div class="ph-stats" id="clienteHeaderStats"></div>
+                    <div class="ph-search-row">
+                        <input type="text" id="clienteFiltroTexto" class="form-input" placeholder="🔍 Buscar por nome ou telefone..." oninput="clienteRenderGrid()" />
                         <select id="clienteFiltroAno" class="form-input" style="max-width:140px;">
                             <option value="">Todos os anos</option>
                         </select>
@@ -2346,14 +2423,19 @@
 
         <!-- Página de Fornecedores -->
         <div id="fornecedores-page" class="page">
-            <div class="cliente-wrap">
-                <div class="cliente-toolbar">
-                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:1.6rem;">🧾</span> Fornecedores
-                    </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cadastre e gerencie seus fornecedores de serviços e insumos.</p>
-                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:14px;margin-bottom:2px;">📝 Cadastro de Fornecedor</h3>
-                    <div class="cliente-search-row" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <div class="page-wrap">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon">🧾</div>
+                        <div>
+                            <h2 class="ph-titulo">Fornecedores</h2>
+                            <p class="ph-sub">Cadastre e gerencie seus fornecedores de serviços e insumos.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📝 Cadastro de Fornecedor</h3>
+                    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
                         <form id="fornecedorForm" onsubmit="return fornecedorSalvar(event)" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;width:100%;">
                             <input type="text" id="fornecedorNome" class="form-input" placeholder="Nome do fornecedor" style="min-width:220px;" required />
                             <input type="text" id="fornecedorTelefone" class="form-input" placeholder="Telefone" style="max-width:160px;" />
@@ -2380,24 +2462,32 @@
                         </form>
                     </div>
                 </div>
-                <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:1.25rem;margin-bottom:2px;">📋 Fornecedores Cadastrados</h3>
-                <div style="margin-top:0.5rem;display:flex;gap:8px;align-items:center;">
-                    <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome ou serviço (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
-                    <button class="btn btn-secondary" type="button" onclick="document.getElementById('fornecedorSearch').value=''; fornecedorRenderGrid();">Limpar</button>
+                <div class="card">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📋 Fornecedores Cadastrados</h3>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome ou serviço (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
+                        <button class="btn btn-secondary" type="button" onclick="document.getElementById('fornecedorSearch').value=''; fornecedorRenderGrid();">Limpar</button>
+                    </div>
+                    <div id="fornecedorGrid" style="margin-top:0.75rem;"></div>
                 </div>
-                <div id="fornecedorGrid" style="margin-top:0.75rem;"></div>
             </div>
         </div>
 
         <!-- Página de Cerimonialistas Parceiras -->
         <div id="cerimonialistas-page" class="page">
-            <div class="voucher-wrap">
-                <div class="voucher-toolbar">
-                    <h2 style="font-size:1.4rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:1.6rem;">🤝</span> Cerimonialistas Parceiras
-                    </h2>
-                    <p style="color:var(--gray-500);font-size:.875rem;margin-top:4px;">Cadastre cerimonialistas parceiras e gere vouchers pra elas indicarem clientes — separado dos vouchers de indicação entre casais. Quem for indicado com o código dela ganha o desconto escolhido na hora de gerar o voucher, dentro do prazo de validade definido. A cerimonialista não recebe crédito nem comissão — o programa dela é só o voucher de desconto.</p>
-                    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:flex-end;max-width:480px;">
+            <div class="page-wrap">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon" style="background:rgba(245,158,11,.12);color:#b45309;">🤝</div>
+                        <div>
+                            <h2 class="ph-titulo">Cerimonialistas Parceiras</h2>
+                            <p class="ph-sub">Cadastre cerimonialistas parceiras e gere vouchers pra elas indicarem clientes — separado dos vouchers de indicação entre casais. Quem for indicado com o código dela ganha o desconto escolhido na hora de gerar o voucher, dentro do prazo de validade definido. A cerimonialista não recebe crédito nem comissão — o programa dela é só o voucher de desconto.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">+ Nova Cerimonialista</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;max-width:480px;">
                         <div class="form-group" style="flex:1;margin-bottom:0;">
                             <label class="form-label" style="font-size:.75rem;">Nome da Cerimonialista</label>
                             <input type="text" id="cerimonialistaNome" class="form-input" placeholder="Nome completo" onkeydown="if(event.key==='Enter') cerimonialistaAdicionar()" />
@@ -2450,16 +2540,11 @@
         <!-- Página de Financeiro -->
         <div id="financeiro-page" class="page">
             <div class="card">
-                <div class="card-header">
-                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                        <h2 class="card-title" style="align-self: center;"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:20px;height:20px;">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                                    <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
-                                    <path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="15" r="2" fill="currentColor"/>
-                                </svg>
-                            </span>Controle Financeiro</h2>
-                        <p class="card-subtitle" style="align-self: center;">Gerencie pagamentos e formas de pagamento dos clientes</p>
+                <div class="ph-top" style="margin-bottom:1.5rem;">
+                    <div class="ph-icon">💳</div>
+                    <div>
+                        <h2 class="ph-titulo">Financeiro</h2>
+                        <p class="ph-sub">Gerencie pagamentos e formas de pagamento dos clientes</p>
                     </div>
                 </div>
 
@@ -6970,6 +7055,22 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const cont = document.getElementById('clienteGrid');
         if (!cont) return;
 
+        const statsEl = document.getElementById('clienteHeaderStats');
+        if (statsEl) {
+            const totalEventos = clienteGruposAtual.length;
+            let valorAceitoTotal = 0, valorPagoTotal = 0;
+            clienteGruposAtual.forEach(g => {
+                const t = clienteTotaisFinanceiros(g);
+                valorAceitoTotal += t.totalAceito;
+                valorPagoTotal += t.totalPago;
+            });
+            statsEl.innerHTML = `
+                <div><div class="cliente-header-stat-num">${totalEventos}</div><div class="cliente-header-stat-label">Evento${totalEventos !== 1 ? 's' : ''}</div></div>
+                <div><div class="cliente-header-stat-num">${formatarValorBR(valorAceitoTotal)}</div><div class="cliente-header-stat-label">Total Aceito</div></div>
+                <div><div class="cliente-header-stat-num">${formatarValorBR(valorPagoTotal)}</div><div class="cliente-header-stat-label">Total Pago</div></div>
+            `;
+        }
+
         if (!clienteGruposAtual.length) {
             cont.innerHTML = `<div class="cliente-empty">👥 ${filtro ? 'Nenhum cliente encontrado para essa busca.' : 'Nenhum cliente com orçamento aceito ainda.'}</div>`;
             return;
@@ -7021,31 +7122,42 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                     }
                 }
             }catch(e){ console.warn('Erro ao calcular aniversário 1 ano', e); }
+            const iniciais = (grupo.nome || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
+            const pctPago = totais.totalAceito ? Math.min(100, Math.round((totais.totalPago / totais.totalAceito) * 100)) : 0;
             return `
                 <div class="cliente-card" onclick="clienteAbrirDetalhePorOrcamentoId(${orcamentoPrincipal.id}, ${idx})">
-                    <div class="cliente-card-nome">👤 ${grupo.nome || 'Sem nome'}</div>
-                    ${dataEventoTxt ? `<div class="cliente-card-data">📅 ${dataEventoTxt}</div>` : ''}
-                    <div class="cliente-card-info">
-                        <span>📞 ${grupo.telefone || '—'}</span>
-                        <span>🏙️ ${grupo.cidade || '—'}</span>
-                    </div>
-                    <div class="cliente-card-stats">
-                        <span class="cliente-chip">${grupo.orcamentos.length} orçamento${grupo.orcamentos.length > 1 ? 's' : ''}</span>
-                        ${aceitos ? `<span class="cliente-chip aceito">✅ ${aceitos} aceito${aceitos > 1 ? 's' : ''}</span>` : ''}
-                        ${pendentes ? `<span class="cliente-chip pendente">🕓 ${pendentes} pendente${pendentes > 1 ? 's' : ''}</span>` : ''}
-                        ${vouchers.length ? `<span class="cliente-chip voucher">🎟️ ${vouchersUsados}/${vouchers.length}</span>` : ''}
-                        ${grupo.orcamentos.some(o => o.contratoAnexo || (o.contratos && o.contratos.length)) ? `<span class="cliente-chip">📎 Contrato</span>` : ''}
-                    </div>
-                    ${totais.totalAceito ? `
-                        <div style="font-size:.8rem;color:var(--gray-600);border-top:1px solid var(--gray-100);padding-top:8px;margin-top:2px;">
-                            💰 ${formatarValorBR(totais.totalAceito)} · Pago ${formatarValorBR(totais.totalPago)}
+                    <div class="cliente-card-topo">
+                        <div class="cliente-avatar">${iniciais}</div>
+                        <div class="cliente-card-nome-wrap">
+                            <div class="cliente-card-nome">${grupo.nome || 'Sem nome'}</div>
+                            ${dataEventoTxt ? `<div class="cliente-card-data">📅 ${dataEventoTxt}</div>` : ''}
                         </div>
-                    ` : ''}
+                    </div>
+                    <div class="cliente-card-body">
+                        <div class="cliente-card-info">
+                            <span>📞 ${grupo.telefone || '—'}</span>
+                            <span>🏙️ ${grupo.cidade || '—'}</span>
+                        </div>
+                        <div class="cliente-card-stats">
+                            <span class="cliente-chip">${grupo.orcamentos.length} orçamento${grupo.orcamentos.length > 1 ? 's' : ''}</span>
+                            ${aceitos ? `<span class="cliente-chip aceito">✅ ${aceitos} aceito${aceitos > 1 ? 's' : ''}</span>` : ''}
+                            ${pendentes ? `<span class="cliente-chip pendente">🕓 ${pendentes} pendente${pendentes > 1 ? 's' : ''}</span>` : ''}
+                            ${vouchers.length ? `<span class="cliente-chip voucher">🎟️ ${vouchersUsados}/${vouchers.length}</span>` : ''}
+                            ${grupo.orcamentos.some(o => o.contratoAnexo || (o.contratos && o.contratos.length)) ? `<span class="cliente-chip">📎 Contrato</span>` : ''}
+                        </div>
+                        ${totais.totalAceito ? `
+                            <div class="cliente-fin-box">
+                                <div class="cliente-fin-linha"><span>Total aceito</span><strong>${formatarValorBR(totais.totalAceito)}</strong></div>
+                                <div class="cliente-fin-linha"><span>Pago (${pctPago}%)</span><strong>${formatarValorBR(totais.totalPago)}</strong></div>
+                                <div class="cliente-fin-barra"><div class="cliente-fin-barra-preenchida" style="width:${pctPago}%;"></div></div>
+                            </div>
+                        ` : ''}
+                    </div>
                     <div class="cliente-card-actions">
-                        <button type="button" class="btn btn-sm btn-primary" style="background:#ef4444;" onclick="(function(e){e && e.stopPropagation(); cardapioAbrirModal(${orcamentoPrincipal.id});})(event)">📱 Cardápio Digital</button>
+                        <button type="button" class="btn cliente-btn-cardapio" onclick="(function(e){e && e.stopPropagation(); cardapioAbrirModal(${orcamentoPrincipal.id});})(event)">📱 Cardápio Digital</button>
                         ${isRealizado ? `
-                            ${isAniversario1Ano ? `<button type="button" class="btn btn-sm btn-primary" onclick="(function(e){e && e.stopPropagation(); enviarParabensAniversario(${orcamentoPrincipal.id});})(event)">🎉 Enviar Parabéns 1 ano</button>` : ''}
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="(function(e){e && e.stopPropagation(); enviarPesquisaSatisfacao(${orcamentoPrincipal.id});})(event)">📲 Enviar Pesquisa</button>
+                            ${isAniversario1Ano ? `<button type="button" class="btn btn-sm btn-primary" onclick="(function(e){e && e.stopPropagation(); enviarParabensAniversario(${orcamentoPrincipal.id});})(event)">🎉 Parabéns 1 ano</button>` : ''}
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="(function(e){e && e.stopPropagation(); enviarPesquisaSatisfacao(${orcamentoPrincipal.id});})(event)">📲 Pesquisa</button>
                         ` : ''}
                     </div>
                 </div>
@@ -7061,7 +7173,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
         // Render seção de realizados, se houver
         if (realizados.length) {
-            html += `<h3 style="font-size:1.05rem;margin-top:18px;color:var(--gray-700);">📌 Eventos Realizados</h3>`;
+            html += `<div class="cliente-section-title">📌 Eventos Realizados</div>`;
             // Use estilo mais suave para realizados
             html += `<div class="cliente-grid" style="opacity:.85;filter:grayscale(.02);">` + realizados.map((g) => {
                 // Ao mapear realizados, use o índice global para abrir detalhe e marque como realizado
