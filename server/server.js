@@ -101,6 +101,12 @@ const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: '25mb' }));
 
+// Serve o próprio app (index.html, db-sync.js, cardapio/ etc.) junto com a API, no mesmo
+// endereço e protocolo (http://<ip-da-rede>:3300/). Importante pra quem acessa por um link
+// https (ex: GitHub Pages): o navegador bloqueia uma página https tentando falar com uma API
+// http ("conteúdo misto") — servindo tudo daqui, não tem mistura de protocolo.
+app.use(express.static(path.join(__dirname, '..')));
+
 app.get('/api/health', async (req, res) => {
     try {
         await pool.query('SELECT 1');
