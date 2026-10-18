@@ -78,8 +78,20 @@
                     var remoto = syncRequest('GET', API_BASE + '/collections/' + cfg.endpoint) || [];
                     var localRaw = localStorage.getItem(key);
                     var local = localRaw ? JSON.parse(localRaw) : [];
-                    if (remoto.length) {
-                        // banco tem dado -> ele manda
+                    if (remoto.length && local.length) {
+                        // Tem dado dos dois lados: ao invés do banco simplesmente mandar por
+                        // cima (o que apaga sem querer itens que só existiam neste aparelho,
+                        // ex: um tablet que ficou um tempo sem conseguir falar com o banco),
+                        // junta tudo por id. Quando o mesmo id existe nos dois lados, fica a
+                        // versão do banco (outros aparelhos podem ter atualizado depois).
+                        var porId = {};
+                        remoto.forEach(function (item) { if (item && item.id != null) porId[item.id] = item; });
+                        local.forEach(function (item) { if (item && item.id != null && !(item.id in porId)) porId[item.id] = item; });
+                        var mesclado = Object.keys(porId).map(function (id) { return porId[id]; });
+                        localStorage.setItem(key, JSON.stringify(mesclado));
+                        syncRequest('PUT', API_BASE + '/collections/' + cfg.endpoint, mesclado);
+                    } else if (remoto.length) {
+                        // banco tem dado, navegador não tem nada local -> banco manda
                         localStorage.setItem(key, JSON.stringify(remoto));
                     } else if (local.length) {
                         // banco vazio + já existe dado no navegador -> primeira sincronização,
