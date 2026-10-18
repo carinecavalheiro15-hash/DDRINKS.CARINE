@@ -6,7 +6,9 @@ const cors = require('cors');
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const { exec } = require('child_process');
+const selfsigned = require('selfsigned');
 
 // Caminho completo do git.exe — necessário porque, rodando como Serviço do Windows
 // (conta LocalSystem), o PATH não inclui o Git instalado só no perfil do usuário.
@@ -19,6 +21,9 @@ const GIT_BIN = process.env.GIT_BIN || 'C:\\Users\\CarineCavalheiro\\AppData\\Lo
 const GIT_CREDENTIALS_FILE = (process.env.GIT_CREDENTIALS_FILE || path.join(__dirname, '.git-credentials')).replace(/\\/g, '/');
 
 const PORT = process.env.PORT || 3300;
+const PORTA_HTTPS = process.env.PORTA_HTTPS || 3301;
+// IPs/nomes que o certificado precisa cobrir — adicione aqui se o IP da rede mudar.
+const HOSTS_CERTIFICADO = (process.env.HOSTS_CERTIFICADO || 'localhost,127.0.0.1,192.168.3.20').split(',');
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
@@ -266,7 +271,49 @@ app.put('/api/config/:key', async (req, res) => {
     }
 });
 
+// Gera (uma vez só, e reaproveita depois) um certificado HTTPS "caseiro" — necessário pra
+// quem acessa o app por um link https (ex: GitHub Pages) conseguir falar com esse servidor
+// sem o navegador bloquear por "conteúdo misto". Como não é de uma autoridade reconhecida,
+// o navegador pede confirmação ("avançado > continuar mesmo assim") na primeira vez, por
+// endereço — depois disso fica lembrado.
+async function obterCertificadoHttps() {
+    const certDir = path.join(__dirname, 'certs');
+    const certPath = path.join(certDir, 'cert.pem');
+    const keyPath = path.join(certDir, 'key.pem');
+    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+        return { cert: fs.readFileSync(certPath), key: fs.readFileSync(keyPath) };
+    }
+    fs.mkdirSync(certDir, { recursive: true });
+    const pems = await selfsigned.generate(
+        [{ name: 'commonName', value: HOSTS_CERTIFICADO[0] }],
+        {
+            days: 3650,
+            keySize: 2048,
+            algorithm: 'sha256',
+            extensions: [{
+                name: 'subjectAltName',
+                altNames: HOSTS_CERTIFICADO.map(h =>
+                    /^\d{1,3}(\.\d{1,3}){3}$/.test(h) ? { type: 7, ip: h } : { type: 2, value: h }
+                )
+            }]
+        }
+    );
+    fs.writeFileSync(certPath, pems.cert);
+    fs.writeFileSync(keyPath, pems.private);
+    return { cert: pems.cert, key: pems.private };
+}
+
 app.listen(PORT, () => {
     console.log(`\n  DDrinks + MySQL rodando em http://localhost:${PORT}`);
-    console.log('  Deixe esta janela aberta enquanto usa o app. Pra fechar, feche esta janela ou Ctrl+C.\n');
 });
+
+obterCertificadoHttps()
+    .then(({ cert, key }) => {
+        https.createServer({ cert, key }, app).listen(PORTA_HTTPS, () => {
+            console.log(`  Também em https://localhost:${PORTA_HTTPS} (certificado próprio — confirme "continuar mesmo assim" na 1ª vez em cada aparelho).`);
+            console.log('  Deixe esta janela aberta enquanto usa o app. Pra fechar, feche esta janela ou Ctrl+C.\n');
+        });
+    })
+    .catch((e) => {
+        console.warn('⚠️  Não consegui iniciar o HTTPS (o app continua funcionando por HTTP):', e.message);
+    });

@@ -13,16 +13,17 @@
 // só que sem salvar no banco (como era antes) — nunca trava por causa disso.
 // ============================================================
 (function () {
-    // Tenta "localhost" primeiro (quando quem abre o app é o próprio computador que roda o
-    // servidor) e, se não responder, cai pro IP da rede Wi-Fi local — assim tablets, celulares
-    // e outros computadores NA MESMA REDE também conseguem salvar no banco. Isso só funciona
-    // dentro dessa rede; de fora (ex: dados móveis), ainda não alcança.
-    // Se o IP da rede do computador mudar (reiniciar o roteador, trocar de rede etc.), essa
-    // lista precisa ser atualizada.
-    var API_BASE_CANDIDATOS = [
-        'http://localhost:3300/api',
-        'http://192.168.3.20:3300/api'
-    ];
+    // Se a própria página foi aberta por um link https (ex: GitHub Pages), só dá pra usar o
+    // servidor também em https — o navegador bloqueia uma página https chamando algo em http
+    // ("conteúdo misto"). Se a página foi aberta local (file://) ou por http, usa http mesmo
+    // (mais simples, sem aviso de certificado). Em qualquer um dos casos, tenta "localhost"
+    // primeiro (quando quem abre é o próprio computador que roda o servidor) e cai pro IP da
+    // rede Wi-Fi local, pra tablets/celulares/outros computadores NA MESMA REDE também
+    // conseguirem. Isso só funciona dentro dessa rede; de fora (ex: dados móveis), ainda não
+    // alcança. Se o IP da rede do computador mudar, essa lista precisa ser atualizada.
+    var API_BASE_CANDIDATOS = window.location.protocol === 'https:'
+        ? ['https://192.168.3.20:3301/api']
+        : ['http://localhost:3300/api', 'http://192.168.3.20:3300/api'];
     var API_BASE = API_BASE_CANDIDATOS[0];
 
     // localStorage key -> onde isso vive na API
@@ -65,6 +66,9 @@
         }
     }
     window.__ddrinksDbOnline = online;
+    // Pra outras partes do app (ex: upload de foto do cardápio digital) usarem o mesmo
+    // endereço que funcionou aqui, em vez de um "localhost" fixo que só funciona neste PC.
+    window.__ddrinksApiBase = API_BASE;
 
     if (online) {
         Object.keys(SYNC_KEYS).forEach(function (key) {

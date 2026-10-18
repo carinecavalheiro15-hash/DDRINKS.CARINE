@@ -6208,7 +6208,7 @@ html += htmlPacotes;
                 reader.onerror=()=>reject(new Error('Não foi possível ler o arquivo.'));
                 reader.readAsDataURL(file);
             });
-            const resp=await fetch('http://localhost:3300/api/cardapio/foto-drink',{
+            const resp=await fetch((window.__ddrinksApiBase||'http://localhost:3300/api')+'/cardapio/foto-drink',{
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({drinkId,dataUrl})
@@ -8135,7 +8135,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                 reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
                 reader.readAsDataURL(file);
             });
-            const resp = await fetch('http://localhost:3300/api/cardapio/foto', {
+            const resp = await fetch((window.__ddrinksApiBase || 'http://localhost:3300/api') + '/cardapio/foto', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orcamentoId: _cardapioOrcAtualId, dataUrl })
