@@ -2390,9 +2390,17 @@
                         Gere um QR Code que leva o convidado a uma página com os drinks escolhidos, foto do casal, Instagram e um botão de WhatsApp com desconto.
                     </p>
                     <div class="form-group">
-                        <label class="form-label">Link da foto do casal (opcional)</label>
-                        <input type="url" id="cardapioFotoUrl" class="form-input" placeholder="https://..." oninput="cardapioAtualizarPreview()" />
-                        <p style="font-size:.72rem;color:var(--gray-500);margin-top:4px;">Cole aqui o link de uma foto pública do casal. Se deixar em branco, a página usa a logo da D'Drinks.</p>
+                        <label class="form-label">Foto do casal (opcional)</label>
+                        <input type="hidden" id="cardapioFotoUrl" />
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <img id="cardapioFotoPreviewImg" src="" alt="" style="display:none;width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid var(--gray-200);" />
+                            <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                                📎 Anexar foto
+                                <input type="file" id="cardapioFotoArquivo" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="cardapioAnexarFoto(event)" />
+                            </label>
+                            <button type="button" class="btn btn-secondary btn-sm" id="cardapioFotoRemoverBtn" style="display:none;" onclick="cardapioRemoverFoto()">🗑️ Remover</button>
+                        </div>
+                        <p style="font-size:.72rem;color:var(--gray-500);margin-top:6px;" id="cardapioFotoStatus">Nenhuma foto anexada — a página vai usar a logo da D'Drinks.</p>
                     </div>
                     <div class="form-group">
                         <label class="form-label">🍹 Drinks que vão aparecer no cardápio</label>
@@ -7286,7 +7294,77 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             : 'Nenhum drink selecionado neste orçamento ainda.';
 
         document.getElementById('cardapioFotoUrl').value = orc.cardapioFotoUrl || '';
+        cardapioAtualizarStatusFoto(orc.cardapioFotoUrl || '');
         document.getElementById('cardapioModal').classList.add('open');
+        cardapioAtualizarPreview();
+    }
+
+    // Foto pode ser um link colado (começa com http) ou um caminho relativo salvo em
+    // cardapio/fotos/ (ver cardapioAnexarFoto) — nesse caso resolve contra o link base
+    // pra conseguir mostrar a miniatura aqui dentro do app.
+    function cardapioResolverFotoSrc(valor) {
+        if (!valor) return '';
+        if (/^https?:\/\//i.test(valor)) return valor;
+        const baseUrl = localStorage.getItem('ddrinksCardapioBaseUrl') || CARDAPIO_BASE_URL_PADRAO;
+        return baseUrl.replace(/\/$/, '') + '/' + valor.replace(/^\//, '');
+    }
+
+    function cardapioAtualizarStatusFoto(valor) {
+        const statusEl = document.getElementById('cardapioFotoStatus');
+        const imgEl = document.getElementById('cardapioFotoPreviewImg');
+        const removerBtn = document.getElementById('cardapioFotoRemoverBtn');
+        if (valor) {
+            statusEl.textContent = '✅ Foto anexada para este evento.';
+            imgEl.src = cardapioResolverFotoSrc(valor);
+            imgEl.style.display = 'inline-block';
+            removerBtn.style.display = '';
+        } else {
+            statusEl.textContent = "Nenhuma foto anexada — a página vai usar a logo da D'Drinks.";
+            imgEl.style.display = 'none';
+            imgEl.src = '';
+            removerBtn.style.display = 'none';
+        }
+    }
+
+    async function cardapioAnexarFoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!window.__ddrinksDbOnline) {
+            showNotification('Para anexar foto é preciso que o servidor local esteja rodando (server/start.bat).', 'warning');
+            event.target.value = '';
+            return;
+        }
+        const statusEl = document.getElementById('cardapioFotoStatus');
+        statusEl.textContent = '⏳ Enviando foto...';
+        try {
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
+                reader.readAsDataURL(file);
+            });
+            const resp = await fetch('http://localhost:3300/api/cardapio/foto', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orcamentoId: _cardapioOrcAtualId, dataUrl })
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Falha ao enviar a foto.');
+            document.getElementById('cardapioFotoUrl').value = data.caminho;
+            cardapioAtualizarStatusFoto(data.caminho);
+            cardapioAtualizarPreview();
+            showNotification('📷 Foto anexada!', 'success');
+        } catch (e) {
+            statusEl.textContent = '❌ Erro ao enviar foto: ' + e.message;
+            showNotification('Erro ao enviar foto: ' + e.message, 'error');
+        } finally {
+            event.target.value = '';
+        }
+    }
+
+    function cardapioRemoverFoto() {
+        document.getElementById('cardapioFotoUrl').value = '';
+        cardapioAtualizarStatusFoto('');
         cardapioAtualizarPreview();
     }
 
