@@ -60,12 +60,19 @@
                     var remoto = syncRequest('GET', API_BASE + '/collections/' + cfg.endpoint) || [];
                     var localRaw = localStorage.getItem(key);
                     var local = localRaw ? JSON.parse(localRaw) : [];
-                    if (!remoto.length && local.length) {
+                    if (remoto.length) {
+                        // banco tem dado -> ele manda
+                        localStorage.setItem(key, JSON.stringify(remoto));
+                    } else if (local.length) {
                         // banco vazio + já existe dado no navegador -> primeira sincronização,
                         // manda o que já existe pro banco em vez de apagar tudo
                         syncRequest('PUT', API_BASE + '/collections/' + cfg.endpoint, local);
-                    } else {
-                        localStorage.setItem(key, JSON.stringify(remoto));
+                    } else if (localRaw !== null) {
+                        // banco vazio e navegador "vazio" (ex: "[]") -> remove a chave em vez de
+                        // deixar "[]" gravado. Algumas telas (fichas técnicas, drinks) usam a
+                        // AUSÊNCIA da chave pra cair num catálogo padrão embutido no app; gravar
+                        // "[]" aqui apaga esse catálogo padrão sem querer.
+                        localStorage.removeItem(key);
                     }
                 } else {
                     var resp = syncRequest('GET', API_BASE + '/config/' + cfg.endpoint);
