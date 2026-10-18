@@ -8,6 +8,16 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 
+// Caminho completo do git.exe — necessário porque, rodando como Serviço do Windows
+// (conta LocalSystem), o PATH não inclui o Git instalado só no perfil do usuário.
+const GIT_BIN = process.env.GIT_BIN || 'C:\\Users\\CarineCavalheiro\\AppData\\Local\\Programs\\Git\\cmd\\git.exe';
+
+// Arquivo de credenciais do GitHub (usuário:token), só pra esse servidor usar no "git push".
+// Rodando como Serviço do Windows (conta LocalSystem), o login do GitHub salvo na sua conta
+// de usuário não fica visível pra esse processo — por isso usamos um arquivo à parte, criado
+// manualmente (nunca commitado, ver .gitignore). Veja server/COMO_CONFIGURAR_GIT_TOKEN.md.
+const GIT_CREDENTIALS_FILE = (process.env.GIT_CREDENTIALS_FILE || path.join(__dirname, '.git-credentials')).replace(/\\/g, '/');
+
 const PORT = process.env.PORT || 3300;
 
 const pool = mysql.createPool({
@@ -126,7 +136,13 @@ function salvarFotoEPublicar({ dataUrl, subpasta, nomeBase, mensagemCommit }, re
     res.json({ ok: true, caminho: caminhoRelativo });
 
     const relPathGit = ['cardapio', ...subpasta, filename].join('/');
-    exec(`git add "${relPathGit}" && git commit -m "${mensagemCommit}" && git push origin main`, { cwd: repoDir }, (err, stdout, stderr) => {
+    // "-c credential.helper=" (vazio) zera qualquer helper herdado (ex: o "manager" da sua
+    // conta, que tentaria abrir uma janela/navegador e travaria rodando como serviço) antes
+    // de usar só o arquivo de token dedicado, pra essa chamada de push especificamente.
+    const comandoAdd = `"${GIT_BIN}" add "${relPathGit}"`;
+    const comandoCommit = `"${GIT_BIN}" commit -m "${mensagemCommit}"`;
+    const comandoPush = `"${GIT_BIN}" -c credential.helper= -c credential.helper="store --file=${GIT_CREDENTIALS_FILE}" push origin main`;
+    exec(`${comandoAdd} && ${comandoCommit} && ${comandoPush}`, { cwd: repoDir }, (err, stdout, stderr) => {
         if (err) console.warn('⚠️  Não consegui publicar a foto automaticamente no GitHub (ela continua funcionando neste computador):', (stderr || err.message).split('\n')[0]);
         else console.log('✓ Foto publicada no GitHub:', filename);
     });

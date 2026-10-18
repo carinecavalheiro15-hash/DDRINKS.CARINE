@@ -1,6 +1,5 @@
 server/.env
+server/.git-credentials
 server/node_modules/
-server/service-out.log
-server/service-err.log
-server/service-out.log.old
-server/service-err.log.old
+server/service-out*.log*
+server/service-err*.log*
