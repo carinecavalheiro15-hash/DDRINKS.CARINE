@@ -1477,6 +1477,39 @@
                     </div>
                 </div>
 
+                <!-- Gráficos por Ano -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="card">
+                        <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                            <h3 class="card-title"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:18px;height:18px;">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                            <path d="M4 19h16" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                            <rect x="6" y="10" width="3" height="9" rx="1" fill="currentColor"/>
+                                            <rect x="11" y="6" width="3" height="13" rx="1" fill="currentColor"/>
+                                            <rect x="16" y="2" width="3" height="17" rx="1" fill="currentColor"/>
+                                        </svg>
+                                    </span>Eventos por Ano</h3>
+                        </div>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="chartEventosPorAno"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                            <h3 class="card-title"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:18px;height:18px;">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                            <path d="M7 7v2a5 5 0 005 5 5 5 0 005-5V7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M12 3v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                            <path d="M9 18c0 1.657 3 3 3 3s3-1.343 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>Valores Recebidos por Ano</h3>
+                        </div>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="chartRecebidoPorAnoAgenda"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Estatísticas Adicionais -->
                 <div class="grid grid-cols-4 gap-4">
                     <div class="card">
@@ -3885,6 +3918,8 @@ html += htmlPacotes;
         let chartStatusInstance = null;
         let chartTopDrinksInstance = null;
         let chartRecebidoAnoInstance = null;
+        let chartEventosAnoInstance = null;
+        let chartRecebidoAnoAgendaInstance = null;
         let chartLucroAnoInstance = null;
 
         const monthNames = [
@@ -4190,6 +4225,91 @@ html += htmlPacotes;
             });
         }
 
+        // Diferente do gráfico "Eventos por Mês" (que agrupa Jan-Dez somando todos os anos
+        // juntos), este agrupa por ano — importante porque os orçamentos aqui vão de 2026 a
+        // 2029, então teria eventos de anos diferentes se misturando no mesmo mês.
+        function atualizarGraficoEventosPorAno() {
+            const ctx = document.getElementById('chartEventosPorAno');
+            if (!ctx) return;
+
+            const porAno = {};
+            orcamentos.forEach(evento => {
+                if (!evento.data) return;
+                const ano = new Date(evento.data).getFullYear();
+                if (isNaN(ano)) return;
+                porAno[ano] = (porAno[ano] || 0) + 1;
+            });
+
+            const anos = Object.keys(porAno).map(Number).sort((a, b) => a - b);
+            const valores = anos.map(a => porAno[a]);
+
+            if (chartEventosAnoInstance) chartEventosAnoInstance.destroy();
+            chartEventosAnoInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: anos.map(String),
+                    datasets: [{
+                        label: 'Eventos por Ano',
+                        data: valores,
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        // Mesma lógica de atualizarGraficoRecebidoPorAno() (tela Financeiro), só que com seu
+        // próprio canvas/instância pra poder aparecer também no Dashboard de Eventos.
+        function atualizarGraficoRecebidoPorAnoAgenda() {
+            const ctx = document.getElementById('chartRecebidoPorAnoAgenda');
+            if (!ctx) return;
+
+            const totaisPorAno = {};
+            orcamentos.filter(orcamentoFoiAceito).forEach(orc => {
+                obterListaPagamentos(orc).forEach(p => {
+                    if (!p.data) return;
+                    const ano = new Date(p.data).getFullYear();
+                    totaisPorAno[ano] = (totaisPorAno[ano] || 0) + (Number(p.valor) || 0);
+                });
+            });
+
+            const anos = Object.keys(totaisPorAno).map(Number).sort((a, b) => a - b);
+            const valores = anos.map(a => totaisPorAno[a]);
+
+            if (chartRecebidoAnoAgendaInstance) chartRecebidoAnoAgendaInstance.destroy();
+            chartRecebidoAnoAgendaInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: anos.map(String),
+                    datasets: [{
+                        label: 'Recebido',
+                        data: valores,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (item) => formatarValorBR(item.parsed.y) } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: (v) => formatarValorBR(v) } }
+                    }
+                }
+            });
+        }
+
         function computeTopDrinks() {
             const ctx = document.getElementById('chartTopDrinks');
             if (!ctx) return;
@@ -4300,6 +4420,8 @@ html += htmlPacotes;
             setTimeout(() => {
                 atualizarGraficoMeses();
                 atualizarGraficoStatus();
+                atualizarGraficoEventosPorAno();
+                atualizarGraficoRecebidoPorAnoAgenda();
                 computeTopDrinks();
             }, 100);
 
