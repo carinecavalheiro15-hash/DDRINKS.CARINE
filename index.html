@@ -801,6 +801,10 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/></svg>
                     Financeiro
                 </button>
+                <button class="sidebar-item" onclick="showPage('relatorios')" id="nav-relatorios" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2h7l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M14 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 12h8M8 15.5h8M8 8.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Relatórios
+                </button>
                 <button class="sidebar-item" onclick="showPage('config')" id="nav-config" style="display:none;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
                     Configurações
@@ -2602,6 +2606,52 @@
         </div>
         <!-- FIM PÁGINA CERIMONIALISTAS -->
 
+        <!-- ===== PÁGINA DE RELATÓRIOS ===== -->
+        <div id="relatorios-page" class="page">
+            <div class="page-wrap">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2h7l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><path d="M14 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 12h8M8 15.5h8M8 8.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+                        <div>
+                            <h2 class="ph-titulo">Relatórios</h2>
+                            <p class="ph-sub">Filtre por ano e mês e baixe um relatório completo dos orçamentos e valores daquele período.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                        <div class="form-group" style="margin-bottom:0;min-width:160px;">
+                            <label class="form-label">Ano</label>
+                            <select id="relAno" class="form-input" onchange="relatorioAnoMudou()"></select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;min-width:180px;" id="relMesWrap">
+                            <label class="form-label">Mês</label>
+                            <select id="relMes" class="form-input">
+                                <option value="todos">Ano inteiro</option>
+                                <option value="0">Janeiro</option>
+                                <option value="1">Fevereiro</option>
+                                <option value="2">Março</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Maio</option>
+                                <option value="5">Junho</option>
+                                <option value="6">Julho</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Setembro</option>
+                                <option value="9">Outubro</option>
+                                <option value="10">Novembro</option>
+                                <option value="11">Dezembro</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="relatorioGerar()">🔍 Gerar Relatório</button>
+                    </div>
+                </div>
+
+                <div id="relatorioResultado"></div>
+            </div>
+        </div>
+        <!-- FIM PÁGINA RELATÓRIOS -->
+
         <!-- Página de Financeiro -->
         <div id="financeiro-page" class="page">
             <div class="card" style="max-width:1200px;margin:0 auto 2rem;">
@@ -2862,6 +2912,9 @@
                 fornecedorRenderGrid();
             } else if (pageId === 'cerimonialistas') {
                 cerimonialistaRender();
+            } else if (pageId === 'relatorios') {
+                relatorioPopularFiltros();
+                relatorioGerar();
             }
         }
 
@@ -2880,6 +2933,7 @@
                 document.getElementById('nav-clientes').style.display = 'flex';
                 document.getElementById('nav-fornecedores').style.display = 'flex';
                 document.getElementById('nav-financeiro').style.display = 'flex';
+                document.getElementById('nav-relatorios').style.display = 'flex';
                 document.getElementById('nav-config').style.display = 'flex';
                 document.getElementById('nav-drinks').style.display = 'flex';
                 document.getElementById('nav-estoque').style.display = 'flex';
@@ -2898,6 +2952,7 @@
                 document.getElementById('nav-clientes').style.display = 'none';
                 document.getElementById('nav-fornecedores').style.display = 'none';
                 document.getElementById('nav-financeiro').style.display = 'none';
+                document.getElementById('nav-relatorios').style.display = 'none';
                 document.getElementById('nav-config').style.display = 'none';
                 document.getElementById('nav-drinks').style.display = 'none';
                 document.getElementById('nav-estoque').style.display = 'none';
@@ -4830,6 +4885,400 @@ html += htmlPacotes;
         function calcularTotalGastos(orc) {
             return obterListaGastos(orc).reduce((soma, g) => soma + (Number(g.valor) || 0), 0);
         }
+
+        // ==================== RELATÓRIOS ====================
+        // Filtra pela data do EVENTO (orc.data) — mesmo critério já usado nos gráficos
+        // "Eventos por Ano"/"Eventos por Mês", pra manter os números consistentes entre telas.
+        const RELATORIO_MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        let _relatorioAtual = null; // guarda o último relatório gerado, pra exportar sem recalcular
+
+        function relatorioObterAnosDisponiveis() {
+            const anos = new Set();
+            orcamentos.forEach(o => {
+                if (!o.data) return;
+                const a = new Date(o.data).getFullYear();
+                if (!isNaN(a)) anos.add(a);
+            });
+            return Array.from(anos).sort((a, b) => b - a);
+        }
+
+        function relatorioPopularFiltros() {
+            const orcamentosSalvos = localStorage.getItem('orcamentos');
+            if (orcamentosSalvos) orcamentos = JSON.parse(orcamentosSalvos);
+
+            const selAno = document.getElementById('relAno');
+            if (!selAno) return;
+            const anos = relatorioObterAnosDisponiveis();
+            const atual = selAno.value;
+            selAno.innerHTML = '<option value="todos">Todos os anos</option>' + anos.map(a => `<option value="${a}">${a}</option>`).join('');
+            if (atual && Array.from(selAno.options).some(o => o.value === atual)) {
+                selAno.value = atual;
+            } else if (anos.length) {
+                selAno.value = String(anos[0]);
+            }
+            relatorioAnoMudou();
+        }
+
+        function relatorioAnoMudou() {
+            const ano = document.getElementById('relAno')?.value;
+            const mesWrap = document.getElementById('relMesWrap');
+            if (mesWrap) mesWrap.style.display = (ano === 'todos') ? 'none' : '';
+        }
+
+        function relatorioResumoVazio() {
+            return { totalOrcamentos: 0, aceitos: 0, pendentes: 0, naoAceitos: 0, valorAceito: 0, valorRecebido: 0, valorPendente: 0 };
+        }
+
+        function relatorioCalcularResumo(lista) {
+            const resumo = relatorioResumoVazio();
+            resumo.totalOrcamentos = lista.length;
+            lista.forEach(o => {
+                if (orcamentoFoiAceito(o)) {
+                    resumo.aceitos++;
+                    resumo.valorAceito += Number(o.valor) || 0;
+                    resumo.valorRecebido += calcularTotalPago(o);
+                } else if (o.status === 'pendente') {
+                    resumo.pendentes++;
+                } else {
+                    resumo.naoAceitos++;
+                }
+            });
+            resumo.valorPendente = Math.max(0, resumo.valorAceito - resumo.valorRecebido);
+            return resumo;
+        }
+
+        function relatorioGerar() {
+            const orcamentosSalvos = localStorage.getItem('orcamentos');
+            if (orcamentosSalvos) orcamentos = JSON.parse(orcamentosSalvos);
+
+            const selAno = document.getElementById('relAno');
+            if (selAno && !selAno.options.length) relatorioPopularFiltros();
+
+            const anoFiltro = document.getElementById('relAno')?.value || 'todos';
+            const mesFiltro = anoFiltro === 'todos' ? 'todos' : (document.getElementById('relMes')?.value || 'todos');
+
+            const comData = orcamentos.filter(o => o.data && !isNaN(new Date(o.data).getTime()));
+
+            let filtrados = comData;
+            if (anoFiltro !== 'todos') {
+                filtrados = filtrados.filter(o => new Date(o.data).getFullYear() === Number(anoFiltro));
+                if (mesFiltro !== 'todos') {
+                    filtrados = filtrados.filter(o => new Date(o.data).getMonth() === Number(mesFiltro));
+                }
+            }
+            filtrados = filtrados.slice().sort((a, b) => new Date(a.data) - new Date(b.data));
+
+            const resumo = relatorioCalcularResumo(filtrados);
+
+            let quebra = null;
+            let tipoQuebra = null;
+            if (anoFiltro === 'todos') {
+                tipoQuebra = 'ano';
+                quebra = relatorioObterAnosDisponiveis().map(ano => {
+                    const doAno = comData.filter(o => new Date(o.data).getFullYear() === ano);
+                    return { rotulo: String(ano), ...relatorioCalcularResumo(doAno) };
+                });
+            } else if (mesFiltro === 'todos') {
+                tipoQuebra = 'mes';
+                const doAno = comData.filter(o => new Date(o.data).getFullYear() === Number(anoFiltro));
+                quebra = RELATORIO_MESES.map((nome, idx) => {
+                    const doMes = doAno.filter(o => new Date(o.data).getMonth() === idx);
+                    return { rotulo: nome, ...relatorioCalcularResumo(doMes) };
+                });
+            }
+
+            const periodoTexto = anoFiltro === 'todos'
+                ? 'Todos os anos'
+                : (mesFiltro === 'todos' ? `Ano de ${anoFiltro}` : `${RELATORIO_MESES[Number(mesFiltro)]} de ${anoFiltro}`);
+
+            _relatorioAtual = { periodoTexto, resumo, quebra, tipoQuebra, itens: filtrados };
+            relatorioRenderizar(_relatorioAtual);
+        }
+
+        function relatorioRenderizar(rel) {
+            const cont = document.getElementById('relatorioResultado');
+            if (!cont) return;
+
+            const { periodoTexto, resumo, quebra, tipoQuebra, itens } = rel;
+
+            const statCard = (label, valor, cor) => `
+                <div class="card" style="padding:1rem;margin-bottom:0;">
+                    <div class="text-xl font-bold" style="color:${cor};">${valor}</div>
+                    <div class="text-xs" style="color:var(--gray-600);margin-top:2px;">${label}</div>
+                </div>`;
+
+            const resumoHtml = `
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    ${statCard('Orçamentos', resumo.totalOrcamentos, 'var(--gray-900)')}
+                    ${statCard('Aceitos', resumo.aceitos, 'var(--success-color)')}
+                    ${statCard('Pendentes', resumo.pendentes, 'var(--warning-color)')}
+                    ${statCard('Não Aceitos', resumo.naoAceitos, 'var(--error-color)')}
+                    ${statCard('Valor Aceito', formatarValorBR(resumo.valorAceito), 'var(--primary-color)')}
+                    ${statCard('Valor Recebido', formatarValorBR(resumo.valorRecebido), 'var(--success-color)')}
+                    ${statCard('Valor Pendente', formatarValorBR(resumo.valorPendente), 'var(--warning-color)')}
+                </div>
+            `;
+
+            const quebraHtml = quebra ? `
+                <div class="card">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">${tipoQuebra === 'ano' ? 'Resumo por Ano' : 'Resumo por Mês'}</h3>
+                    <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:640px;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--gray-200);">
+                                <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">${tipoQuebra === 'ano' ? 'Ano' : 'Mês'}</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Orçamentos</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Aceitos</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Pendentes</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Valor Aceito</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Recebido</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Pendente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${quebra.map(l => `
+                                <tr style="border-bottom:1px solid var(--gray-100);${l.totalOrcamentos ? '' : 'color:var(--gray-400);'}">
+                                    <td style="padding:7px 10px;font-weight:600;">${l.rotulo}</td>
+                                    <td style="padding:7px 10px;text-align:right;">${l.totalOrcamentos}</td>
+                                    <td style="padding:7px 10px;text-align:right;">${l.aceitos}</td>
+                                    <td style="padding:7px 10px;text-align:right;">${l.pendentes}</td>
+                                    <td style="padding:7px 10px;text-align:right;">${formatarValorBR(l.valorAceito)}</td>
+                                    <td style="padding:7px 10px;text-align:right;color:var(--success-color);">${formatarValorBR(l.valorRecebido)}</td>
+                                    <td style="padding:7px 10px;text-align:right;color:var(--warning-color);">${formatarValorBR(l.valorPendente)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            ` : '';
+
+            const STATUS_LABEL = { aceito: '✅ Aceito', pendente: '🕓 Pendente', nao_aceito: '❌ Não Aceito' };
+            const listaHtml = `
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+                        <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin:0;">Orçamentos — ${periodoTexto}</h3>
+                        <div style="display:flex;gap:8px;">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="relatorioBaixarCSV()">📊 Baixar CSV</button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="relatorioBaixarPDF()">📥 Baixar PDF</button>
+                        </div>
+                    </div>
+                    ${!itens.length ? '<div class="cliente-empty">Nenhum orçamento com data nesse período.</div>' : `
+                    <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:.85rem;min-width:720px;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--gray-200);">
+                                <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Cliente</th>
+                                <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Data</th>
+                                <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Status</th>
+                                <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Pacote</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Valor</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Pago</th>
+                                <th style="text-align:right;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Pendente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itens.map(o => {
+                                const aceito = orcamentoFoiAceito(o);
+                                const valor = aceito ? (Number(o.valor) || 0) : 0;
+                                const pago = aceito ? calcularTotalPago(o) : 0;
+                                const pendente = Math.max(0, valor - pago);
+                                return `
+                                <tr style="border-bottom:1px solid var(--gray-100);">
+                                    <td style="padding:7px 10px;font-weight:600;">${o.cliente || '—'}</td>
+                                    <td style="padding:7px 10px;">${o.dataFormatada || formatarData(o.data)}</td>
+                                    <td style="padding:7px 10px;">${STATUS_LABEL[o.status] || o.status || '—'}</td>
+                                    <td style="padding:7px 10px;">${o.pacoteAceito || o.pacote || '—'}</td>
+                                    <td style="padding:7px 10px;text-align:right;">${aceito ? formatarValorBR(valor) : '—'}</td>
+                                    <td style="padding:7px 10px;text-align:right;color:var(--success-color);">${aceito ? formatarValorBR(pago) : '—'}</td>
+                                    <td style="padding:7px 10px;text-align:right;color:var(--warning-color);">${aceito ? formatarValorBR(pendente) : '—'}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                    </div>
+                    `}
+                </div>
+            `;
+
+            cont.innerHTML = resumoHtml + quebraHtml + listaHtml;
+        }
+
+        function relatorioBaixarCSV() {
+            if (!_relatorioAtual) { showNotification('Gere o relatório primeiro.', 'warning'); return; }
+            const { periodoTexto, resumo, itens } = _relatorioAtual;
+
+            const linhas = [];
+            linhas.push(["Relatório D'Drinks", periodoTexto]);
+            linhas.push([]);
+            linhas.push(['Total Orçamentos', resumo.totalOrcamentos]);
+            linhas.push(['Aceitos', resumo.aceitos]);
+            linhas.push(['Pendentes', resumo.pendentes]);
+            linhas.push(['Não Aceitos', resumo.naoAceitos]);
+            linhas.push(['Valor Aceito', resumo.valorAceito.toFixed(2).replace('.', ',')]);
+            linhas.push(['Valor Recebido', resumo.valorRecebido.toFixed(2).replace('.', ',')]);
+            linhas.push(['Valor Pendente', resumo.valorPendente.toFixed(2).replace('.', ',')]);
+            linhas.push([]);
+            linhas.push(['Cliente', 'Data', 'Status', 'Pacote', 'Valor', 'Pago', 'Pendente']);
+
+            const STATUS_LABEL = { aceito: 'Aceito', pendente: 'Pendente', nao_aceito: 'Não Aceito' };
+            itens.forEach(o => {
+                const aceito = orcamentoFoiAceito(o);
+                const valor = aceito ? (Number(o.valor) || 0) : 0;
+                const pago = aceito ? calcularTotalPago(o) : 0;
+                const pendente = Math.max(0, valor - pago);
+                linhas.push([
+                    o.cliente || '',
+                    o.dataFormatada || formatarData(o.data) || '',
+                    STATUS_LABEL[o.status] || o.status || '',
+                    o.pacoteAceito || o.pacote || '',
+                    aceito ? valor.toFixed(2).replace('.', ',') : '',
+                    aceito ? pago.toFixed(2).replace('.', ',') : '',
+                    aceito ? pendente.toFixed(2).replace('.', ',') : ''
+                ]);
+            });
+
+            const csvEscape = (v) => {
+                const s = String(v ?? '');
+                return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+            };
+            // ";" como separador (não ",") porque o Excel em pt-BR espera isso por padrão.
+            const csv = '﻿' + linhas.map(linha => linha.map(csvEscape).join(';')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio-ddrinks-${periodoTexto.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            showNotification('📊 CSV baixado!', 'success');
+        }
+
+        function relatorioBaixarPDF() {
+            if (!_relatorioAtual) { showNotification('Gere o relatório primeiro.', 'warning'); return; }
+            const { periodoTexto, resumo, quebra, tipoQuebra, itens } = _relatorioAtual;
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const margem = 15;
+            const fimPagina = 280;
+            let y = 20;
+
+            function novaLinhaSeNecessario(altura) {
+                if (y + altura > fimPagina) { pdf.addPage(); y = 20; }
+            }
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(16);
+            pdf.text("Relatório D'Drinks", margem, y);
+            y += 7;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(11);
+            pdf.setTextColor(90, 90, 90);
+            pdf.text(periodoTexto, margem, y);
+            y += 10;
+
+            pdf.setTextColor(0, 0, 0);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.text('Resumo', margem, y);
+            y += 7;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(10);
+            [
+                `Total de Orçamentos: ${resumo.totalOrcamentos}`,
+                `Aceitos: ${resumo.aceitos}    Pendentes: ${resumo.pendentes}    Não Aceitos: ${resumo.naoAceitos}`,
+                `Valor Aceito: ${formatarValorBR(resumo.valorAceito)}`,
+                `Valor Recebido: ${formatarValorBR(resumo.valorRecebido)}`,
+                `Valor Pendente: ${formatarValorBR(resumo.valorPendente)}`
+            ].forEach(linha => { pdf.text(linha, margem, y); y += 6; });
+            y += 4;
+
+            if (quebra && quebra.length) {
+                novaLinhaSeNecessario(14);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(12);
+                pdf.text(tipoQuebra === 'ano' ? 'Resumo por Ano' : 'Resumo por Mês', margem, y);
+                y += 7;
+
+                const cols = [margem, 55, 80, 108, 140, 168];
+                const headers = [tipoQuebra === 'ano' ? 'Ano' : 'Mês', 'Orç.', 'Aceitos', 'Val. Aceito', 'Recebido', 'Pendente'];
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(8.5);
+                pdf.setTextColor(120, 120, 120);
+                headers.forEach((h, i) => pdf.text(h, cols[i], y));
+                y += 2;
+                pdf.setDrawColor(200, 200, 200);
+                pdf.line(margem, y, 195, y);
+                y += 5;
+
+                pdf.setFontSize(9);
+                quebra.forEach(l => {
+                    novaLinhaSeNecessario(7);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(30, 30, 30);
+                    pdf.text(String(l.rotulo), cols[0], y);
+                    pdf.text(String(l.totalOrcamentos), cols[1], y);
+                    pdf.text(String(l.aceitos), cols[2], y);
+                    pdf.text(formatarValorBR(l.valorAceito), cols[3], y);
+                    pdf.text(formatarValorBR(l.valorRecebido), cols[4], y);
+                    pdf.text(formatarValorBR(l.valorPendente), cols[5], y);
+                    y += 6;
+                });
+                y += 6;
+            }
+
+            novaLinhaSeNecessario(14);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12);
+            pdf.setTextColor(0, 0, 0);
+            pdf.text('Orçamentos do Período', margem, y);
+            y += 7;
+
+            if (!itens.length) {
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10);
+                pdf.setTextColor(90, 90, 90);
+                pdf.text('Nenhum orçamento com data nesse período.', margem, y);
+                y += 6;
+            } else {
+                const colsL = [margem, 70, 100, 130, 155, 175];
+                const headersL = ['Cliente', 'Data', 'Status', 'Valor', 'Pago', 'Pendente'];
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(8.5);
+                pdf.setTextColor(120, 120, 120);
+                headersL.forEach((h, i) => pdf.text(h, colsL[i], y));
+                y += 2;
+                pdf.setDrawColor(200, 200, 200);
+                pdf.line(margem, y, 195, y);
+                y += 5;
+
+                const STATUS_LABEL = { aceito: 'Aceito', pendente: 'Pendente', nao_aceito: 'Não Aceito' };
+                pdf.setFontSize(8.5);
+                itens.forEach(o => {
+                    novaLinhaSeNecessario(6);
+                    const aceito = orcamentoFoiAceito(o);
+                    const valor = aceito ? (Number(o.valor) || 0) : 0;
+                    const pago = aceito ? calcularTotalPago(o) : 0;
+                    const pendente = Math.max(0, valor - pago);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(30, 30, 30);
+                    pdf.text(String(o.cliente || '—').slice(0, 28), colsL[0], y);
+                    pdf.text(o.dataFormatada || formatarData(o.data) || '—', colsL[1], y);
+                    pdf.text(STATUS_LABEL[o.status] || o.status || '—', colsL[2], y);
+                    pdf.text(aceito ? formatarValorBR(valor) : '—', colsL[3], y);
+                    pdf.text(aceito ? formatarValorBR(pago) : '—', colsL[4], y);
+                    pdf.text(aceito ? formatarValorBR(pendente) : '—', colsL[5], y);
+                    y += 5.5;
+                });
+            }
+
+            pdf.save(`relatorio-ddrinks-${periodoTexto.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`);
+            showNotification('📥 PDF baixado!', 'success');
+        }
+        // ==================== FIM RELATÓRIOS ====================
 
         // Controla quais painéis de "Gastos deste Evento" estão abertos — fica fora do
         // card pra não fechar sozinho quando o card é reconstruído (ex: ao adicionar pagamento).
