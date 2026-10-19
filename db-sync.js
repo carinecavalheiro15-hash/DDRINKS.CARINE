@@ -83,10 +83,12 @@
                         // cima (o que apaga sem querer itens que só existiam neste aparelho,
                         // ex: um tablet que ficou um tempo sem conseguir falar com o banco),
                         // junta tudo por id. Quando o mesmo id existe nos dois lados, fica a
-                        // versão do banco (outros aparelhos podem ter atualizado depois).
+                        // versão deste aparelho — é a mais recente na prática (ex: acabou de
+                        // editar e deu F5 antes do envio pro banco terminar; se o banco
+                        // "vencesse" aqui, a edição mais nova seria apagada bem na sua frente).
                         var porId = {};
                         remoto.forEach(function (item) { if (item && item.id != null) porId[item.id] = item; });
-                        local.forEach(function (item) { if (item && item.id != null && !(item.id in porId)) porId[item.id] = item; });
+                        local.forEach(function (item) { if (item && item.id != null) porId[item.id] = item; });
                         var mesclado = Object.keys(porId).map(function (id) { return porId[id]; });
                         localStorage.setItem(key, JSON.stringify(mesclado));
                         syncRequest('PUT', API_BASE + '/collections/' + cfg.endpoint, mesclado);
