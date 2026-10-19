@@ -38,6 +38,34 @@ CREATE TABLE IF NOT EXISTS orcamentos (
     INDEX idx_orcamentos_data_evento (data_evento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Pagamentos e documentos de cada evento (tela "Eventos"), extraídos do JSON do
+-- orçamento em tabelas próprias — além de continuarem dentro de "dados" também,
+-- pra poder consultar/filtrar direto em SQL sem abrir o JSON.
+CREATE TABLE IF NOT EXISTS orcamento_pagamentos (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    orcamento_id    BIGINT NOT NULL,
+    valor           DECIMAL(12,2),
+    forma           VARCHAR(50),
+    data_pagamento  DATE NULL,
+    observacoes     TEXT,
+    criado_em       DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_orc_pagamentos_orcamento (orcamento_id),
+    FOREIGN KEY (orcamento_id) REFERENCES orcamentos(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS orcamento_documentos (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    orcamento_id    BIGINT NOT NULL,
+    nome            VARCHAR(255),
+    tipo            VARCHAR(100),
+    tamanho         INT,
+    dados           LONGTEXT,
+    data_upload     DATETIME NULL,
+    criado_em       DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_orc_documentos_orcamento (orcamento_id),
+    FOREIGN KEY (orcamento_id) REFERENCES orcamentos(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS fornecedores (
     id              BIGINT PRIMARY KEY,
     nome            VARCHAR(255),

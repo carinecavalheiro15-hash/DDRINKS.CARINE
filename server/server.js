@@ -235,6 +235,33 @@ app.put('/api/collections/:name', async (req, res) => {
                 `INSERT INTO ${cfg.table} (${cols.join(',')}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${updates}`,
                 vals
             );
+
+            // Orçamentos (tela "Eventos"): além do JSON completo em "dados", explode
+            // pagamentos e documentos anexados em tabelas próprias, pra dar pra ver e
+            // consultar direto no MySQL Workbench sem abrir o JSON.
+            if (req.params.name === 'orcamentos') {
+                await conn.query('DELETE FROM orcamento_pagamentos WHERE orcamento_id = ?', [item.id]);
+                const pagamentos = Array.isArray(item.pagamentos)
+                    ? item.pagamentos
+                    : (item.pagamentos && item.pagamentos.valor ? [item.pagamentos] : []);
+                for (const p of pagamentos) {
+                    await conn.query(
+                        'INSERT INTO orcamento_pagamentos (orcamento_id, valor, forma, data_pagamento, observacoes) VALUES (?,?,?,?,?)',
+                        [item.id, p.valor != null ? p.valor : null, p.forma || null, extrairDataISO(p.data || p.dataPagamento), p.observacoes || null]
+                    );
+                }
+
+                await conn.query('DELETE FROM orcamento_documentos WHERE orcamento_id = ?', [item.id]);
+                const documentos = Array.isArray(item.contratos)
+                    ? item.contratos
+                    : (item.contratoAnexo ? [item.contratoAnexo] : []);
+                for (const d of documentos) {
+                    await conn.query(
+                        'INSERT INTO orcamento_documentos (orcamento_id, nome, tipo, tamanho, dados, data_upload) VALUES (?,?,?,?,?,?)',
+                        [item.id, d.nome || null, d.tipo || null, d.tamanho || null, d.dados || null, d.dataUpload ? new Date(d.dataUpload) : null]
+                    );
+                }
+            }
         }
 
         await conn.commit();
