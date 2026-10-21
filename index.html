@@ -8006,8 +8006,17 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         if (baseUrl) baseUrl.value = localStorage.getItem('ddrinksCardapioBaseUrl') || CARDAPIO_BASE_URL_PADRAO;
     }
 
+    // Aceita o link completo (https://instagram.com/usuario) ou só o @usuario/usuario,
+    // pra não depender de colar o link certinho.
+    function cardapioNormalizarInstagram(valor) {
+        const v = (valor || '').trim();
+        if (!v) return '';
+        if (/^https?:\/\//i.test(v)) return v;
+        return 'https://instagram.com/' + v.replace(/^@/, '');
+    }
+
     function cardapioSalvarConfig() {
-        const instagram = document.getElementById('cfg-cardapio-instagram')?.value.trim() || '';
+        const instagram = cardapioNormalizarInstagram(document.getElementById('cfg-cardapio-instagram')?.value);
         const desconto = document.getElementById('cfg-cardapio-desconto')?.value.trim() || '5';
         const baseUrl = document.getElementById('cfg-cardapio-baseurl')?.value.trim() || CARDAPIO_BASE_URL_PADRAO;
         localStorage.setItem('ddrinksInstagramUrl', instagram);
