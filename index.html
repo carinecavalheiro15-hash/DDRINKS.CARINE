@@ -1034,13 +1034,8 @@
                     <div class="grid grid-cols-3 gap-4">
                         <div class="form-group">
                             <label for="dataEvento" class="form-label">Data do Evento *</label>
-                            <div class="date-input-group">
-                                <input type="text" id="dataEvento" class="form-input" required placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" oninput="miniCalMascarar('dataEvento')">
-                                <button type="button" class="date-cal-btn" onclick="miniCalAbrir('dataEvento')" aria-label="Abrir calendário">📅</button>
-                                <div class="mini-cal-pop" id="dataEvento-calpop"></div>
-                            </div>
+                            <input type="date" id="dataEvento" class="form-input" required oninput="document.getElementById('dataEventoISO').value = this.value;">
                             <input type="hidden" id="dataEventoISO">
-                            <small id="dataEventoPreview" style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);font-weight:600;"></small>
                         </div>
                         <div class="form-group">
                             <label for="dataDegustacaoForm" class="form-label">Agendar Degustação</label>
@@ -3612,7 +3607,6 @@ html += htmlPacotes;
             document.getElementById('clienteEndereco').value = '';
             document.getElementById('dataEvento').value = '';
             document.getElementById('dataEventoISO').value = '';
-            document.getElementById('dataEventoPreview').textContent = '';
             document.getElementById('quantidadeConvidados').value = '';
             document.getElementById('descricaoEvento').value = '';
             document.getElementById('descricaoOutro').value = '';
@@ -4840,9 +4834,8 @@ html += htmlPacotes;
             document.getElementById('clienteTelefone').value = orcamento.telefone || '';
             document.getElementById('clienteCidade').value = orcamento.cidade || '';
             document.getElementById('clienteEndereco').value = orcamento.endereco || '';
-            document.getElementById('dataEvento').value = orcamento.data ? formatarData(orcamento.data) : '';
+            document.getElementById('dataEvento').value = orcamento.data || '';
             document.getElementById('dataEventoISO').value = orcamento.data || '';
-            document.getElementById('dataEventoPreview').textContent = orcamento.data ? ('📅 ' + formatarData(orcamento.data)) : '';
             document.getElementById('quantidadeConvidados').value = orcamento.quantidadeConvidados || '';
             document.getElementById('pacoteSelecionado').value = orcamento.pacote || 'bronze';
             const campoVoucherCodigo = document.getElementById('clienteVoucherCodigo');
