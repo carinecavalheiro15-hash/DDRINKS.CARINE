@@ -2088,9 +2088,10 @@
                         <div class="form-group">
                             <label class="form-label">Categoria</label>
                             <select class="form-input" id="ftCategoria">
-                                <option value="Alcoólico">Alcoólico</option>
-                                <option value="Sem Álcool">Sem Álcool</option>
+                                <option value="Alcoólicos">Alcoólicos</option>
+                                <option value="Não Alcoólicos">Não Alcoólicos</option>
                                 <option value="Especial">Especial</option>
+                                <option value="Autorais">Autorais</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -6080,44 +6081,46 @@ html += htmlPacotes;
 
     // ==================== FICHAS TÉCNICAS ====================
     const FT_PADRAO = [
-      {id:'caipirinha_limao',nome:'Caipirinha de Limão',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Limão',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
-      {id:'caipirinha_morango',nome:'Caipirinha de Morango',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Morango',qty:'4 unidades'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
-      {id:'caipirinha_kiwi',nome:'Caipirinha de Kiwi',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Kiwi',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
-      {id:'caipirinha_vinho',nome:'Caipirinha de Vinho',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Vinho Tinto',qty:'150 ml'},{nome:'Limão',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
-      {id:'mojito',nome:'Mojito',categoria:'Alcoólico',ingredientes:[{nome:'Rum Branco',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Hortelã',qty:'8 folhas'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Água com Gás',qty:'completar'},{nome:'Gelo',qty:''}]},
-      {id:'mojito_sem_alcool',nome:'Mojito Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Limão',qty:'25 ml'},{nome:'Hortelã',qty:'8 folhas'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Água com Gás',qty:'completar'},{nome:'Gelo',qty:''}]},
-      {id:'sex_on_the_beach',nome:'Sex on the Beach',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'40 ml'},{nome:'Licor de Pêssego',qty:'20 ml'},{nome:'Suco de Laranja',qty:'50 ml'},{nome:'Suco de Cranberry',qty:'50 ml'},{nome:'Gelo',qty:''}]},
-      {id:'sex_on_the_beach_sem_alcool',nome:'Sex on the Beach Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Laranja',qty:'80 ml'},{nome:'Suco de Cranberry',qty:'80 ml'},{nome:'Xarope de Pêssego',qty:'20 ml'},{nome:'Gelo',qty:''}]},
-      {id:'gin_tonica',nome:'Gin Tônica',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'60 ml'},{nome:'Água Tônica',qty:'200 ml'},{nome:'Limão Siciliano',qty:'2 fatias'},{nome:'Gelo',qty:''}]},
-      {id:'moscow_mule',nome:'Moscow Mule',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Espuma de Gengibre',qty:'100 ml'},{nome:'Gelo',qty:''}]},
-      {id:'moscow_mule_sem_alcool',nome:'Moscow Mule Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Limão',qty:'20 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Ginger Ale',qty:'150 ml'},{nome:'Gelo',qty:''}]},
-      {id:'gin_tropical',nome:'Gin Tropical',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'50 ml'},{nome:'Energético Tropical',qty:'150 ml'},{nome:'Frutas para decoração',qty:''},{nome:'Gelo',qty:''}]},
-      {id:'negroni',nome:'Negroni',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'30 ml'},{nome:'Campari',qty:'30 ml'},{nome:'Vermute Rosso',qty:'30 ml'},{nome:'Gelo',qty:''}]},
-      {id:'aperol_spritz',nome:'Aperol Spritz',categoria:'Alcoólico',ingredientes:[{nome:'Aperol',qty:'60 ml'},{nome:'Espumante',qty:'90 ml'},{nome:'Água com Gás',qty:'30 ml'},{nome:'Laranja',qty:'1 fatia'},{nome:'Gelo',qty:''}]},
-      {id:'whisky_sour',nome:'Whisky Sour',categoria:'Alcoólico',ingredientes:[{nome:'Whisky',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
-      {id:'cosmopolitan',nome:'Cosmopolitan',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'40 ml'},{nome:'Cointreau',qty:'20 ml'},{nome:'Suco de Cranberry',qty:'20 ml'},{nome:'Suco de Limão',qty:'10 ml'},{nome:'Gelo',qty:''}]},
-      {id:'pina_colada',nome:'Piña Colada',categoria:'Alcoólico',ingredientes:[{nome:'Rum Branco',qty:'50 ml'},{nome:'Suco de Abacaxi',qty:'80 ml'},{nome:'Leite de Coco',qty:'40 ml'},{nome:'Gelo',qty:''}]},
-      {id:'pina_colada_sem_alcool',nome:'Piña Colada Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Suco de Abacaxi',qty:'100 ml'},{nome:'Leite de Coco',qty:'50 ml'},{nome:'Gelo',qty:''}]},
-      {id:'alexander',nome:'Alexander',categoria:'Alcoólico',ingredientes:[{nome:'Conhaque',qty:'30 ml'},{nome:'Creme de Cacau',qty:'30 ml'},{nome:'Creme de Leite',qty:'30 ml'},{nome:'Gelo',qty:''}]},
-      {id:'tequila_sour',nome:'Tequila Sour',categoria:'Alcoólico',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
-      {id:'pink_lady',nome:'Pink Lady',categoria:'Alcoólico',ingredientes:[{nome:'Gin',qty:'40 ml'},{nome:'Grenadine',qty:'20 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Gelo',qty:''}]},
-      {id:'limonada_suica',nome:'Limonada Suíça',categoria:'Sem Álcool',ingredientes:[{nome:'Limão',qty:'1 unidade'},{nome:'Água',qty:'150 ml'},{nome:'Leite Condensado',qty:'20 ml'},{nome:'Gelo',qty:''}]},
-      {id:'soda_italiana_limao_siciliano',nome:'Soda Italiana Limão Siciliano',categoria:'Sem Álcool',ingredientes:[{nome:'Xarope de Limão Siciliano',qty:'30 ml'},{nome:'Água com Gás',qty:'200 ml'},{nome:'Gelo',qty:''}]},
-      {id:'soda_italiana_morango',nome:'Soda Italiana Morango',categoria:'Sem Álcool',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'200 ml'},{nome:'Gelo',qty:''}]},
-      {id:'lagoa_azul',nome:'Lagoa Azul',categoria:'Alcoólico',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Curaçau Blue',qty:'20 ml'},{nome:'Refrigerante de Limão',qty:'100 ml'},{nome:'Gelo',qty:''}]},
-      {id:'tequila_sunrise',nome:'Tequila Sunrise',categoria:'Alcoólico',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Laranja',qty:'120 ml'},{nome:'Grenadine',qty:'10 ml'},{nome:'Gelo',qty:''}]},
-      {id:'margarita',nome:'Margarita',categoria:'Alcoólico',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Cointreau',qty:'25 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Sal para borda',qty:''},{nome:'Gelo',qty:''}]},
-      {id:'amaretto_sour',nome:'Amaretto Sour',categoria:'Alcoólico',ingredientes:[{nome:'Amaretto',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
+      {id:'caipirinha_limao',nome:'Caipirinha de Limão',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Limão',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'caipirinha_morango',nome:'Caipirinha de Morango',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Morango',qty:'4 unidades'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'caipirinha_kiwi',nome:'Caipirinha de Kiwi',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Kiwi',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'caipirinha_vinho',nome:'Caipirinha de Vinho',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'60 ml'},{nome:'Vinho Tinto',qty:'150 ml'},{nome:'Limão',qty:'1 unidade'},{nome:'Açúcar',qty:'20 g'},{nome:'Gelo',qty:''}]},
+      {id:'mojito',nome:'Mojito',categoria:'Alcoólicos',ingredientes:[{nome:'Rum Branco',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Hortelã',qty:'8 folhas'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Água com Gás',qty:'completar'},{nome:'Gelo',qty:''}]},
+      {id:'mojito_sem_alcool',nome:'Mojito Sem Álcool',categoria:'Não Alcoólicos',ingredientes:[{nome:'Suco de Limão',qty:'25 ml'},{nome:'Hortelã',qty:'8 folhas'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Água com Gás',qty:'completar'},{nome:'Gelo',qty:''}]},
+      {id:'sex_on_the_beach',nome:'Sex on the Beach',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'40 ml'},{nome:'Licor de Pêssego',qty:'20 ml'},{nome:'Suco de Laranja',qty:'50 ml'},{nome:'Suco de Cranberry',qty:'50 ml'},{nome:'Gelo',qty:''}]},
+      {id:'sex_on_the_beach_sem_alcool',nome:'Sex on the Beach Sem Álcool',categoria:'Não Alcoólicos',ingredientes:[{nome:'Suco de Laranja',qty:'80 ml'},{nome:'Suco de Cranberry',qty:'80 ml'},{nome:'Xarope de Pêssego',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'gin_tonica',nome:'Gin Tônica',categoria:'Alcoólicos',ingredientes:[{nome:'Gin',qty:'60 ml'},{nome:'Água Tônica',qty:'200 ml'},{nome:'Limão Siciliano',qty:'2 fatias'},{nome:'Gelo',qty:''}]},
+      {id:'moscow_mule',nome:'Moscow Mule',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Espuma de Gengibre',qty:'100 ml'},{nome:'Gelo',qty:''}]},
+      {id:'moscow_mule_sem_alcool',nome:'Moscow Mule Sem Álcool',categoria:'Não Alcoólicos',ingredientes:[{nome:'Suco de Limão',qty:'20 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Ginger Ale',qty:'150 ml'},{nome:'Gelo',qty:''}]},
+      {id:'gin_tropical',nome:'Gin Tropical',categoria:'Alcoólicos',ingredientes:[{nome:'Gin',qty:'50 ml'},{nome:'Energético Tropical',qty:'150 ml'},{nome:'Frutas para decoração',qty:''},{nome:'Gelo',qty:''}]},
+      {id:'negroni',nome:'Negroni',categoria:'Alcoólicos',ingredientes:[{nome:'Gin',qty:'30 ml'},{nome:'Campari',qty:'30 ml'},{nome:'Vermute Rosso',qty:'30 ml'},{nome:'Gelo',qty:''}]},
+      {id:'aperol_spritz',nome:'Aperol Spritz',categoria:'Alcoólicos',ingredientes:[{nome:'Aperol',qty:'60 ml'},{nome:'Espumante',qty:'90 ml'},{nome:'Água com Gás',qty:'30 ml'},{nome:'Laranja',qty:'1 fatia'},{nome:'Gelo',qty:''}]},
+      {id:'whisky_sour',nome:'Whisky Sour',categoria:'Alcoólicos',ingredientes:[{nome:'Whisky',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
+      {id:'cosmopolitan',nome:'Cosmopolitan',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'40 ml'},{nome:'Cointreau',qty:'20 ml'},{nome:'Suco de Cranberry',qty:'20 ml'},{nome:'Suco de Limão',qty:'10 ml'},{nome:'Gelo',qty:''}]},
+      {id:'pina_colada',nome:'Piña Colada',categoria:'Alcoólicos',ingredientes:[{nome:'Rum Branco',qty:'50 ml'},{nome:'Suco de Abacaxi',qty:'80 ml'},{nome:'Leite de Coco',qty:'40 ml'},{nome:'Gelo',qty:''}]},
+      {id:'pina_colada_sem_alcool',nome:'Piña Colada Sem Álcool',categoria:'Não Alcoólicos',ingredientes:[{nome:'Suco de Abacaxi',qty:'100 ml'},{nome:'Leite de Coco',qty:'50 ml'},{nome:'Gelo',qty:''}]},
+      {id:'alexander',nome:'Alexander',categoria:'Alcoólicos',ingredientes:[{nome:'Conhaque',qty:'30 ml'},{nome:'Creme de Cacau',qty:'30 ml'},{nome:'Creme de Leite',qty:'30 ml'},{nome:'Gelo',qty:''}]},
+      {id:'tequila_sour',nome:'Tequila Sour',categoria:'Alcoólicos',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
+      {id:'pink_lady',nome:'Pink Lady',categoria:'Alcoólicos',ingredientes:[{nome:'Gin',qty:'40 ml'},{nome:'Grenadine',qty:'20 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'limonada_suica',nome:'Limonada Suíça',categoria:'Não Alcoólicos',ingredientes:[{nome:'Limão',qty:'1 unidade'},{nome:'Água',qty:'150 ml'},{nome:'Leite Condensado',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'soda_italiana_limao_siciliano',nome:'Soda Italiana Limão Siciliano',categoria:'Não Alcoólicos',ingredientes:[{nome:'Xarope de Limão Siciliano',qty:'30 ml'},{nome:'Água com Gás',qty:'200 ml'},{nome:'Gelo',qty:''}]},
+      {id:'soda_italiana_morango',nome:'Soda Italiana Morango',categoria:'Não Alcoólicos',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'200 ml'},{nome:'Gelo',qty:''}]},
+      {id:'lagoa_azul',nome:'Lagoa Azul',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Curaçau Blue',qty:'20 ml'},{nome:'Refrigerante de Limão',qty:'100 ml'},{nome:'Gelo',qty:''}]},
+      {id:'tequila_sunrise',nome:'Tequila Sunrise',categoria:'Alcoólicos',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Laranja',qty:'120 ml'},{nome:'Grenadine',qty:'10 ml'},{nome:'Gelo',qty:''}]},
+      {id:'margarita',nome:'Margarita',categoria:'Alcoólicos',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Cointreau',qty:'25 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Sal para borda',qty:''},{nome:'Gelo',qty:''}]},
+      {id:'amaretto_sour',nome:'Amaretto Sour',categoria:'Alcoólicos',ingredientes:[{nome:'Amaretto',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
       {id:'cotton_fairy',nome:'Cotton Fairy',categoria:'Especial',ingredientes:[{nome:'Espumante Brut',qty:'120 ml'},{nome:'Licor de Morango',qty:'30 ml'},{nome:'Algodão Doce',qty:'1 porção'},{nome:'Gelo',qty:''}]},
-      {id:'cotton_fairy_sem_alcool',nome:'Cotton Fairy Sem Álcool',categoria:'Sem Álcool',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'180 ml'},{nome:'Algodão Doce',qty:'1 porção'},{nome:'Gelo',qty:''}]},
+      {id:'cotton_fairy_sem_alcool',nome:'Cotton Fairy Sem Álcool',categoria:'Não Alcoólicos',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'180 ml'},{nome:'Algodão Doce',qty:'1 porção'},{nome:'Gelo',qty:''}]},
       {id:'hold_up',nome:'Hold Up',categoria:'Especial',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Aperol',qty:'20 ml'},{nome:'Suco de Abacaxi',qty:'60 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Sugar Syrup',qty:'15 ml'},{nome:'Xarope de Maracujá',qty:'20 ml'},{nome:'Gelo',qty:''}]},
       {id:'passion',nome:'Passion',categoria:'Especial',ingredientes:[{nome:'Vodka de Baunilha',qty:'50 ml'},{nome:'Licor de Maracujá',qty:'20 ml'},{nome:'Xarope de Baunilha',qty:'15 ml'},{nome:'Suco de Abacaxi',qty:'60 ml'},{nome:'Polpa de Maracujá',qty:'30 ml'},{nome:'Gelo',qty:''}]},
       {id:'cookie_drink',nome:'Cookie Drink',categoria:'Especial',ingredientes:[{nome:'Vodka de Baunilha',qty:'50 ml'},{nome:'Licor de Chocolate',qty:'20 ml'},{nome:'Licor de Café',qty:'20 ml'},{nome:'Café Espresso',qty:'30 ml'},{nome:'Farofa de Baunilha',qty:'1 porção'},{nome:'Gelo',qty:''}]},
       {id:'mirtilo_sour',nome:'Mirtilo Sour',categoria:'Especial',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Abacaxi',qty:'50 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Albumina',qty:'15 ml'},{nome:'Gelo',qty:''}]},
       {id:'oreo_yin',nome:'Oreo Yin',categoria:'Especial',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Licor de Café',qty:'20 ml'},{nome:'Café Espresso Fresco',qty:'30 ml'},{nome:'Sugar Syrup de Baunilha',qty:'15 ml'},{nome:'Creme de Baunilha',qty:'30 ml'},{nome:'Gelo',qty:''}]},
+      {id:'blumenau_sunset',nome:'Blumenau Sunset',categoria:'Autorais',ingredientes:[{nome:'Cachaça',qty:'50 ml'},{nome:'Xarope de Maracujá',qty:'20 ml'},{nome:'Mel',qty:'10 ml'},{nome:'Suco de Limão',qty:'15 ml'},{nome:'Espuma de Gengibre',qty:'completar'},{nome:'Gelo',qty:''}]},
+      {id:'jardim_vermelho',nome:'Jardim Vermelho',categoria:'Autorais',ingredientes:[{nome:'Gin',qty:'50 ml'},{nome:'Xarope de Hibisco',qty:'20 ml'},{nome:'Suco de Framboesa',qty:'30 ml'},{nome:'Suco de Limão',qty:'15 ml'},{nome:'Água Tônica',qty:'completar'},{nome:'Gelo',qty:''}]},
     ];
 
-    const FT_CORES = {'Alcoólico':'#ef4444','Sem Álcool':'#10b981','Especial':'#8b5cf6'};
+    const FT_CORES = {'Alcoólicos':'#ef4444','Não Alcoólicos':'#10b981','Especial':'#8b5cf6','Autorais':'#f59e0b'};
 
     function ftLoad(){
         const s=localStorage.getItem('ddrinks_fichas');
@@ -6127,7 +6130,7 @@ html += htmlPacotes;
 
     function ftEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-    const FT_ORDEM_CATEGORIAS = ['Alcoólico', 'Sem Álcool', 'Especial'];
+    const FT_ORDEM_CATEGORIAS = ['Alcoólicos', 'Não Alcoólicos', 'Especial', 'Autorais'];
 
     function ftMontarCard(f){
         const cor=FT_CORES[f.categoria]||'#ef4444';
@@ -6189,7 +6192,7 @@ html += htmlPacotes;
         document.getElementById('ftModalTitle').textContent=id?'Editar Drink':'Novo Drink';
         document.getElementById('ftEditId').value=id||'';
         document.getElementById('ftNome').value='';
-        document.getElementById('ftCategoria').value='Alcoólico';
+        document.getElementById('ftCategoria').value='Alcoólicos';
         document.getElementById('ftIngEditor').innerHTML='';
         document.getElementById('ftFotoPath').value='';
         let fotoAtual='';
