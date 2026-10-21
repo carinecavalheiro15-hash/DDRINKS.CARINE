@@ -5010,6 +5010,44 @@ html += htmlPacotes;
             relatorioRenderizar(_relatorioAtual);
         }
 
+        // Resumo geral do sistema (fora dos filtros de ano/mês): um número por módulo,
+        // só pra dar uma visão de tudo sem virar uma tela cheia de tabelas.
+        function relatorioMontarVisaoGeral(statCard) {
+            const fornecedores = JSON.parse(localStorage.getItem('fornecedores') || '[]');
+            const cerimonialistas = JSON.parse(localStorage.getItem('ddrinks_cerimonialistas') || '[]');
+            const vouchers = JSON.parse(localStorage.getItem('ddrinks_vouchers') || '[]');
+            const pacotesPromo = JSON.parse(localStorage.getItem('ddrinks_pacotes_promo') || '[]');
+            const drinksCustom = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+            const estoque = JSON.parse(localStorage.getItem('ddrinks_estoque') || '[]');
+
+            const inativos = new Set(drinksCarregarInativos());
+            const totalDrinksPadrao = Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}).length;
+            const totalDrinks = totalDrinksPadrao + drinksCustom.length;
+
+            const vouchersUsados = vouchers.filter(v => v.status === 'usado').length;
+
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+            const degLista = degOrcamentosLoad();
+            const degPendentes = degLista.filter(o => degDrinkIds(o).length > 0 && (!o.degustacao || !o.degustacao.dataDegustacao)).length;
+            const degRealizadas = degLista.filter(o => o.degustacao && (o.degustacao.realizado === true || (o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) < hoje))).length;
+
+            return `
+                <div class="card">
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">Visão Geral do Sistema</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        ${statCard('Fornecedores', fornecedores.length, 'var(--gray-900)')}
+                        ${statCard('Cerimonialistas', cerimonialistas.length, 'var(--gray-900)')}
+                        ${statCard('Drinks Cadastrados', `${totalDrinks - inativos.size}/${totalDrinks} ativos`, 'var(--gray-900)')}
+                        ${statCard('Itens no Estoque', estoque.length, 'var(--gray-900)')}
+                        ${statCard('Pacotes Promocionais', pacotesPromo.length, 'var(--gray-900)')}
+                        ${statCard('Vouchers', `${vouchersUsados}/${vouchers.length} usados`, 'var(--gray-900)')}
+                        ${statCard('Degustações Pendentes', degPendentes, 'var(--warning-color)')}
+                        ${statCard('Degustações Realizadas', degRealizadas, 'var(--success-color)')}
+                    </div>
+                </div>
+            `;
+        }
+
         function relatorioRenderizar(rel) {
             const cont = document.getElementById('relatorioResultado');
             if (!cont) return;
@@ -5022,7 +5060,10 @@ html += htmlPacotes;
                     <div class="text-xs" style="color:var(--gray-600);margin-top:2px;">${label}</div>
                 </div>`;
 
+            const visaoGeralHtml = `<div style="margin-bottom:1.5rem;">${relatorioMontarVisaoGeral(statCard)}</div>`;
+
             const resumoHtml = `
+                <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin:0 0 14px;">Resumo de Orçamentos — ${periodoTexto}</h3>
                 <div class="grid grid-cols-4 gap-4 mb-6">
                     ${statCard('Orçamentos', resumo.totalOrcamentos, 'var(--gray-900)')}
                     ${statCard('Aceitos', resumo.aceitos, 'var(--success-color)')}
@@ -5116,7 +5157,7 @@ html += htmlPacotes;
                 </div>
             `;
 
-            cont.innerHTML = resumoHtml + quebraHtml + listaHtml;
+            cont.innerHTML = visaoGeralHtml + resumoHtml + quebraHtml + listaHtml;
         }
 
         function relatorioBaixarCSV() {
