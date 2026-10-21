@@ -2167,6 +2167,22 @@
 
         <!-- Página de Alertas -->
         <div id="alertas-page" class="page">
+            <style>
+                .alert-section { background:#fff; border:1px solid var(--gray-200); border-radius:16px; padding:20px 22px; margin-bottom:18px; box-shadow:var(--shadow); }
+                .alert-section-title { display:flex; align-items:center; gap:9px; font-size:1rem; font-weight:700; color:var(--gray-900); margin:0 0 14px; }
+                .alert-section-title .alert-count { margin-left:auto; font-size:.72rem; font-weight:700; color:#fff; background:var(--gray-300); border-radius:20px; padding:2px 10px; }
+                .alert-section-title .alert-count.has-itens { background:var(--primary-color); }
+                .alert-empty { display:flex; flex-direction:column; align-items:center; gap:6px; padding:26px 10px; color:var(--gray-400); font-size:.85rem; text-align:center; }
+                .alert-item { display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid var(--gray-100); border-radius:12px; margin-bottom:10px; background:var(--gray-50); }
+                .alert-item:last-child { margin-bottom:0; }
+                .alert-avatar { width:40px; height:40px; border-radius:50%; background:var(--primary-color); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1rem; flex-shrink:0; font-family:'Poppins',Arial,sans-serif; }
+                .alert-avatar.is-deg { background:var(--warning-color); }
+                .alert-avatar.is-aniv { background:var(--success-color); }
+                .alert-info { flex:1; min-width:0; }
+                .alert-nome { font-weight:700; color:var(--gray-900); font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+                .alert-data { font-size:.8rem; color:var(--gray-500); margin-top:2px; }
+                .alert-actions { display:flex; gap:6px; flex-shrink:0; }
+            </style>
             <div class="deg-wrap">
                 <div class="ph-card">
                     <div class="ph-top">
@@ -2178,19 +2194,19 @@
                     </div>
                 </div>
 
-                <div style="margin-bottom:14px;">
-                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Eventos Próximos (1 mês)</h3>
-                    <div id="alertEventos" style="margin-bottom:8px;"></div>
+                <div class="alert-section">
+                    <h3 class="alert-section-title">📅 Eventos Próximos (1 mês) <span class="alert-count" id="alertEventosCount">0</span></h3>
+                    <div id="alertEventos"></div>
                 </div>
 
-                <div style="margin-bottom:14px;">
-                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Degustações Próximas (1 semana)</h3>
-                    <div id="alertDegustacoes" style="margin-bottom:8px;"></div>
+                <div class="alert-section">
+                    <h3 class="alert-section-title">🍹 Degustações Próximas (1 semana) <span class="alert-count" id="alertDegustacoesCount">0</span></h3>
+                    <div id="alertDegustacoes"></div>
                 </div>
 
-                <div style="margin-bottom:14px;">
-                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Aniversários de 1 ano (lembrar 1 semana antes)</h3>
-                    <div id="alertAniversario1" style="margin-bottom:8px;color:var(--gray-600);"></div>
+                <div class="alert-section">
+                    <h3 class="alert-section-title">🎉 Aniversários de 1 ano (lembrar 1 semana antes) <span class="alert-count" id="alertAniversario1Count">0</span></h3>
+                    <div id="alertAniversario1"></div>
                 </div>
             </div>
         </div>
@@ -6442,13 +6458,19 @@ html += htmlPacotes;
             return d >= hoje && d <= limiteEventos;
         }).sort((a,b)=>new Date(a.data)-new Date(b.data));
 
-        if(!eventos.length) contEventos.innerHTML = '<div style="color:var(--gray-500);">Nenhum evento nos próximos 30 dias.</div>';
+        const contEventosCount = document.getElementById('alertEventosCount');
+        if (contEventosCount) { contEventosCount.textContent = eventos.length; contEventosCount.classList.toggle('has-itens', eventos.length > 0); }
+        if(!eventos.length) contEventos.innerHTML = '<div class="alert-empty">✅<div>Nenhum evento nos próximos 30 dias.</div></div>';
         else contEventos.innerHTML = eventos.map(ev=>{
             const d = new Date(ev.data);
-            return `<div style="display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:8px;background:white;">
-                <div style="flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ev.cliente || 'Cliente'}</div>
-                <div style="width:100px;flex-shrink:0;text-align:center;color:var(--gray-600)">${d.toLocaleDateString('pt-BR')}</div>
-                <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button></div>
+            const inicial = (ev.cliente || '?').trim().charAt(0).toUpperCase();
+            return `<div class="alert-item">
+                <div class="alert-avatar">${inicial}</div>
+                <div class="alert-info">
+                    <div class="alert-nome">${ev.cliente || 'Cliente'}</div>
+                    <div class="alert-data">📅 ${d.toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button></div>
             </div>`;
         }).join('');
 
@@ -6459,13 +6481,19 @@ html += htmlPacotes;
             return d >= hoje && d <= limiteDeg;
         }).sort((a,b)=>new Date(a.data)-new Date(b.data));
 
-        if(!degs.length) contDeg.innerHTML = '<div style="color:var(--gray-500);">Nenhuma degustação nos próximos 7 dias.</div>';
+        const contDegCount = document.getElementById('alertDegustacoesCount');
+        if (contDegCount) { contDegCount.textContent = degs.length; contDegCount.classList.toggle('has-itens', degs.length > 0); }
+        if(!degs.length) contDeg.innerHTML = '<div class="alert-empty">✅<div>Nenhuma degustação nos próximos 7 dias.</div></div>';
         else contDeg.innerHTML = degs.map(ev=>{
             const d = new Date(ev.data);
-            return `<div style="display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:8px;background:white;">
-                <div style="flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ev.cliente || 'Cliente'}</div>
-                <div style="width:100px;flex-shrink:0;text-align:center;color:var(--gray-600)">${d.toLocaleDateString('pt-BR')}</div>
-                <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-sm btn-secondary" onclick="degAbrirModal(${ev.id})">Abrir</button></div>
+            const inicial = (ev.cliente || '?').trim().charAt(0).toUpperCase();
+            return `<div class="alert-item">
+                <div class="alert-avatar is-deg">${inicial}</div>
+                <div class="alert-info">
+                    <div class="alert-nome">${ev.cliente || 'Cliente'}</div>
+                    <div class="alert-data">🍹 ${d.toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="degAbrirModal(${ev.id})">Abrir</button></div>
             </div>`;
         }).join('');
 
@@ -6483,13 +6511,19 @@ html += htmlPacotes;
                 return d >= hoje && d <= limiteAniv;
             }).sort((a,b)=>a.dataAniversario - b.dataAniversario);
 
-            if(!anivs.length) contAniv.innerHTML = '<div style="color:var(--gray-500);">Nenhum aniversário de 1 ano nos próximos 7 dias.</div>';
+            const contAnivCount = document.getElementById('alertAniversario1Count');
+            if (contAnivCount) { contAnivCount.textContent = anivs.length; contAnivCount.classList.toggle('has-itens', anivs.length > 0); }
+            if(!anivs.length) contAniv.innerHTML = '<div class="alert-empty">✅<div>Nenhum aniversário de 1 ano nos próximos 7 dias.</div></div>';
             else contAniv.innerHTML = anivs.map(ev=>{
                 const d = ev.dataAniversario;
-                return `<div style="display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:8px;background:white;">
-                    <div style="flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ev.cliente || 'Cliente'}</div>
-                    <div style="width:100px;flex-shrink:0;text-align:center;color:var(--gray-600)">${d.toLocaleDateString('pt-BR')}</div>
-                    <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button><button class="btn btn-sm btn-primary" onclick="enviarParabensAniversario(${ev.id})">Enviar Parabéns</button></div>
+                const inicial = (ev.cliente || '?').trim().charAt(0).toUpperCase();
+                return `<div class="alert-item">
+                    <div class="alert-avatar is-aniv">${inicial}</div>
+                    <div class="alert-info">
+                        <div class="alert-nome">${ev.cliente || 'Cliente'}</div>
+                        <div class="alert-data">🎉 ${d.toLocaleDateString('pt-BR')}</div>
+                    </div>
+                    <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button><button class="btn btn-sm btn-primary" onclick="enviarParabensAniversario(${ev.id})">Enviar Parabéns</button></div>
                 </div>`;
             }).join('');
         }
