@@ -5010,10 +5010,9 @@ html += htmlPacotes;
             relatorioRenderizar(_relatorioAtual);
         }
 
-        // Resumo geral do sistema (fora dos filtros de ano/mês): um card por módulo com a
-        // contagem e uma lista resumida dos registros (nomes), não só o número — sem virar
-        // uma tela cheia de tabelas, por isso corta em alguns itens e mostra "e mais X".
-        function relatorioMontarVisaoGeral() {
+        // Lê todos os módulos do sistema uma vez só, em formato simples (arrays de texto),
+        // pra ser reaproveitado tanto na tela quanto no CSV e no PDF do relatório.
+        function relatorioColetarDadosGerais() {
             const fornecedores = JSON.parse(localStorage.getItem('fornecedores') || '[]');
             const cerimonialistas = JSON.parse(localStorage.getItem('ddrinks_cerimonialistas') || '[]');
             const vouchers = JSON.parse(localStorage.getItem('ddrinks_vouchers') || '[]');
@@ -5031,6 +5030,24 @@ html += htmlPacotes;
             const degLista = degOrcamentosLoad();
             const degPendentesLista = degLista.filter(o => degDrinkIds(o).length > 0 && (!o.degustacao || !o.degustacao.dataDegustacao));
             const degRealizadasLista = degLista.filter(o => o.degustacao && (o.degustacao.realizado === true || (o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) < hoje)));
+
+            return {
+                fornecedores: { total: fornecedores.length, itens: fornecedores.map(f => `${f.nome || 'Sem nome'}${f.servico ? ` (${f.servico})` : ''}`) },
+                cerimonialistas: { total: cerimonialistas.length, itens: cerimonialistas.map(c => c.nome || 'Sem nome') },
+                pacotesPromo: { total: pacotesPromo.length, itens: pacotesPromo.map(p => p.nome || 'Sem nome') },
+                estoque: { total: estoque.length, itens: estoque.map(i => `${i.nome || 'Sem nome'}${i.quantidade != null ? ` — ${i.quantidade} ${i.unidade || ''}` : ''}`) },
+                vouchers: { total: vouchers.length, usados: vouchersUsados.length, itens: vouchers.map(v => `${v.codigo}${v.status === 'usado' ? ' — usado' : ' — disponível'}`) },
+                drinks: { total: totalDrinks, ativos: totalDrinks - inativos.size },
+                degRealizadas: { total: degRealizadasLista.length, itens: degRealizadasLista.map(o => `${o.cliente || 'Cliente'}${o.degustacao?.dataDegustacao ? ` — ${new Date(o.degustacao.dataDegustacao).toLocaleDateString('pt-BR')}` : ''}`) },
+                degPendentes: { total: degPendentesLista.length, itens: degPendentesLista.map(o => o.cliente || 'Cliente') }
+            };
+        }
+
+        // Resumo geral do sistema (fora dos filtros de ano/mês): um card por módulo com a
+        // contagem e uma lista resumida dos registros (nomes), não só o número — sem virar
+        // uma tela cheia de tabelas, por isso corta em alguns itens e mostra "e mais X".
+        function relatorioMontarVisaoGeral() {
+            const dados = relatorioColetarDadosGerais();
 
             const MAX_ITENS = 8;
             const listaResumo = (textos) => {
@@ -5053,14 +5070,14 @@ html += htmlPacotes;
                 <div class="card">
                     <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">Visão Geral do Sistema</h3>
                     <div class="grid grid-cols-3 gap-4">
-                        ${moduloCard('Fornecedores', fornecedores.length, fornecedores.map(f => `${f.nome || 'Sem nome'}${f.servico ? ` (${f.servico})` : ''}`))}
-                        ${moduloCard('Cerimonialistas', cerimonialistas.length, cerimonialistas.map(c => c.nome || 'Sem nome'))}
-                        ${moduloCard('Pacotes Promocionais', pacotesPromo.length, pacotesPromo.map(p => p.nome || 'Sem nome'))}
-                        ${moduloCard('Itens no Estoque', estoque.length, estoque.map(i => `${i.nome || 'Sem nome'}${i.quantidade != null ? ` — ${i.quantidade} ${i.unidade || ''}` : ''}`))}
-                        ${moduloCard(`Vouchers (${vouchersUsados.length}/${vouchers.length} usados)`, vouchers.length, vouchers.map(v => `${v.codigo}${v.status === 'usado' ? ' — usado' : ' — disponível'}`))}
-                        ${moduloCard('Drinks Cadastrados', `${totalDrinks - inativos.size}/${totalDrinks} ativos`, ['Lista completa na tela de Drinks.'])}
-                        ${moduloCard('Degustações Realizadas', degRealizadasLista.length, degRealizadasLista.map(o => `${o.cliente || 'Cliente'}${o.degustacao?.dataDegustacao ? ` — ${new Date(o.degustacao.dataDegustacao).toLocaleDateString('pt-BR')}` : ''}`))}
-                        ${moduloCard('Degustações Pendentes', degPendentesLista.length, degPendentesLista.map(o => o.cliente || 'Cliente'))}
+                        ${moduloCard('Fornecedores', dados.fornecedores.total, dados.fornecedores.itens)}
+                        ${moduloCard('Cerimonialistas', dados.cerimonialistas.total, dados.cerimonialistas.itens)}
+                        ${moduloCard('Pacotes Promocionais', dados.pacotesPromo.total, dados.pacotesPromo.itens)}
+                        ${moduloCard('Itens no Estoque', dados.estoque.total, dados.estoque.itens)}
+                        ${moduloCard(`Vouchers (${dados.vouchers.usados}/${dados.vouchers.total} usados)`, dados.vouchers.total, dados.vouchers.itens)}
+                        ${moduloCard('Drinks Cadastrados', `${dados.drinks.ativos}/${dados.drinks.total} ativos`, ['Lista completa na tela de Drinks.'])}
+                        ${moduloCard('Degustações Realizadas', dados.degRealizadas.total, dados.degRealizadas.itens)}
+                        ${moduloCard('Degustações Pendentes', dados.degPendentes.total, dados.degPendentes.itens)}
                     </div>
                 </div>
             `;
@@ -5143,6 +5160,8 @@ html += htmlPacotes;
                         <thead>
                             <tr style="border-bottom:2px solid var(--gray-200);">
                                 <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Cliente</th>
+                                <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Telefone</th>
+                                <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Local</th>
                                 <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Data</th>
                                 <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Status</th>
                                 <th style="text-align:left;padding:8px 10px;font-size:.7rem;text-transform:uppercase;color:var(--gray-500);">Pacote</th>
@@ -5160,6 +5179,8 @@ html += htmlPacotes;
                                 return `
                                 <tr style="border-bottom:1px solid var(--gray-100);">
                                     <td style="padding:7px 10px;font-weight:600;">${o.cliente || '—'}</td>
+                                    <td style="padding:7px 10px;">${o.telefone || '—'}</td>
+                                    <td style="padding:7px 10px;">${o.cidade || o.endereco || '—'}</td>
                                     <td style="padding:7px 10px;">${o.dataFormatada || formatarData(o.data)}</td>
                                     <td style="padding:7px 10px;">${STATUS_LABEL[o.status] || o.status || '—'}</td>
                                     <td style="padding:7px 10px;">${o.pacoteAceito || o.pacote || '—'}</td>
@@ -5193,7 +5214,7 @@ html += htmlPacotes;
             linhas.push(['Valor Recebido', resumo.valorRecebido.toFixed(2).replace('.', ',')]);
             linhas.push(['Valor Pendente', resumo.valorPendente.toFixed(2).replace('.', ',')]);
             linhas.push([]);
-            linhas.push(['Cliente', 'Data', 'Status', 'Pacote', 'Valor', 'Pago', 'Pendente']);
+            linhas.push(['Cliente', 'Telefone', 'Local', 'Data', 'Status', 'Pacote', 'Valor', 'Pago', 'Pendente']);
 
             const STATUS_LABEL = { aceito: 'Aceito', pendente: 'Pendente', nao_aceito: 'Não Aceito' };
             itens.forEach(o => {
@@ -5203,6 +5224,8 @@ html += htmlPacotes;
                 const pendente = Math.max(0, valor - pago);
                 linhas.push([
                     o.cliente || '',
+                    o.telefone || '',
+                    o.cidade || o.endereco || '',
                     o.dataFormatada || formatarData(o.data) || '',
                     STATUS_LABEL[o.status] || o.status || '',
                     o.pacoteAceito || o.pacote || '',
@@ -5211,6 +5234,25 @@ html += htmlPacotes;
                     aceito ? pendente.toFixed(2).replace('.', ',') : ''
                 ]);
             });
+
+            // Visão geral do resto do sistema (fornecedores, cerimonialistas, etc.)
+            const dadosGerais = relatorioColetarDadosGerais();
+            linhas.push([]);
+            linhas.push(['VISÃO GERAL DO SISTEMA']);
+            const secaoCSV = (titulo, dado) => {
+                linhas.push([]);
+                linhas.push([`${titulo} (${dado.total})`]);
+                dado.itens.forEach(txt => linhas.push(['', txt]));
+            };
+            secaoCSV('Fornecedores', dadosGerais.fornecedores);
+            secaoCSV('Cerimonialistas', dadosGerais.cerimonialistas);
+            secaoCSV('Pacotes Promocionais', dadosGerais.pacotesPromo);
+            secaoCSV('Itens no Estoque', dadosGerais.estoque);
+            secaoCSV(`Vouchers (${dadosGerais.vouchers.usados} usados)`, dadosGerais.vouchers);
+            linhas.push([]);
+            linhas.push([`Drinks Cadastrados (${dadosGerais.drinks.ativos}/${dadosGerais.drinks.total} ativos)`]);
+            secaoCSV('Degustações Realizadas', dadosGerais.degRealizadas);
+            secaoCSV('Degustações Pendentes', dadosGerais.degPendentes);
 
             const csvEscape = (v) => {
                 const s = String(v ?? '');
@@ -5318,10 +5360,10 @@ html += htmlPacotes;
                 pdf.text('Nenhum orçamento com data nesse período.', margem, y);
                 y += 6;
             } else {
-                const colsL = [margem, 70, 100, 130, 155, 175];
-                const headersL = ['Cliente', 'Data', 'Status', 'Valor', 'Pago', 'Pendente'];
+                const colsL = [margem, 48, 76, 106, 128, 148, 165, 182];
+                const headersL = ['Cliente', 'Telefone', 'Local', 'Data', 'Status', 'Valor', 'Pago', 'Pendente'];
                 pdf.setFont('helvetica', 'bold');
-                pdf.setFontSize(8.5);
+                pdf.setFontSize(7.5);
                 pdf.setTextColor(120, 120, 120);
                 headersL.forEach((h, i) => pdf.text(h, colsL[i], y));
                 y += 2;
@@ -5330,7 +5372,7 @@ html += htmlPacotes;
                 y += 5;
 
                 const STATUS_LABEL = { aceito: 'Aceito', pendente: 'Pendente', nao_aceito: 'Não Aceito' };
-                pdf.setFontSize(8.5);
+                pdf.setFontSize(7.5);
                 itens.forEach(o => {
                     novaLinhaSeNecessario(6);
                     const aceito = orcamentoFoiAceito(o);
@@ -5339,15 +5381,65 @@ html += htmlPacotes;
                     const pendente = Math.max(0, valor - pago);
                     pdf.setFont('helvetica', 'normal');
                     pdf.setTextColor(30, 30, 30);
-                    pdf.text(String(o.cliente || '—').slice(0, 28), colsL[0], y);
-                    pdf.text(o.dataFormatada || formatarData(o.data) || '—', colsL[1], y);
-                    pdf.text(STATUS_LABEL[o.status] || o.status || '—', colsL[2], y);
-                    pdf.text(aceito ? formatarValorBR(valor) : '—', colsL[3], y);
-                    pdf.text(aceito ? formatarValorBR(pago) : '—', colsL[4], y);
-                    pdf.text(aceito ? formatarValorBR(pendente) : '—', colsL[5], y);
+                    pdf.text(String(o.cliente || '—').slice(0, 16), colsL[0], y);
+                    pdf.text(String(o.telefone || '—').slice(0, 15), colsL[1], y);
+                    pdf.text(String(o.cidade || o.endereco || '—').slice(0, 15), colsL[2], y);
+                    pdf.text(o.dataFormatada || formatarData(o.data) || '—', colsL[3], y);
+                    pdf.text(STATUS_LABEL[o.status] || o.status || '—', colsL[4], y);
+                    pdf.text(aceito ? formatarValorBR(valor) : '—', colsL[5], y);
+                    pdf.text(aceito ? formatarValorBR(pago) : '—', colsL[6], y);
+                    pdf.text(aceito ? formatarValorBR(pendente) : '—', colsL[7], y);
                     y += 5.5;
                 });
             }
+
+            // ---- Visão Geral do Sistema (fornecedores, cerimonialistas, estoque, etc.) ----
+            const dadosGerais = relatorioColetarDadosGerais();
+            const imprimirSecaoGeral = (titulo, dado) => {
+                novaLinhaSeNecessario(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(11);
+                pdf.setTextColor(0, 0, 0);
+                pdf.text(`${titulo} (${dado.total})`, margem, y);
+                y += 6;
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(9);
+                pdf.setTextColor(50, 50, 50);
+                if (!dado.itens.length) {
+                    novaLinhaSeNecessario(5);
+                    pdf.text('Nenhum registro.', margem + 2, y);
+                    y += 5;
+                } else {
+                    dado.itens.forEach(txt => {
+                        novaLinhaSeNecessario(5);
+                        pdf.text(`• ${txt}`.slice(0, 95), margem + 2, y);
+                        y += 5;
+                    });
+                }
+                y += 3;
+            };
+
+            pdf.addPage();
+            y = 20;
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(14);
+            pdf.setTextColor(0, 0, 0);
+            pdf.text('Visão Geral do Sistema', margem, y);
+            y += 9;
+
+            imprimirSecaoGeral('Fornecedores', dadosGerais.fornecedores);
+            imprimirSecaoGeral('Cerimonialistas', dadosGerais.cerimonialistas);
+            imprimirSecaoGeral('Pacotes Promocionais', dadosGerais.pacotesPromo);
+            imprimirSecaoGeral('Itens no Estoque', dadosGerais.estoque);
+            imprimirSecaoGeral(`Vouchers (${dadosGerais.vouchers.usados} usados)`, dadosGerais.vouchers);
+            novaLinhaSeNecessario(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(11);
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(`Drinks Cadastrados: ${dadosGerais.drinks.ativos}/${dadosGerais.drinks.total} ativos`, margem, y);
+            y += 9;
+            imprimirSecaoGeral('Degustações Realizadas', dadosGerais.degRealizadas);
+            imprimirSecaoGeral('Degustações Pendentes', dadosGerais.degPendentes);
 
             pdf.save(`relatorio-ddrinks-${periodoTexto.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`);
             showNotification('📥 PDF baixado!', 'success');
