@@ -94,9 +94,18 @@
             color:var(--gray-900); margin:0; line-height:1.2;
         }
         .ph-sub { color:var(--gray-500); font-size:.82rem; margin-top:3px; }
-        .ph-stats { display:flex; gap:32px; margin-top:18px; padding-top:18px; border-top:1px solid var(--gray-100); flex-wrap:wrap; }
-        .ph-stat-num { font-family:'Playfair Display',Georgia,serif; font-weight:700; font-size:1.25rem; color:var(--gray-900); line-height:1; }
-        .ph-stat-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--gray-500); margin-top:5px; }
+        .ph-stats { display:flex; gap:14px; margin-top:18px; padding-top:18px; border-top:1px solid var(--gray-100); flex-wrap:wrap; }
+        .ph-stat-card {
+            flex:1; min-width:150px; display:flex; flex-direction:column; gap:6px;
+            background:var(--gray-50); border:1px solid var(--gray-100); border-radius:12px;
+            padding:14px 18px; border-left:3px solid var(--gray-300);
+        }
+        .ph-stat-card.is-aceito { border-left-color:var(--success-color); }
+        .ph-stat-card.is-pago { border-left-color:var(--warning-color); }
+        .ph-stat-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--gray-500); font-weight:700; }
+        .ph-stat-num { font-family:'Playfair Display',Georgia,serif; font-weight:700; font-size:1.4rem; color:var(--gray-900); line-height:1.1; }
+        .ph-stat-card.is-aceito .ph-stat-num { color:var(--success-color); }
+        .ph-stat-card.is-pago .ph-stat-num { color:var(--warning-color); }
         .ph-search-row { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
         .ph-search-row input, .ph-search-row select { flex:1; min-width:220px; }
 
@@ -7863,9 +7872,9 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                 valorPagoTotal += t.totalPago;
             });
             statsEl.innerHTML = `
-                <div><div class="ph-stat-num">${totalEventos}</div><div class="ph-stat-label">Evento${totalEventos !== 1 ? 's' : ''}</div></div>
-                <div><div class="ph-stat-num">${formatarValorBR(valorAceitoTotal)}</div><div class="ph-stat-label">Total Aceito</div></div>
-                <div><div class="ph-stat-num">${formatarValorBR(valorPagoTotal)}</div><div class="ph-stat-label">Total Pago</div></div>
+                <div class="ph-stat-card"><div class="ph-stat-label">Evento${totalEventos !== 1 ? 's' : ''}</div><div class="ph-stat-num">${totalEventos}</div></div>
+                <div class="ph-stat-card is-aceito"><div class="ph-stat-label">Total Aceito</div><div class="ph-stat-num">${formatarValorBR(valorAceitoTotal)}</div></div>
+                <div class="ph-stat-card is-pago"><div class="ph-stat-label">Total Pago</div><div class="ph-stat-num">${formatarValorBR(valorPagoTotal)}</div></div>
             `;
         }
 
