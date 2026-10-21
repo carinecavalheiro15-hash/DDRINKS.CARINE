@@ -2152,15 +2152,18 @@
                         </div>
                     </div>
                 </div>
-                <div style="margin-bottom:14px;">
-                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Próximas Degustações</h3>
-                    <div id="degProximas" style="margin-bottom:8px;"></div>
+                <div class="alert-section">
+                    <h3 class="alert-section-title">🕓 Faltam Realizar <span class="alert-count" id="degListaCount">0</span></h3>
+                    <div id="degLista"></div>
                 </div>
-                <div style="margin-bottom:14px;">
-                    <h3 style="margin:0 0 8px 0;font-size:1rem;font-weight:700;color:var(--gray-800);">Degustações Realizadas</h3>
-                    <div id="degRealizadas" style="margin-bottom:8px;color:var(--gray-600);"></div>
+                <div class="alert-section">
+                    <h3 class="alert-section-title">✅ Degustações Realizadas <span class="alert-count" id="degRealizadasCount">0</span></h3>
+                    <div id="degRealizadas"></div>
                 </div>
-                <div id="degLista"></div>
+                <div class="alert-section">
+                    <h3 class="alert-section-title">📅 Próximas Degustações <span class="alert-count" id="degProximasCount">0</span></h3>
+                    <div id="degProximas"></div>
+                </div>
             </div>
         </div>
         <!-- FIM PÁGINA DEGUSTAÇÃO -->
@@ -2181,7 +2184,7 @@
                 .alert-info { flex:1; min-width:0; }
                 .alert-nome { font-weight:700; color:var(--gray-900); font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
                 .alert-data { font-size:.8rem; color:var(--gray-500); margin-top:2px; }
-                .alert-actions { display:flex; gap:6px; flex-shrink:0; }
+                .alert-actions { display:flex; gap:6px; flex-shrink:0; align-items:center; flex-wrap:wrap; }
             </style>
             <div class="deg-wrap">
                 <div class="ph-card">
@@ -6377,7 +6380,9 @@ html += htmlPacotes;
         degRenderProximas();
         degRenderRealizadas();
         const cont = document.getElementById('degLista');
-        if (!lista.length) { cont.innerHTML = '<div class="deg-empty">🍹 Nenhum orçamento pendente de agendamento. Use o botão "Agendar Degustação" nos orçamentos para marcar uma data.</div>'; return; }
+        const contListaCount = document.getElementById('degListaCount');
+        if (contListaCount) { contListaCount.textContent = lista.length; contListaCount.classList.toggle('has-itens', lista.length > 0); }
+        if (!lista.length) { cont.innerHTML = '<div class="alert-empty">🍹<div>Nenhum orçamento pendente de agendamento. Use o botão "Agendar Degustação" nos orçamentos para marcar uma data.</div></div>'; return; }
         cont.innerHTML = lista.map(o => {
             const ids = degDrinkIds(o);
             const deg = (o.degustacao && o.degustacao.drinks) || {};
@@ -6389,14 +6394,16 @@ html += htmlPacotes;
             else if (revisados > 0 && revisados === ids.length) { badgeCls = 'completo'; badgeTxt = `✅ ${revisados}/${ids.length} revisados`; }
             else if (revisados > 0) { badgeCls = 'parcial'; badgeTxt = `⏳ ${revisados}/${ids.length} revisados`; }
             const hasDate = !!(o.degustacao && o.degustacao.dataDegustacao);
-            return `<div class="deg-list-card" onclick="degAbrirModal(${o.id})">
-                <div>
-                    <div class="deg-list-cliente">${o.cliente || 'Cliente'}</div>
-                    <div class="deg-list-meta">${o.dataFormatada || o.data || ''} · ${ids.length} drink(s)</div>
+            const inicial = (o.cliente || '?').trim().charAt(0).toUpperCase();
+            return `<div class="alert-item" style="cursor:pointer;" onclick="degAbrirModal(${o.id})">
+                <div class="alert-avatar">${inicial}</div>
+                <div class="alert-info">
+                    <div class="alert-nome">${o.cliente || 'Cliente'}</div>
+                    <div class="alert-data">${o.dataFormatada || o.data || ''} · ${ids.length} drink(s)</div>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center;">
+                <div class="alert-actions">
                     <span class="deg-progress-badge ${badgeCls}">${badgeTxt}</span>
-                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); degAgendarInline(${o.id});">📅 Agendar Degustação</button>
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); degAgendarInline(${o.id});">📅 Agendar</button>
                     ${hasDate ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); degExcluirAgendamento(${o.id});">🗑 Excluir</button>` : ''}
                 </div>
             </div>`;
@@ -6408,15 +6415,21 @@ html += htmlPacotes;
         if(!cont) return;
         const todayStart = new Date(); todayStart.setHours(0,0,0,0);
         const lista = degOrcamentosLoad().filter(o => o.degustacao && o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) >= todayStart).map(o=>({id:o.id, cliente:o.cliente, data:o.degustacao.dataDegustacao}));
-        if(!lista.length){ cont.innerHTML = '<div style="color:var(--gray-500);">Nenhuma degustação agendada.</div>'; return; }
+        const contProximasCount = document.getElementById('degProximasCount');
+        if (contProximasCount) { contProximasCount.textContent = lista.length; contProximasCount.classList.toggle('has-itens', lista.length > 0); }
+        if(!lista.length){ cont.innerHTML = '<div class="alert-empty">📅<div>Nenhuma degustação agendada.</div></div>'; return; }
         // sort ascending
         lista.sort((a,b)=> new Date(a.data) - new Date(b.data));
         const proximas = lista.slice(0,6).map(it=>{
             const d = new Date(it.data);
-            return `<div style="display:flex;align-items:center;gap:12px;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:white;">
-                <div style="flex:1;min-width:0;font-size:.9rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.cliente || 'Cliente'}</div>
-                <div style="width:90px;flex-shrink:0;text-align:center;font-size:.85rem;color:var(--gray-600);">${d.toLocaleDateString('pt-BR')}</div>
-                <div style="display:flex;gap:6px;flex-shrink:0;">
+            const inicial = (it.cliente || '?').trim().charAt(0).toUpperCase();
+            return `<div class="alert-item">
+                <div class="alert-avatar is-deg">${inicial}</div>
+                <div class="alert-info">
+                    <div class="alert-nome">${it.cliente || 'Cliente'}</div>
+                    <div class="alert-data">📅 ${d.toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div class="alert-actions">
                     <button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button>
                     <button class="btn btn-sm btn-danger" onclick="degExcluirAgendamento(${it.id})">🗑 Excluir</button>
                 </div>
@@ -6430,14 +6443,20 @@ html += htmlPacotes;
         if(!cont) return;
         const todayStart = new Date(); todayStart.setHours(0,0,0,0);
         const lista = degOrcamentosLoad().filter(o => o.degustacao && (o.degustacao.realizado === true || (o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) < todayStart)) ).map(o=>({id:o.id, cliente:o.cliente, data:o.degustacao.dataDegustacao, realizado:o.degustacao.realizado}));
-        if(!lista.length){ cont.innerHTML = '<div style="color:var(--gray-500);">Nenhuma degustação realizada ainda.</div>'; return; }
+        const contRealizadasCount = document.getElementById('degRealizadasCount');
+        if (contRealizadasCount) { contRealizadasCount.textContent = lista.length; contRealizadasCount.classList.toggle('has-itens', lista.length > 0); }
+        if(!lista.length){ cont.innerHTML = '<div class="alert-empty">✅<div>Nenhuma degustação realizada ainda.</div></div>'; return; }
         lista.sort((a,b)=> new Date(b.data || 0) - new Date(a.data || 0));
         const html = lista.slice(0,10).map(it=>{
             const d = it.data ? new Date(it.data) : null;
-            return `<div style="display:flex;align-items:center;gap:12px;padding:8px 10px;border:1px solid var(--gray-100);border-radius:8px;margin-bottom:6px;background:#f8fafc;">
-                <div style="flex:1;min-width:0;font-size:.9rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.cliente || 'Cliente'}</div>
-                <div style="width:90px;flex-shrink:0;text-align:center;font-size:.85rem;color:var(--gray-600);">${d?d.toLocaleDateString('pt-BR'):'--'}</div>
-                <div style="display:flex;gap:6px;flex-shrink:0;"><button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button></div>
+            const inicial = (it.cliente || '?').trim().charAt(0).toUpperCase();
+            return `<div class="alert-item">
+                <div class="alert-avatar is-aniv">${inicial}</div>
+                <div class="alert-info">
+                    <div class="alert-nome">${it.cliente || 'Cliente'}</div>
+                    <div class="alert-data">✅ ${d?d.toLocaleDateString('pt-BR'):'--'}</div>
+                </div>
+                <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="degAbrirFromProxima(${it.id})">Abrir</button></div>
             </div>`;
         }).join('');
         cont.innerHTML = html;
