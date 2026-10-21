@@ -2766,16 +2766,42 @@
                     </div>
                 </div>
 
-                <!-- Cards de Clientes Aceitos -->
-                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 1rem;">📋 Clientes com Orçamentos Aceitos</h3>
-                <div class="form-group" style="max-width:420px;margin-bottom:1.5rem;">
-                    <input type="text" id="financeiroFiltroTexto" class="form-input" placeholder="Buscar por nome ou telefone do cliente..." oninput="carregarFinanceiro()" />
+                <!-- Dashboard: Pacotes Mais Fechados -->
+                <div class="card mb-6">
+                    <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                        <h3 class="card-title"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:18px;height:18px;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
+                                        <path d="M12 12v9M12 12L4 7.5M12 12l8-4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>Pacotes Mais Fechados</h3>
+                        <p class="card-subtitle">Quantidade de orçamentos aceitos em cada pacote (Bronze, Prata, Ouro)</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div style="grid-column: span 2; height: 260px; position: relative;">
+                            <canvas id="chartPacotesFechados"></canvas>
+                        </div>
+                        <div id="pacotesFechadosLista" style="align-self:center;"></div>
+                    </div>
                 </div>
-                <div id="clientes-aceitos-container" style="display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <div class="empty-state-icon">💳</div>
-                        <div class="empty-state-title">Nenhum cliente com orçamento aceito</div>
-                        <div class="empty-state-text">Quando clientes aceitarem orçamentos, eles aparecerão aqui</div>
+
+                <!-- Dashboard: Formas de Pagamento -->
+                <div class="card mb-6">
+                    <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                        <h3 class="card-title"><span class="section-icon" aria-hidden="true" style="vertical-align:middle;margin-right:8px;display:inline-block;width:18px;height:18px;">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                        <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                                        <path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                        <circle cx="12" cy="15" r="2" fill="currentColor"/>
+                                    </svg>
+                                </span>Formas de Pagamento</h3>
+                        <p class="card-subtitle">Valor recebido por forma de pagamento (PIX, dinheiro, cartão etc.)</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div style="grid-column: span 2; height: 260px; position: relative;">
+                            <canvas id="chartFormasPagamento"></canvas>
+                        </div>
+                        <div id="formasPagamentoLista" style="align-self:center;"></div>
                     </div>
                 </div>
             </div>
@@ -3991,6 +4017,8 @@ html += htmlPacotes;
         let chartEventosAnoInstance = null;
         let chartRecebidoAnoAgendaInstance = null;
         let chartLucroAnoInstance = null;
+        let chartPacotesFechadosInstance = null;
+        let chartFormasPagamentoInstance = null;
 
         const monthNames = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -5446,156 +5474,12 @@ html += htmlPacotes;
         }
         // ==================== FIM RELATÓRIOS ====================
 
-        // Controla quais painéis de "Gastos deste Evento" estão abertos — fica fora do
-        // card pra não fechar sozinho quando o card é reconstruído (ex: ao adicionar pagamento).
-        const gastosPaineisAbertos = new Set();
-        function toggleGastosPainel(orcamentoId) {
-            if (gastosPaineisAbertos.has(orcamentoId)) gastosPaineisAbertos.delete(orcamentoId);
-            else gastosPaineisAbertos.add(orcamentoId);
-            carregarFinanceiro();
-        }
-
+        // Gastos por evento são lançados direto no detalhe do cliente (tela Eventos) — ver
+        // clienteSalvarGasto/clienteExcluirGasto. Esse atalho só leva até lá.
         function abrirGastosEvento(orcamentoId) {
             const orcamento = orcamentos.find(o => o.id === orcamentoId);
             if (!orcamento || !orcamentoFoiAceito(orcamento)) return;
-
-            gastosPaineisAbertos.add(orcamentoId);
-            const filtro = document.getElementById('financeiroFiltroTexto');
-            if (filtro) filtro.value = orcamento.cliente || '';
-            showPage('financeiro');
-        }
-
-        function montarCardFinanceiro(orc) {
-            const pagamentos = obterListaPagamentos(orc);
-            const valorTotal = Number(orc.valor) || 0;
-            const valorPago = calcularTotalPago(orc);
-            const valorRestante = valorTotal - valorPago;
-            const percentualPago = valorTotal > 0 ? Math.min(100, (valorPago / valorTotal) * 100) : 0;
-
-            const gastos = obterListaGastos(orc);
-            const totalGastos = calcularTotalGastos(orc);
-            const lucro = valorTotal - totalGastos;
-            const gastosPainelAberto = gastosPaineisAbertos.has(orc.id);
-
-            const historicoHtml = !pagamentos.length ? `
-                <div style="font-size:.8rem;color:var(--gray-500);padding:8px 4px;">Nenhum pagamento registrado ainda.</div>
-            ` : pagamentos.map((p, idx) => `
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--gray-100);font-size:.85rem;">
-                    <div>
-                        <div style="font-weight:600;color:var(--gray-900);">${({ dinheiro: '💵', pix: '📱', credito: '💳', debito: '🏦', cheque: '📄', transferencia: '🏧' }[p.forma] || '💰')} ${formatarValorBR(Number(p.valor) || 0)}</div>
-                        <div style="color:var(--gray-500);font-size:.75rem;">${p.data ? new Date(p.data).toLocaleDateString('pt-BR') : '—'}${p.observacoes ? ' · ' + p.observacoes : ''}</div>
-                    </div>
-                    <button class="btn btn-sm btn-danger" onclick="excluirPagamento(${orc.id}, ${idx})" title="Excluir pagamento">🗑️</button>
-                </div>
-            `).join('');
-
-            const gastosHtml = !gastos.length ? `
-                <div style="font-size:.8rem;color:var(--gray-500);padding:8px 4px;">Nenhum gasto registrado ainda.</div>
-            ` : gastos.map((g, idx) => `
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--gray-100);font-size:.85rem;">
-                    <div>
-                        <div style="font-weight:600;color:var(--gray-900);">${CATEGORIAS_GASTO[g.categoria] || '📦 Outros'} — ${formatarValorBR(Number(g.valor) || 0)}</div>
-                        <div style="color:var(--gray-500);font-size:.75rem;">${g.data ? new Date(g.data).toLocaleDateString('pt-BR') : '—'}${g.descricao ? ' · ' + g.descricao : ''}</div>
-                    </div>
-                    <button class="btn btn-sm btn-danger" onclick="excluirGasto(${orc.id}, ${idx})" title="Excluir gasto">🗑️</button>
-                </div>
-            `).join('');
-
-            return `
-                <div class="card" style="border-left: 4px solid var(--primary-color); padding: 1.5rem;">
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="font-size: 1.125rem; font-weight: 700; color: var(--gray-900); margin: 0 0 0.25rem 0;">${orc.cliente}</h4>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.875rem; color: var(--gray-600);">
-                            <span>📞 ${orc.telefone}</span>
-                            <span>📅 ${orc.dataFormatada || formatarData(orc.data)}</span>
-                            <span>👥 ${orc.quantidadeConvidados} convidados</span>
-                        </div>
-                    </div>
-
-                    <div style="background: var(--gray-50); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <span style="font-weight: 600; color: var(--gray-700);">Valor Total:</span>
-                            <span style="font-size: 1.25rem; font-weight: 700; color: var(--success-color);">${formatarValorBR(valorTotal)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span style="color: var(--gray-600);">Pago (${pagamentos.length} pagamento${pagamentos.length === 1 ? '' : 's'}):</span>
-                            <span style="color: var(--success-color); font-weight: 600;">${formatarValorBR(valorPago)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: var(--gray-600);">Restante:</span>
-                            <span style="color: ${valorRestante > 0 ? 'var(--warning-color)' : 'var(--success-color)'}; font-weight: 600;">${formatarValorBR(Math.max(0, valorRestante))}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--gray-300);">
-                            <span style="color: var(--gray-600);">Gastos (${gastos.length}):</span>
-                            <span style="color: var(--error-color); font-weight: 600;">- ${formatarValorBR(totalGastos)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
-                            <span style="color: var(--gray-700); font-weight: 700;">Lucro do Evento:</span>
-                            <span style="color: ${lucro >= 0 ? 'var(--success-color)' : 'var(--error-color)'}; font-weight: 700; font-size: 1.05rem;">${formatarValorBR(lucro)}</span>
-                        </div>
-                        <div style="margin-top: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.75rem;">
-                                <span>Progresso: ${percentualPago.toFixed(0)}%</span>
-                            </div>
-                            <div style="width: 100%; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
-                                <div style="height: 100%; width: ${percentualPago}%; background: ${percentualPago >= 100 ? 'var(--success-color)' : 'var(--warning-color)'}; transition: width 0.3s ease;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <label style="font-weight: 600; color: var(--gray-700); display: block; margin-bottom: 0.5rem;">Histórico de Pagamentos:</label>
-                    <div style="background:white;border:1px solid var(--gray-200);border-radius:0.5rem;padding:2px 12px;margin-bottom:1rem;">
-                        ${historicoHtml}
-                    </div>
-
-                    <div>
-                        <label style="font-weight: 600; color: var(--gray-700); display: block; margin-bottom: 0.5rem;">Adicionar Pagamento:</label>
-                        <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.75rem;">
-                            <select id="forma-pagamento-${orc.id}" class="form-input">
-                                <option value="">Forma de pagamento...</option>
-                                <option value="dinheiro">💵 Dinheiro</option>
-                                <option value="pix">📱 PIX</option>
-                                <option value="credito">💳 Crédito</option>
-                                <option value="debito">🏦 Débito</option>
-                                <option value="cheque">📄 Cheque</option>
-                                <option value="transferencia">🏧 Transferência</option>
-                            </select>
-                            <input type="date" id="data-pagamento-${orc.id}" class="form-input" value="${new Date().toISOString().slice(0, 10)}" />
-                        </div>
-                        <input type="number" id="valor-pago-${orc.id}" class="form-input" placeholder="Valor pago (R$)" step="0.01" style="margin-bottom: 0.75rem;">
-                        <textarea id="obs-pagamento-${orc.id}" class="form-input" placeholder="Observações (opcional)..." style="resize: vertical; min-height: 50px; margin-bottom: 0.75rem;"></textarea>
-                        <button onclick="salvarPagamento(${orc.id})" class="btn btn-success" style="background: var(--success-color); color: white; width: 100%; font-weight: 600;">
-                            ✓ Adicionar Pagamento
-                        </button>
-                    </div>
-
-                    <button onclick="toggleGastosPainel(${orc.id})" class="btn btn-secondary" style="width: 100%; font-weight: 600; margin-top: 0.5rem;">
-                        ${gastosPainelAberto ? '▲' : '▼'} Adicionar/Ver Gastos deste Evento (${gastos.length})
-                    </button>
-                    <div style="display: ${gastosPainelAberto ? 'block' : 'none'}; margin-top: 1rem;">
-                        <label style="font-weight: 600; color: var(--gray-700); display: block; margin-bottom: 0.5rem;">Histórico de Gastos:</label>
-                        <div style="background:white;border:1px solid var(--gray-200);border-radius:0.5rem;padding:2px 12px;margin-bottom:1rem;">
-                            ${gastosHtml}
-                        </div>
-
-                        <div>
-                            <label style="font-weight: 600; color: var(--gray-700); display: block; margin-bottom: 0.5rem;">Adicionar Gasto:</label>
-                            <div class="grid grid-cols-2 gap-4" style="margin-bottom: 0.75rem;">
-                                <select id="categoria-gasto-${orc.id}" class="form-input">
-                                    <option value="">Categoria...</option>
-                                    ${Object.entries(CATEGORIAS_GASTO).map(([chave, label]) => `<option value="${chave}">${label}</option>`).join('')}
-                                </select>
-                                <input type="date" id="data-gasto-${orc.id}" class="form-input" value="${new Date().toISOString().slice(0, 10)}" />
-                            </div>
-                            <input type="number" id="valor-gasto-${orc.id}" class="form-input" placeholder="Valor gasto (R$)" step="0.01" style="margin-bottom: 0.75rem;">
-                            <textarea id="obs-gasto-${orc.id}" class="form-input" placeholder="Descrição (opcional)..." style="resize: vertical; min-height: 50px; margin-bottom: 0.75rem;"></textarea>
-                            <button onclick="salvarGasto(${orc.id})" class="btn btn-danger" style="width: 100%; font-weight: 600;">
-                                ✓ Adicionar Gasto
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
+            abrirClientePorOrcamentoId(orcamentoId);
         }
 
         // Soma todos os pagamentos já registrados (de qualquer orçamento), agrupados pelo
@@ -5720,6 +5604,110 @@ html += htmlPacotes;
             });
         }
 
+        const PACOTE_CORES = { bronze: 'rgba(180, 115, 60, 0.85)', prata: 'rgba(148, 163, 184, 0.85)', ouro: 'rgba(245, 196, 81, 0.9)' };
+        const PACOTE_LABEL = { bronze: 'Bronze', prata: 'Prata', ouro: 'Ouro' };
+
+        function atualizarGraficoPacotesFechados() {
+            const ctx = document.getElementById('chartPacotesFechados');
+            if (!ctx) return;
+
+            const contagem = { bronze: 0, prata: 0, ouro: 0 };
+            orcamentos.filter(orcamentoFoiAceito).forEach(orc => {
+                const pacote = (orc.pacoteAceito || orc.pacote || '').toLowerCase();
+                if (contagem[pacote] != null) contagem[pacote]++;
+            });
+            const totalFechados = contagem.bronze + contagem.prata + contagem.ouro;
+            const pacotesComDado = Object.keys(contagem).filter(p => contagem[p] > 0);
+
+            const listaEl = document.getElementById('pacotesFechadosLista');
+            if (listaEl) {
+                listaEl.innerHTML = !totalFechados ? `
+                    <div style="font-size:.8rem;color:var(--gray-500);">Nenhum pacote fechado ainda.</div>
+                ` : ['ouro', 'prata', 'bronze'].map(p => `
+                    <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:.85rem;">
+                        <span style="font-weight:600;color:var(--gray-700);">${PACOTE_LABEL[p]}</span>
+                        <span style="font-weight:700;">${contagem[p]} ${contagem[p] === 1 ? 'orçamento' : 'orçamentos'} (${totalFechados ? Math.round(contagem[p] / totalFechados * 100) : 0}%)</span>
+                    </div>
+                `).join('');
+            }
+
+            if (chartPacotesFechadosInstance) chartPacotesFechadosInstance.destroy();
+            if (!totalFechados) return;
+            chartPacotesFechadosInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: pacotesComDado.map(p => PACOTE_LABEL[p]),
+                    datasets: [{
+                        data: pacotesComDado.map(p => contagem[p]),
+                        backgroundColor: pacotesComDado.map(p => PACOTE_CORES[p]),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // Soma o valor efetivamente pago (não o total do orçamento) agrupado pela forma de
+        // pagamento usada em cada parcela — dá pra ver se o cliente paga mais via PIX, cartão, etc.
+        function atualizarGraficoFormasPagamento() {
+            const ctx = document.getElementById('chartFormasPagamento');
+            if (!ctx) return;
+
+            const LABEL_FORMA = { dinheiro: '💵 Dinheiro', pix: '📱 PIX', credito: '💳 Crédito', debito: '🏦 Débito', cheque: '📄 Cheque', transferencia: '🏧 Transferência' };
+            const CORES_FORMA = { dinheiro: 'rgba(16, 185, 129, 0.85)', pix: 'rgba(56, 189, 248, 0.85)', credito: 'rgba(239, 68, 68, 0.85)', debito: 'rgba(168, 85, 247, 0.85)', cheque: 'rgba(245, 158, 11, 0.85)', transferencia: 'rgba(100, 116, 139, 0.85)' };
+
+            const totaisPorForma = {};
+            orcamentos.filter(orcamentoFoiAceito).forEach(orc => {
+                obterListaPagamentos(orc).forEach(p => {
+                    if (!p.forma) return;
+                    totaisPorForma[p.forma] = (totaisPorForma[p.forma] || 0) + (Number(p.valor) || 0);
+                });
+            });
+            const formas = Object.keys(totaisPorForma).sort((a, b) => totaisPorForma[b] - totaisPorForma[a]);
+            const totalGeral = formas.reduce((s, f) => s + totaisPorForma[f], 0);
+
+            const listaEl = document.getElementById('formasPagamentoLista');
+            if (listaEl) {
+                listaEl.innerHTML = !formas.length ? `
+                    <div style="font-size:.8rem;color:var(--gray-500);">Nenhum pagamento registrado ainda.</div>
+                ` : formas.map(f => `
+                    <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:.85rem;">
+                        <span style="font-weight:600;color:var(--gray-700);">${LABEL_FORMA[f] || f}</span>
+                        <span style="color:var(--success-color);font-weight:700;">${formatarValorBR(totaisPorForma[f])}</span>
+                    </div>
+                `).join('');
+            }
+
+            if (chartFormasPagamentoInstance) chartFormasPagamentoInstance.destroy();
+            if (!formas.length) return;
+            chartFormasPagamentoInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: formas.map(f => LABEL_FORMA[f] || f),
+                    datasets: [{
+                        data: formas.map(f => totaisPorForma[f]),
+                        backgroundColor: formas.map(f => CORES_FORMA[f] || 'rgba(148, 163, 184, 0.85)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { label: (item) => `${item.label}: ${formatarValorBR(item.parsed)} (${totalGeral ? Math.round(item.parsed / totalGeral * 100) : 0}%)` } }
+                    }
+                }
+            });
+        }
+
+        // Atualiza os indicadores e gráficos do Financeiro. Pagamentos e gastos por evento
+        // são lançados na tela Eventos (clienteSalvarPagamento/clienteSalvarGasto) — aqui só
+        // consolida os números pra dashboard.
         function carregarFinanceiro() {
             const orcamentosSalvos = localStorage.getItem('orcamentos');
             if (orcamentosSalvos) {
@@ -5727,9 +5715,7 @@ html += htmlPacotes;
             }
 
             const aceitos = orcamentos.filter(orcamentoFoiAceito);
-            const container = document.getElementById('clientes-aceitos-container');
 
-            // Calcula estatísticas
             let totalAceito = 0;
             let totalRecebido = 0;
             let totalPendente = 0;
@@ -5742,7 +5728,6 @@ html += htmlPacotes;
                 totalPendente += valorTotal - pago;
             });
 
-            // Atualiza estatísticas
             document.getElementById('total-valor-aceito').textContent = formatarValorBR(totalAceito);
             document.getElementById('valor-pendente-pagamento').textContent = formatarValorBR(totalPendente);
             document.getElementById('valor-recebido').textContent = formatarValorBR(totalRecebido);
@@ -5750,140 +5735,9 @@ html += htmlPacotes;
             setTimeout(() => {
                 atualizarGraficoRecebidoPorAno();
                 atualizarGraficoLucroPorAno();
+                atualizarGraficoPacotesFechados();
+                atualizarGraficoFormasPagamento();
             }, 100);
-
-            if (aceitos.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <div class="empty-state-icon">💳</div>
-                        <div class="empty-state-title">Nenhum cliente com orçamento aceito</div>
-                        <div class="empty-state-text">Quando clientes aceitarem orçamentos, eles aparecerão aqui</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const filtro = (document.getElementById('financeiroFiltroTexto')?.value || '').trim().toLowerCase();
-            const aceitosFiltrados = !filtro ? aceitos : aceitos.filter(o =>
-                (o.cliente || '').toLowerCase().includes(filtro) || (o.telefone || '').includes(filtro)
-            );
-
-            if (!aceitosFiltrados.length) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <div class="empty-state-icon">🔍</div>
-                        <div class="empty-state-title">Nenhum cliente encontrado</div>
-                        <div class="empty-state-text">Tente buscar por outro nome ou telefone</div>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = aceitosFiltrados.map(orc => montarCardFinanceiro(orc)).join('');
-        }
-
-        function salvarPagamento(orcamentoId) {
-            const orcamento = orcamentos.find(o => o.id === orcamentoId);
-            if (!orcamento) {
-                showNotification('Orçamento não encontrado!', 'error');
-                return;
-            }
-
-            const forma = document.getElementById(`forma-pagamento-${orcamentoId}`).value;
-            const valor = parseFloat(document.getElementById(`valor-pago-${orcamentoId}`).value) || 0;
-            const dataInput = document.getElementById(`data-pagamento-${orcamentoId}`).value;
-            const observacoes = document.getElementById(`obs-pagamento-${orcamentoId}`).value.trim();
-
-            if (!forma) {
-                showNotification('Selecione uma forma de pagamento!', 'warning');
-                return;
-            }
-            if (valor <= 0) {
-                showNotification('Digite um valor válido!', 'warning');
-                return;
-            }
-
-            const pagamentos = obterListaPagamentos(orcamento);
-            const totalJaPago = pagamentos.reduce((soma, p) => soma + (Number(p.valor) || 0), 0);
-            if (totalJaPago + valor > Number(orcamento.valor) + 0.01) {
-                showNotification(`Esse pagamento deixaria o total pago (${formatarValorBR(totalJaPago + valor)}) maior que o valor do orçamento (${formatarValorBR(Number(orcamento.valor))})!`, 'warning');
-                return;
-            }
-
-            pagamentos.push({
-                valor,
-                forma,
-                observacoes,
-                data: dataInput ? new Date(dataInput + 'T12:00:00').toISOString() : new Date().toISOString()
-            });
-            orcamento.pagamentos = pagamentos;
-
-            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
-            carregarFinanceiro();
-            clienteReabrirDetalheAtual();
-            showNotification('Pagamento adicionado com sucesso! ✓', 'success');
-        }
-
-        function excluirPagamento(orcamentoId, indice) {
-            const orcamento = orcamentos.find(o => o.id === orcamentoId);
-            if (!orcamento) return;
-            const pagamentos = obterListaPagamentos(orcamento);
-            if (!pagamentos[indice]) return;
-            if (!confirm('Excluir este pagamento? Essa ação não pode ser desfeita.')) return;
-            pagamentos.splice(indice, 1);
-            orcamento.pagamentos = pagamentos;
-            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
-            carregarFinanceiro();
-            clienteReabrirDetalheAtual();
-            showNotification('Pagamento excluído.', 'warning');
-        }
-
-        function salvarGasto(orcamentoId) {
-            const orcamento = orcamentos.find(o => o.id === orcamentoId);
-            if (!orcamento) {
-                showNotification('Orçamento não encontrado!', 'error');
-                return;
-            }
-
-            const categoria = document.getElementById(`categoria-gasto-${orcamentoId}`).value;
-            const valor = parseFloat(document.getElementById(`valor-gasto-${orcamentoId}`).value) || 0;
-            const dataInput = document.getElementById(`data-gasto-${orcamentoId}`).value;
-            const descricao = document.getElementById(`obs-gasto-${orcamentoId}`).value.trim();
-
-            if (!categoria) {
-                showNotification('Selecione uma categoria de gasto!', 'warning');
-                return;
-            }
-            if (valor <= 0) {
-                showNotification('Digite um valor válido!', 'warning');
-                return;
-            }
-
-            const gastos = obterListaGastos(orcamento);
-            gastos.push({
-                categoria,
-                valor,
-                descricao,
-                data: dataInput ? new Date(dataInput + 'T12:00:00').toISOString() : new Date().toISOString()
-            });
-            orcamento.gastos = gastos;
-
-            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
-            carregarFinanceiro();
-            showNotification('Gasto adicionado com sucesso! ✓', 'success');
-        }
-
-        function excluirGasto(orcamentoId, indice) {
-            const orcamento = orcamentos.find(o => o.id === orcamentoId);
-            if (!orcamento) return;
-            const gastos = obterListaGastos(orcamento);
-            if (!gastos[indice]) return;
-            if (!confirm('Excluir este gasto? Essa ação não pode ser desfeita.')) return;
-            gastos.splice(indice, 1);
-            orcamento.gastos = gastos;
-            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
-            carregarFinanceiro();
-            showNotification('Gasto excluído.', 'warning');
         }
 
         // Sistema de notificações
