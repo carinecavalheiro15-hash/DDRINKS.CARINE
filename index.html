@@ -2673,17 +2673,18 @@
 
         <!-- Página de Financeiro -->
         <div id="financeiro-page" class="page">
-            <div class="card" style="max-width:1200px;margin:0 auto 2rem;">
-                <div class="ph-top" style="margin-bottom:1.5rem;">
-                    <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/></svg></div>
-                    <div>
-                        <h2 class="ph-titulo">Financeiro</h2>
-                        <p class="ph-sub">Gerencie pagamentos e formas de pagamento dos clientes</p>
+            <div class="page-wrap" style="padding-bottom:0;">
+                <div class="ph-card">
+                    <div class="ph-top">
+                        <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M2 9h20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" fill="currentColor"/></svg></div>
+                        <div>
+                            <h2 class="ph-titulo">Financeiro</h2>
+                            <p class="ph-sub">Gerencie pagamentos e formas de pagamento dos clientes</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Estatísticas Financeiras -->
-                <div class="ph-stats" style="margin-top:0;padding-top:0;border-top:none;margin-bottom:1.5rem;">
+                    <!-- Estatísticas Financeiras -->
+                    <div class="ph-stats">
                     <div class="ph-stat-card is-aceito">
                         <div class="ph-stat-label">Total Aceito</div>
                         <div class="ph-stat-num" id="total-valor-aceito">R$ 0,00</div>
@@ -2696,8 +2697,10 @@
                         <div class="ph-stat-label">Total Recebido</div>
                         <div class="ph-stat-num" id="valor-recebido">R$ 0,00</div>
                     </div>
+                    </div>
                 </div>
-
+            </div>
+            <div class="page-wrap" style="padding-top:0;">
                 <!-- Dashboard: Recebido por Ano -->
                 <div class="card mb-6">
                     <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
@@ -2751,6 +2754,7 @@
                         <div class="empty-state-text">Quando clientes aceitarem orçamentos, eles aparecerão aqui</div>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
