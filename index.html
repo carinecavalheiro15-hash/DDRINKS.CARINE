@@ -6499,13 +6499,12 @@ html += htmlPacotes;
         if (contEventosCount) { contEventosCount.textContent = eventos.length; contEventosCount.classList.toggle('has-itens', eventos.length > 0); }
         if(!eventos.length) contEventos.innerHTML = `<div class="alert-empty">${ICONE_MINI_CHECK}<div>Nenhum evento nos próximos 30 dias.</div></div>`;
         else contEventos.innerHTML = eventos.map(ev=>{
-            const d = new Date(ev.data);
             const inicial = (ev.cliente || '?').trim().charAt(0).toUpperCase();
             return `<div class="alert-item">
                 <div class="alert-avatar">${inicial}</div>
                 <div class="alert-info">
                     <div class="alert-nome">${ev.cliente || 'Cliente'}</div>
-                    <div class="alert-data">${ICONE_MINI_CALENDARIO}${d.toLocaleDateString('pt-BR')}</div>
+                    <div class="alert-data">${ICONE_MINI_CALENDARIO}${formatarData(ev.data)}</div>
                 </div>
                 <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button></div>
             </div>`;
@@ -6527,13 +6526,12 @@ html += htmlPacotes;
             if (contPagCount) { contPagCount.textContent = pendentes.length; contPagCount.classList.toggle('has-itens', pendentes.length > 0); }
             if (!pendentes.length) contPag.innerHTML = `<div class="alert-empty">${ICONE_MINI_CHECK}<div>Nenhum pagamento pendente para eventos próximos.</div></div>`;
             else contPag.innerHTML = pendentes.map(ev => {
-                const d = new Date(ev.data);
                 const inicial = (ev.cliente || '?').trim().charAt(0).toUpperCase();
                 return `<div class="alert-item">
                     <div class="alert-avatar">${inicial}</div>
                     <div class="alert-info">
                         <div class="alert-nome">${ev.cliente || 'Cliente'}</div>
-                        <div class="alert-data">${ICONE_MINI_CALENDARIO}${d.toLocaleDateString('pt-BR')} · ${ICONE_MINI_CARTEIRA}Falta ${formatarValorBR(ev.restante)}</div>
+                        <div class="alert-data">${ICONE_MINI_CALENDARIO}${formatarData(ev.data)} · ${ICONE_MINI_CARTEIRA}Falta ${formatarValorBR(ev.restante)}</div>
                     </div>
                     <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button></div>
                 </div>`;
