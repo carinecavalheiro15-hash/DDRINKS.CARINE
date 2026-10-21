@@ -5010,9 +5010,10 @@ html += htmlPacotes;
             relatorioRenderizar(_relatorioAtual);
         }
 
-        // Resumo geral do sistema (fora dos filtros de ano/mês): um número por módulo,
-        // só pra dar uma visão de tudo sem virar uma tela cheia de tabelas.
-        function relatorioMontarVisaoGeral(statCard) {
+        // Resumo geral do sistema (fora dos filtros de ano/mês): um card por módulo com a
+        // contagem e uma lista resumida dos registros (nomes), não só o número — sem virar
+        // uma tela cheia de tabelas, por isso corta em alguns itens e mostra "e mais X".
+        function relatorioMontarVisaoGeral() {
             const fornecedores = JSON.parse(localStorage.getItem('fornecedores') || '[]');
             const cerimonialistas = JSON.parse(localStorage.getItem('ddrinks_cerimonialistas') || '[]');
             const vouchers = JSON.parse(localStorage.getItem('ddrinks_vouchers') || '[]');
@@ -5024,25 +5025,42 @@ html += htmlPacotes;
             const totalDrinksPadrao = Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}).length;
             const totalDrinks = totalDrinksPadrao + drinksCustom.length;
 
-            const vouchersUsados = vouchers.filter(v => v.status === 'usado').length;
+            const vouchersUsados = vouchers.filter(v => v.status === 'usado');
 
             const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
             const degLista = degOrcamentosLoad();
-            const degPendentes = degLista.filter(o => degDrinkIds(o).length > 0 && (!o.degustacao || !o.degustacao.dataDegustacao)).length;
-            const degRealizadas = degLista.filter(o => o.degustacao && (o.degustacao.realizado === true || (o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) < hoje))).length;
+            const degPendentesLista = degLista.filter(o => degDrinkIds(o).length > 0 && (!o.degustacao || !o.degustacao.dataDegustacao));
+            const degRealizadasLista = degLista.filter(o => o.degustacao && (o.degustacao.realizado === true || (o.degustacao.dataDegustacao && new Date(o.degustacao.dataDegustacao) < hoje)));
+
+            const MAX_ITENS = 8;
+            const listaResumo = (textos) => {
+                if (!textos.length) return '<div style="color:var(--gray-400);font-size:.78rem;">Nenhum registro.</div>';
+                const visiveis = textos.slice(0, MAX_ITENS);
+                const extra = textos.length - visiveis.length;
+                return `<div style="font-size:.8rem;color:var(--gray-700);line-height:1.7;">${visiveis.map(t => `• ${t}`).join('<br/>')}${extra > 0 ? `<br/><span style="color:var(--gray-400);">e mais ${extra}...</span>` : ''}</div>`;
+            };
+
+            const moduloCard = (titulo, count, textos) => `
+                <div class="card" style="padding:1rem;margin-bottom:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;">
+                        <div style="font-size:.82rem;font-weight:700;color:var(--gray-800);">${titulo}</div>
+                        <div style="font-size:.72rem;font-weight:700;color:#fff;background:var(--primary-color);border-radius:20px;padding:2px 10px;flex-shrink:0;">${count}</div>
+                    </div>
+                    ${listaResumo(textos)}
+                </div>`;
 
             return `
                 <div class="card">
                     <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">Visão Geral do Sistema</h3>
-                    <div class="grid grid-cols-4 gap-4">
-                        ${statCard('Fornecedores', fornecedores.length, 'var(--gray-900)')}
-                        ${statCard('Cerimonialistas', cerimonialistas.length, 'var(--gray-900)')}
-                        ${statCard('Drinks Cadastrados', `${totalDrinks - inativos.size}/${totalDrinks} ativos`, 'var(--gray-900)')}
-                        ${statCard('Itens no Estoque', estoque.length, 'var(--gray-900)')}
-                        ${statCard('Pacotes Promocionais', pacotesPromo.length, 'var(--gray-900)')}
-                        ${statCard('Vouchers', `${vouchersUsados}/${vouchers.length} usados`, 'var(--gray-900)')}
-                        ${statCard('Degustações Pendentes', degPendentes, 'var(--warning-color)')}
-                        ${statCard('Degustações Realizadas', degRealizadas, 'var(--success-color)')}
+                    <div class="grid grid-cols-3 gap-4">
+                        ${moduloCard('Fornecedores', fornecedores.length, fornecedores.map(f => `${f.nome || 'Sem nome'}${f.servico ? ` (${f.servico})` : ''}`))}
+                        ${moduloCard('Cerimonialistas', cerimonialistas.length, cerimonialistas.map(c => c.nome || 'Sem nome'))}
+                        ${moduloCard('Pacotes Promocionais', pacotesPromo.length, pacotesPromo.map(p => p.nome || 'Sem nome'))}
+                        ${moduloCard('Itens no Estoque', estoque.length, estoque.map(i => `${i.nome || 'Sem nome'}${i.quantidade != null ? ` — ${i.quantidade} ${i.unidade || ''}` : ''}`))}
+                        ${moduloCard(`Vouchers (${vouchersUsados.length}/${vouchers.length} usados)`, vouchers.length, vouchers.map(v => `${v.codigo}${v.status === 'usado' ? ' — usado' : ' — disponível'}`))}
+                        ${moduloCard('Drinks Cadastrados', `${totalDrinks - inativos.size}/${totalDrinks} ativos`, ['Lista completa na tela de Drinks.'])}
+                        ${moduloCard('Degustações Realizadas', degRealizadasLista.length, degRealizadasLista.map(o => `${o.cliente || 'Cliente'}${o.degustacao?.dataDegustacao ? ` — ${new Date(o.degustacao.dataDegustacao).toLocaleDateString('pt-BR')}` : ''}`))}
+                        ${moduloCard('Degustações Pendentes', degPendentesLista.length, degPendentesLista.map(o => o.cliente || 'Cliente'))}
                     </div>
                 </div>
             `;
@@ -5060,7 +5078,7 @@ html += htmlPacotes;
                     <div class="text-xs" style="color:var(--gray-600);margin-top:2px;">${label}</div>
                 </div>`;
 
-            const visaoGeralHtml = `<div style="margin-bottom:1.5rem;">${relatorioMontarVisaoGeral(statCard)}</div>`;
+            const visaoGeralHtml = `<div style="margin-bottom:1.5rem;">${relatorioMontarVisaoGeral()}</div>`;
 
             const resumoHtml = `
                 <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin:0 0 14px;">Resumo de Orçamentos — ${periodoTexto}</h3>
