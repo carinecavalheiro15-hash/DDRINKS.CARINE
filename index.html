@@ -2546,13 +2546,13 @@
                     <div class="ph-top">
                         <div class="ph-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a4 4 0 110 8 4 4 0 010-8zm0 10c-4.418 0-8 2.239-8 5v3h16v-3c0-2.761-3.582-5-8-5z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg></div>
                         <div>
-                            <h2 class="ph-titulo">Fornecedores</h2>
+                            <h2 class="ph-titulo">Cadastro de Fornecedores</h2>
                             <p class="ph-sub">Cadastre e gerencie seus fornecedores de serviços e insumos.</p>
                         </div>
                     </div>
                 </div>
                 <div class="card">
-                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📝 Cadastro de Fornecedor</h3>
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📝 Novo Fornecedor</h3>
                     <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
                         <form id="fornecedorForm" onsubmit="return fornecedorSalvar(event)" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;width:100%;">
                             <input type="text" id="fornecedorNome" class="form-input" placeholder="Nome do fornecedor" style="min-width:220px;" required />
@@ -2581,7 +2581,7 @@
                     </div>
                 </div>
                 <div class="card">
-                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📋 Fornecedores Cadastrados</h3>
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📋 Fornecedores</h3>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome ou serviço (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
                         <button class="btn btn-secondary" type="button" onclick="document.getElementById('fornecedorSearch').value=''; fornecedorRenderGrid();">Limpar</button>
