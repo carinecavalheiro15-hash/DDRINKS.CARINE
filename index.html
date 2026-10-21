@@ -6122,9 +6122,19 @@ html += htmlPacotes;
 
     const FT_CORES = {'Alcoólicos':'#ef4444','Não Alcoólicos':'#10b981','Especial':'#8b5cf6','Autorais':'#f59e0b'};
 
+    // Fichas já salvas antes (no navegador ou no banco) ainda têm os nomes antigos de
+    // categoria ("Alcoólico"/"Sem Álcool") — renomeia na primeira leitura e já salva de
+    // volta, pra não precisar recadastrar nada.
+    const FT_RENOMEIA_CATEGORIA = {'Alcoólico':'Alcoólicos','Sem Álcool':'Não Alcoólicos'};
     function ftLoad(){
         const s=localStorage.getItem('ddrinks_fichas');
-        return s?JSON.parse(s):JSON.parse(JSON.stringify(FT_PADRAO));
+        const lista=s?JSON.parse(s):JSON.parse(JSON.stringify(FT_PADRAO));
+        let mudou=false;
+        lista.forEach(f=>{
+            if(FT_RENOMEIA_CATEGORIA[f.categoria]){ f.categoria=FT_RENOMEIA_CATEGORIA[f.categoria]; mudou=true; }
+        });
+        if(mudou) ftSave(lista);
+        return lista;
     }
     function ftSave(d){localStorage.setItem('ddrinks_fichas',JSON.stringify(d));}
 
