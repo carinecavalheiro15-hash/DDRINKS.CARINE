@@ -52,12 +52,12 @@
     .ornamento .linha{ height:1px; width:46px; background:linear-gradient(90deg,transparent,currentColor,transparent); }
     .ornamento .diamante{ width:5px;height:5px;border:1px solid currentColor;transform:rotate(45deg); }
 
-    .foto-wrap{ position:relative; width:196px; height:196px; margin:0 auto 20px; }
+    .foto-wrap{ position:relative; width:100%; margin:0 auto 22px; }
     .foto{
-        width:196px;height:196px;border-radius:50%;object-fit:cover;
+        width:100%;aspect-ratio:4/5;border-radius:18px;object-fit:cover;
         display:block;
         border:3px solid var(--gold);
-        box-shadow:0 10px 34px rgba(0,0,0,.55), 0 0 0 8px rgba(245,196,81,.06);
+        box-shadow:0 10px 34px rgba(0,0,0,.55);
         background:#111;
     }
     .nome{
