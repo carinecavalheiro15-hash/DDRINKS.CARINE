@@ -9189,12 +9189,15 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         document.getElementById('cronogramaModalSub').textContent = (orcamento.dataFormatada || formatarData(orcamento.data) || '') + (orcamento.descricao ? ' · ' + orcamento.descricao : '');
         const cont = document.getElementById('cronogramaLinhas');
         cont.innerHTML = '';
-        const itens = [...(orcamento.cronograma || [])].sort((a, b) => (a.horario || '').localeCompare(b.horario || ''));
+        // Não ordena por horário: a ordem é a que o usuário montou (um evento pode passar da
+        // meia-noite, ex: 22:00 depois 03:00, e ordenar por horário quebraria essa sequência).
+        const itens = orcamento.cronograma || [];
         if (!itens.length) {
             cont.appendChild(cronogramaCriarLinha('', ''));
         } else {
             itens.forEach(it => cont.appendChild(cronogramaCriarLinha(it.horario, it.tarefa)));
         }
+        document.getElementById('cronogramaObs').value = orcamento.cronogramaObs || '';
         document.getElementById('cronogramaModal').style.display = 'flex';
     }
 
@@ -9211,8 +9214,8 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             const inputs = row.querySelectorAll('input');
             return { horario: inputs[0].value, tarefa: inputs[1].value.trim() };
         }).filter(it => it.horario || it.tarefa);
-        itens.sort((a, b) => (a.horario || '').localeCompare(b.horario || ''));
         orcamento.cronograma = itens;
+        orcamento.cronogramaObs = (document.getElementById('cronogramaObs')?.value || '').trim();
         localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
         clienteRenderGrid();
         clienteReabrirDetalheAtual();
@@ -9535,6 +9538,10 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             <div style="padding:16px 22px;" id="cronogramaModalBody">
                 <div id="cronogramaLinhas"></div>
                 <button type="button" class="btn btn-sm btn-secondary" onclick="cronogramaAdicionarLinha()">➕ Adicionar Horário</button>
+                <div class="form-group" style="margin-top:18px;">
+                    <label class="form-label" for="cronogramaObs">Observações Gerais (fora do cronograma)</label>
+                    <textarea id="cronogramaObs" class="form-input" style="resize:vertical;min-height:70px;" placeholder="Alguma observação sobre o evento que não é uma etapa do cronograma..."></textarea>
+                </div>
             </div>
             <div style="padding:14px 22px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:white;">
                 <button onclick="cronogramaFecharModal()" class="btn btn-secondary btn-sm">Fechar</button>
