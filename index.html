@@ -2203,6 +2203,11 @@
                 </div>
 
                 <div class="alert-section">
+                    <h3 class="alert-section-title">💸 Pagamentos Pendentes (eventos em até 1 mês) <span class="alert-count" id="alertPagamentosCount">0</span></h3>
+                    <div id="alertPagamentos"></div>
+                </div>
+
+                <div class="alert-section">
                     <h3 class="alert-section-title">🍹 Degustações Próximas (1 semana) <span class="alert-count" id="alertDegustacoesCount">0</span></h3>
                     <div id="alertDegustacoes"></div>
                 </div>
@@ -6492,6 +6497,35 @@ html += htmlPacotes;
                 <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button></div>
             </div>`;
         }).join('');
+
+        // Pagamentos pendentes de eventos aceitos nos próximos 30 dias — some os
+        // pagamentos já registrados e compara com o valor do orçamento; quem já
+        // quitou não aparece aqui.
+        const contPag = document.getElementById('alertPagamentos');
+        if (contPag) {
+            const pendentes = eventos.map(ev => {
+                const orc = lista.find(o => o.id === ev.id);
+                const valor = Number(orc?.valor) || 0;
+                const pago = obterListaPagamentos(orc || {}).reduce((s, p) => s + (Number(p.valor) || 0), 0);
+                return { id: ev.id, cliente: ev.cliente, data: ev.data, restante: valor - pago };
+            }).filter(e => e.restante > 0.01);
+
+            const contPagCount = document.getElementById('alertPagamentosCount');
+            if (contPagCount) { contPagCount.textContent = pendentes.length; contPagCount.classList.toggle('has-itens', pendentes.length > 0); }
+            if (!pendentes.length) contPag.innerHTML = '<div class="alert-empty">✅<div>Nenhum pagamento pendente para eventos próximos.</div></div>';
+            else contPag.innerHTML = pendentes.map(ev => {
+                const d = new Date(ev.data);
+                const inicial = (ev.cliente || '?').trim().charAt(0).toUpperCase();
+                return `<div class="alert-item">
+                    <div class="alert-avatar">${inicial}</div>
+                    <div class="alert-info">
+                        <div class="alert-nome">${ev.cliente || 'Cliente'}</div>
+                        <div class="alert-data">📅 ${d.toLocaleDateString('pt-BR')} · 💰 Falta ${formatarValorBR(ev.restante)}</div>
+                    </div>
+                    <div class="alert-actions"><button class="btn btn-sm btn-secondary" onclick="abrirClientePorOrcamentoId(${ev.id})">Abrir</button></div>
+                </div>`;
+            }).join('');
+        }
 
         // Degustações próximas (o.degustacao.dataDegustacao) — 1 semana (7 dias)
         const limiteDeg = new Date(hoje.getTime() + 1000*60*60*24*7);
