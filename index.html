@@ -6153,11 +6153,11 @@ html += htmlPacotes;
       {id:'soda_italiana_morango',nome:'Soda Italiana Morango',categoria:'Não Alcoólicos',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'200 ml'},{nome:'Gelo',qty:''}]},
       {id:'lagoa_azul',nome:'Lagoa Azul',categoria:'Alcoólicos',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Curaçau Blue',qty:'20 ml'},{nome:'Refrigerante de Limão',qty:'100 ml'},{nome:'Gelo',qty:''}]},
       {id:'tequila_sunrise',nome:'Tequila Sunrise',categoria:'Alcoólicos',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Laranja',qty:'120 ml'},{nome:'Grenadine',qty:'10 ml'},{nome:'Gelo',qty:''}]},
-      {id:'margarita',nome:'Margarita',categoria:'Alcoólicos',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Cointreau',qty:'25 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Sal para borda',qty:''},{nome:'Gelo',qty:''}]},
+      {id:'marguerita',nome:'Margarita',categoria:'Alcoólicos',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Cointreau',qty:'25 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Sal para borda',qty:''},{nome:'Gelo',qty:''}]},
       {id:'amaretto_sour',nome:'Amaretto Sour',categoria:'Alcoólicos',ingredientes:[{nome:'Amaretto',qty:'50 ml'},{nome:'Suco de Limão',qty:'25 ml'},{nome:'Xarope de Açúcar',qty:'15 ml'},{nome:'Gelo',qty:''}]},
       {id:'cotton_fairy',nome:'Cotton Fairy',categoria:'Especiais',ingredientes:[{nome:'Espumante Brut',qty:'120 ml'},{nome:'Licor de Morango',qty:'30 ml'},{nome:'Algodão Doce',qty:'1 porção'},{nome:'Gelo',qty:''}]},
       {id:'cotton_fairy_sem_alcool',nome:'Cotton Fairy Sem Álcool',categoria:'Não Alcoólicos',ingredientes:[{nome:'Xarope de Morango',qty:'30 ml'},{nome:'Água com Gás',qty:'180 ml'},{nome:'Algodão Doce',qty:'1 porção'},{nome:'Gelo',qty:''}]},
-      {id:'hold_up',nome:'Hold Up',categoria:'Especiais',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Aperol',qty:'20 ml'},{nome:'Suco de Abacaxi',qty:'60 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Sugar Syrup',qty:'15 ml'},{nome:'Xarope de Maracujá',qty:'20 ml'},{nome:'Gelo',qty:''}]},
+      {id:'hold_hup',nome:'Hold Up',categoria:'Especiais',ingredientes:[{nome:'Vodka',qty:'50 ml'},{nome:'Aperol',qty:'20 ml'},{nome:'Suco de Abacaxi',qty:'60 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Sugar Syrup',qty:'15 ml'},{nome:'Xarope de Maracujá',qty:'20 ml'},{nome:'Gelo',qty:''}]},
       {id:'passion',nome:'Passion',categoria:'Especiais',ingredientes:[{nome:'Vodka de Baunilha',qty:'50 ml'},{nome:'Licor de Maracujá',qty:'20 ml'},{nome:'Xarope de Baunilha',qty:'15 ml'},{nome:'Suco de Abacaxi',qty:'60 ml'},{nome:'Polpa de Maracujá',qty:'30 ml'},{nome:'Gelo',qty:''}]},
       {id:'cookie_drink',nome:'Cookie Drink',categoria:'Especiais',ingredientes:[{nome:'Vodka de Baunilha',qty:'50 ml'},{nome:'Licor de Chocolate',qty:'20 ml'},{nome:'Licor de Café',qty:'20 ml'},{nome:'Café Espresso',qty:'30 ml'},{nome:'Farofa de Baunilha',qty:'1 porção'},{nome:'Gelo',qty:''}]},
       {id:'mirtilo_sour',nome:'Mirtilo Sour',categoria:'Especiais',ingredientes:[{nome:'Tequila',qty:'50 ml'},{nome:'Suco de Abacaxi',qty:'50 ml'},{nome:'Suco de Limão',qty:'20 ml'},{nome:'Albumina',qty:'15 ml'},{nome:'Gelo',qty:''}]},
@@ -6172,12 +6172,18 @@ html += htmlPacotes;
     // categoria ("Alcoólico"/"Sem Álcool") — renomeia na primeira leitura e já salva de
     // volta, pra não precisar recadastrar nada.
     const FT_RENOMEIA_CATEGORIA = {'Alcoólico':'Alcoólicos','Sem Álcool':'Não Alcoólicos','Especial':'Especiais'};
+    // Duas fichas padrão tinham um id com grafia diferente do mesmo drink no catálogo de
+    // preços ("margarita" vs "marguerita", "hold_up" vs "hold_hup") — isso fazia a tela de
+    // Drinks mostrar o mesmo drink duas vezes (uma com preço, outra sem). Corrige o id pro
+    // mesmo usado no catálogo de preços.
+    const FT_RENOMEIA_ID = {'margarita':'marguerita','hold_up':'hold_hup'};
     function ftLoad(){
         const s=localStorage.getItem('ddrinks_fichas');
         const lista=s?JSON.parse(s):JSON.parse(JSON.stringify(FT_PADRAO));
         let mudou=false;
         lista.forEach(f=>{
             if(FT_RENOMEIA_CATEGORIA[f.categoria]){ f.categoria=FT_RENOMEIA_CATEGORIA[f.categoria]; mudou=true; }
+            if(FT_RENOMEIA_ID[f.id]){ f.id=FT_RENOMEIA_ID[f.id]; mudou=true; }
         });
         if(mudou) ftSave(lista);
         return lista;
@@ -6406,12 +6412,20 @@ html += htmlPacotes;
     // mais um drink ficar cadastrado só de um lado.
     function drinksSincronizarComFichas(){
         const padroesIds = new Set(Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}));
-        const drinksCustom = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+        let drinksCustom = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+        let mudouDrinks = false;
+
+        // Limpa entradas antigas criadas por engano com o id antigo da ficha (ex: "margarita"
+        // antes de virar "marguerita") — o drink já tem preço certo sob o id novo/padrão.
+        const antesDaLimpeza = drinksCustom.length;
+        drinksCustom = drinksCustom.filter(d => !FT_RENOMEIA_ID[d.id]);
+        if (drinksCustom.length !== antesDaLimpeza) mudouDrinks = true;
+
         const drinksPorId = new Set(drinksCustom.map(d => d.id));
         const fichas = ftLoad();
         const fichasPorId = new Set(fichas.map(f => f.id));
 
-        let mudouFichas = false, mudouDrinks = false;
+        let mudouFichas = false;
 
         drinksCustom.forEach(d => {
             if (!fichasPorId.has(d.id)) {
