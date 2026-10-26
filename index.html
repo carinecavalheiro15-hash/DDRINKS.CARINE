@@ -6204,13 +6204,16 @@ html += htmlPacotes;
         const precoB=(precosPacotes.bronze && precosPacotes.bronze[f.id]) || 0;
         const precoP=(precosPacotes.prata && precosPacotes.prata[f.id]) || 0;
         const precoO=(precosPacotes.ouro && precosPacotes.ouro[f.id]) || 0;
-        const precosHtml=(precoB||precoP||precoO)?`
-            <div style="display:flex;gap:10px;padding:0 14px 10px;font-size:.74rem;color:var(--gray-600);">
-                <span>🥉 R$ ${precoB.toFixed(2)}</span>
-                <span>🥈 R$ ${precoP.toFixed(2)}</span>
-                <span>🥇 R$ ${precoO.toFixed(2)}</span>
+        const semPreco=!(precoB||precoP||precoO);
+        const precosHtml=`
+            <div style="display:flex;gap:10px;padding:0 14px 10px;font-size:.74rem;color:${semPreco?'var(--warning-color)':'var(--gray-600)'};">
+                ${semPreco ? '⚠️ Sem preço cadastrado ainda' : `
+                    <span>🥉 R$ ${precoB.toFixed(2)}</span>
+                    <span>🥈 R$ ${precoP.toFixed(2)}</span>
+                    <span>🥇 R$ ${precoO.toFixed(2)}</span>
+                `}
             </div>
-        `:'';
+        `;
         return `<div class="ft-card">
             <div class="ft-card-head" style="background:linear-gradient(135deg,${cor},${cor}bb);">
                 <div>
