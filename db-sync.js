@@ -42,7 +42,9 @@
         ddrinksCardapioDesconto: { type: 'config', endpoint: 'ddrinksCardapioDesconto' },
         ddrinksCardapioBaseUrl: { type: 'config', endpoint: 'ddrinksCardapioBaseUrl' },
         ddrinks_hist: { type: 'config', endpoint: 'ddrinks_hist' },
-        ddrinks_ev_proc: { type: 'config', endpoint: 'ddrinks_ev_proc' }
+        ddrinks_ev_proc: { type: 'config', endpoint: 'ddrinks_ev_proc' },
+        ddrinksPrecosOverride: { type: 'config', endpoint: 'ddrinksPrecosOverride' },
+        ddrinksDrinksInativos: { type: 'config', endpoint: 'ddrinksDrinksInativos' }
     };
 
     function syncRequest(method, url, body) {
