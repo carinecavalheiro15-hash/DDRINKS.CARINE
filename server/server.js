@@ -78,7 +78,13 @@ const COLLECTIONS = {
     },
     'drinks-customizados': {
         table: 'drinks_customizados', idField: 'id',
-        columns: (item) => ({ nome: item.nome || null, sabor: item.sabor || null })
+        columns: (item) => ({
+            nome: item.nome || null,
+            sabor: item.sabor || null,
+            bronze: item.bronze != null && item.bronze !== '' ? item.bronze : null,
+            prata: item.prata != null && item.prata !== '' ? item.prata : null,
+            ouro: item.ouro != null && item.ouro !== '' ? item.ouro : null
+        })
     },
     'fichas-tecnicas': {
         table: 'fichas_tecnicas', idField: 'id',
