@@ -3138,6 +3138,12 @@
             const id = 'cdrink_' + Date.now();
             drinks.push({ id, nome, sabor, bronze, prata, ouro });
             localStorage.setItem('drinksCustomizados', JSON.stringify(drinks));
+            // Atualiza já em memória (não só no localStorage) pra tabela "Todos os Drinks"
+            // mostrar o valor certo imediatamente, sem precisar recarregar a página.
+            ['bronze', 'prata', 'ouro'].forEach(p => {
+                if (!precosPacotes[p]) precosPacotes[p] = {};
+                precosPacotes[p][id] = { bronze, prata, ouro }[p];
+            });
 
             // Cria a ficha técnica junto (mesmo id), pra não ficar um cadastro sem o outro.
             const categoria = document.getElementById('cfg-drink-categoria').value || 'Alcoólicos';
@@ -3160,8 +3166,8 @@
             document.getElementById('cfgDrinkIngEditor').innerHTML = '';
             showNotification(`Drink "${nome}" cadastrado (preço + ficha técnica)!`, 'success');
             renderizarListaDrinksConfig();
-            drinksGerenciarRender();
             carregarDrinksCustomizados();
+            drinksGerenciarRender();
             ftRender(document.getElementById('ftSearch')?.value || '');
         }
 
@@ -6189,6 +6195,16 @@ html += htmlPacotes;
             `<li class="ft-ing-item"><span class="ft-ing-name">${ftEsc(i.nome)}</span>${i.qty?`<span class="ft-ing-qty">${ftEsc(i.qty)}</span>`:''}</li>`
         ).join('');
         const delBtn=!isPadrao(f.id)?`<button class="ft-btn ft-btn-del" onclick="ftExcluir('${ftEsc(f.id)}')">🗑 Excluir</button>`:'';
+        const precoB=(precosPacotes.bronze && precosPacotes.bronze[f.id]) || 0;
+        const precoP=(precosPacotes.prata && precosPacotes.prata[f.id]) || 0;
+        const precoO=(precosPacotes.ouro && precosPacotes.ouro[f.id]) || 0;
+        const precosHtml=(precoB||precoP||precoO)?`
+            <div style="display:flex;gap:10px;padding:0 14px 10px;font-size:.74rem;color:var(--gray-600);">
+                <span>🥉 R$ ${precoB.toFixed(2)}</span>
+                <span>🥈 R$ ${precoP.toFixed(2)}</span>
+                <span>🥇 R$ ${precoO.toFixed(2)}</span>
+            </div>
+        `:'';
         return `<div class="ft-card">
             <div class="ft-card-head" style="background:linear-gradient(135deg,${cor},${cor}bb);">
                 <div>
@@ -6197,6 +6213,7 @@ html += htmlPacotes;
                 </div>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.65;flex-shrink:0;margin-top:2px;"><path d="M4 3h16" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12v6" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M9 18h6" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
             </div>
+            ${precosHtml}
             <div class="ft-card-body"><ul class="ft-ing-list">${ings}</ul></div>
             <div class="ft-card-foot">
                 <button class="ft-btn ft-btn-edit" onclick="ftEditar('${ftEsc(f.id)}')">✏️ Editar</button>
