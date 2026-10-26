@@ -2028,10 +2028,24 @@
                                 <label class="form-label">🥇 Ouro (R$) *</label>
                                 <input type="number" id="cfg-drink-ouro" class="form-input" min="0" step="0.01" placeholder="0.00" required />
                             </div>
-                            <div class="form-group" style="display:flex;align-items:flex-end;">
+                            <div class="form-group" style="grid-column: span 4;">
+                                <label class="form-label">Categoria (ficha técnica)</label>
+                                <select id="cfg-drink-categoria" class="form-input">
+                                    <option value="Alcoólicos">Alcoólicos</option>
+                                    <option value="Não Alcoólicos">Não Alcoólicos</option>
+                                    <option value="Especiais">Especiais</option>
+                                    <option value="Autorais">Autorais</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="grid-column: span 4;">
+                                <label class="form-label">Ingredientes (ficha técnica)</label>
+                                <div id="cfgDrinkIngEditor"></div>
+                                <button type="button" class="btn btn-sm btn-secondary" style="margin-top:6px;" onclick="cfgDrinkAddIngRow()">+ Adicionar Ingrediente</button>
+                            </div>
+                            <div class="form-group" style="grid-column: span 4;">
                                 <button type="submit" class="btn btn-primary" style="width:100%;">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                                    Adicionar
+                                    Adicionar (preço + ficha técnica)
                                 </button>
                             </div>
                         </div>
@@ -2934,6 +2948,7 @@
             } else if (pageId === 'config') {
                 atualizarConfigPreview();
             } else if (pageId === 'drinks') {
+                drinksSincronizarComFichas();
                 renderizarListaDrinksConfig();
                 drinksGerenciarRender();
                 ftRender('');
@@ -3097,6 +3112,17 @@
             atualizarPrecos();
         }
 
+        // Mini-editor de ingredientes reaproveitado dentro do formulário "Cadastrar Novo
+        // Drink", pra criar preço e ficha técnica juntos (mesmo padrão do ftAddRow).
+        function cfgDrinkAddIngRow(nome, qty){
+            const ed = document.getElementById('cfgDrinkIngEditor');
+            if (!ed) return;
+            const r = document.createElement('div');
+            r.className = 'ft-ing-row';
+            r.innerHTML = `<input type="text" placeholder="Ingrediente" value="${ftEsc(nome||'')}" class="fting-nome"/><input type="text" placeholder="Qtd (50 ml)" value="${ftEsc(qty||'')}" class="fting-qty"/><button type="button" class="ft-del-row" onclick="this.parentElement.remove()">×</button>`;
+            ed.appendChild(r);
+        }
+
         function adicionarDrinkCustomizado(event) {
             event.preventDefault();
             const nome = document.getElementById('cfg-drink-nome').value.trim();
@@ -3112,15 +3138,31 @@
             const id = 'cdrink_' + Date.now();
             drinks.push({ id, nome, sabor, bronze, prata, ouro });
             localStorage.setItem('drinksCustomizados', JSON.stringify(drinks));
+
+            // Cria a ficha técnica junto (mesmo id), pra não ficar um cadastro sem o outro.
+            const categoria = document.getElementById('cfg-drink-categoria').value || 'Alcoólicos';
+            const ingredientes = [];
+            document.querySelectorAll('#cfgDrinkIngEditor .ft-ing-row').forEach(r => {
+                const n = r.querySelector('.fting-nome').value.trim();
+                const q = r.querySelector('.fting-qty').value.trim();
+                if (n) ingredientes.push({ nome: n, qty: q });
+            });
+            const fichas = ftLoad();
+            fichas.push({ id, nome, categoria, ingredientes, foto: null });
+            ftSave(fichas);
+
             document.getElementById('cfg-drink-nome').value = '';
             document.getElementById('cfg-drink-sabor').value = '';
             document.getElementById('cfg-drink-bronze').value = '';
             document.getElementById('cfg-drink-prata').value = '';
             document.getElementById('cfg-drink-ouro').value = '';
-            showNotification(`Drink "${nome}" cadastrado com sucesso!`, 'success');
+            document.getElementById('cfg-drink-categoria').value = 'Alcoólicos';
+            document.getElementById('cfgDrinkIngEditor').innerHTML = '';
+            showNotification(`Drink "${nome}" cadastrado (preço + ficha técnica)!`, 'success');
             renderizarListaDrinksConfig();
             drinksGerenciarRender();
             carregarDrinksCustomizados();
+            ftRender(document.getElementById('ftSearch')?.value || '');
         }
 
         function removerDrinkCustomizado(id) {
@@ -3131,10 +3173,15 @@
             localStorage.setItem('drinksCustomizados', JSON.stringify(drinks));
             // Remove do precosPacotes
             ['bronze', 'prata', 'ouro'].forEach(p => { delete precosPacotes[p][id]; });
+            // Remove também a ficha técnica correspondente, pra não sobrar órfã
+            const fichas = ftLoad();
+            const semEssa = fichas.filter(f => f.id !== id);
+            if (semEssa.length !== fichas.length) ftSave(semEssa);
             if (drink) showNotification(`Drink "${drink.nome}" removido.`, 'success');
             renderizarListaDrinksConfig();
             drinksGerenciarRender();
             carregarDrinksCustomizados();
+            if (document.getElementById('ftSearch')) ftRender(document.getElementById('ftSearch').value);
         }
 
         function renderizarListaDrinksConfig() {
@@ -6323,8 +6370,51 @@ html += htmlPacotes;
     function ftExcluir(id){
         if(!confirm('Excluir este drink?'))return;
         ftSave(ftLoad().filter(f=>f.id!==id));
+        // Remove também o preço correspondente, se for um drink personalizado (não do
+        // catálogo padrão) — pra não sobrar um preço sem ficha técnica.
+        const drinks = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+        const semEsse = drinks.filter(d => d.id !== id);
+        if (semEsse.length !== drinks.length) {
+            localStorage.setItem('drinksCustomizados', JSON.stringify(semEsse));
+            if (typeof drinksGerenciarRender === 'function') drinksGerenciarRender();
+            if (typeof carregarDrinksCustomizados === 'function') carregarDrinksCustomizados();
+            if (typeof renderizarListaDrinksConfig === 'function') renderizarListaDrinksConfig();
+        }
         ftRender(document.getElementById('ftSearch').value);
         estToast('Drink excluído','warning');
+    }
+
+    // Reconcilia os dois cadastros de drink (preço e ficha técnica), criando do lado que
+    // falta com valores padrão — chamado toda vez que a tela de Drinks é aberta, pra nunca
+    // mais um drink ficar cadastrado só de um lado.
+    function drinksSincronizarComFichas(){
+        const padroesIds = new Set(Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}));
+        const drinksCustom = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+        const drinksPorId = new Set(drinksCustom.map(d => d.id));
+        const fichas = ftLoad();
+        const fichasPorId = new Set(fichas.map(f => f.id));
+
+        let mudouFichas = false, mudouDrinks = false;
+
+        drinksCustom.forEach(d => {
+            if (!fichasPorId.has(d.id)) {
+                fichas.push({ id: d.id, nome: d.nome, categoria: 'Alcoólicos', ingredientes: [], foto: null });
+                fichasPorId.add(d.id);
+                mudouFichas = true;
+            }
+        });
+
+        fichas.forEach(f => {
+            if (padroesIds.has(f.id)) return; // já é do catálogo padrão, o preço vem de outro lugar
+            if (!drinksPorId.has(f.id)) {
+                drinksCustom.push({ id: f.id, nome: f.nome, sabor: '', bronze: 0, prata: 0, ouro: 0 });
+                drinksPorId.add(f.id);
+                mudouDrinks = true;
+            }
+        });
+
+        if (mudouFichas) ftSave(fichas);
+        if (mudouDrinks) localStorage.setItem('drinksCustomizados', JSON.stringify(drinksCustom));
     }
 
     document.getElementById('ftModal').addEventListener('click',function(e){if(e.target===this)ftFecharModal();});
