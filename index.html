@@ -9273,109 +9273,170 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         clienteReabrirDetalheAtual();
     }
 
-    // Anexa o contrato (PDF/imagem/doc) ao orçamento, guardado como base64 no localStorage.
-    const CONTRATO_LIMITE_MB = 4;
-    async function clienteAnexarContrato(orcamentoId, inputEl) {
-        const files = inputEl.files || [];
-        if (!files.length) return;
-        const arquivos = Array.from(files);
-        // size check per file
-        for (const arquivo of arquivos) {
-            if (arquivo.size > CONTRATO_LIMITE_MB * 1024 * 1024) {
-                showNotification(`Arquivo "${arquivo.name}" muito grande (máx. ${CONTRATO_LIMITE_MB}MB).`, 'warning');
-                inputEl.value = '';
-                return;
-            }
-        }
+    // Documentos anexados ao evento ficam no banco (tabela orcamento_documentos), via servidor.
+    // No orçamento (localStorage) fica só a referência { docId, nome, tipo, tamanho, dataUpload }:
+    // guardar o arquivo em base64 no navegador estourava o limite de ~5MB do localStorage e
+    // impedia novos anexos (e qualquer outra gravação do sistema).
+    const CONTRATO_LIMITE_MB = 10;
 
-        const orcamento = orcamentos.find(o => o.id === orcamentoId);
-        if (!orcamento) return;
+    function documentosServidorDisponivel() {
+        if (window.__ddrinksDbOnline && window.__ddrinksApiBase) return true;
+        showNotification('Para anexar ou abrir documentos, o servidor do DDrinks precisa estar ligado e acessível nesta rede.', 'warning');
+        return false;
+    }
 
-        // ensure contratos array, migrate legacy if needed
+    function lerArquivoComoDataUrl(f) {
+        return new Promise((res, rej) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.onerror = () => rej(new Error('Erro lendo arquivo'));
+            r.readAsDataURL(f);
+        });
+    }
+
+    async function documentoEnviarServidor(orcamentoId, doc) {
+        const resp = await fetch(`${window.__ddrinksApiBase}/orcamentos/${orcamentoId}/documentos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(doc)
+        });
+        const corpo = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(corpo.error || ('HTTP ' + resp.status));
+        return corpo.docId;
+    }
+
+    // Lista de documentos do orçamento, migrando o formato antigo de anexo único
+    function clienteContratosDe(orcamento) {
         if (!Array.isArray(orcamento.contratos) && orcamento.contratoAnexo) {
             orcamento.contratos = [orcamento.contratoAnexo];
             delete orcamento.contratoAnexo;
         }
         orcamento.contratos = orcamento.contratos || [];
-
-        // read files as data URLs
-        try {
-            const readers = arquivos.map(f => new Promise((res, rej) => {
-                const r = new FileReader();
-                r.onload = () => res({ nome: f.name, tipo: f.type, tamanho: f.size, dados: r.result, dataUpload: new Date().toISOString() });
-                r.onerror = () => rej(new Error('Erro lendo arquivo'));
-                r.readAsDataURL(f);
-            }));
-            const results = await Promise.all(readers);
-            // append
-            orcamento.contratos.push(...results);
-            // try save
-            try {
-                localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
-            } catch (e) {
-                // rollback
-                orcamento.contratos.splice(-results.length, results.length);
-                showNotification('Não foi possível salvar o(s) arquivo(s) — armazenamento do navegador excedido.', 'error');
-                inputEl.value = '';
-                return;
-            }
-            showNotification(`Anexado(s) ${results.length} arquivo(s) com sucesso!`, 'success');
-            clienteRenderGrid();
-            clienteReabrirDetalheAtual();
-        } catch (e) {
-            showNotification('Erro ao ler o(s) arquivo(s) selecionado(s).', 'error');
-        }
-        inputEl.value = '';
+        return orcamento.contratos;
     }
 
-    function clienteBaixarContrato(orcamentoId, index = 0) {
+    async function clienteAnexarContrato(orcamentoId, inputEl) {
+        const arquivos = Array.from(inputEl.files || []);
+        inputEl.value = '';
+        if (!arquivos.length) return;
+        if (!documentosServidorDisponivel()) return;
+        for (const arquivo of arquivos) {
+            if (arquivo.size > CONTRATO_LIMITE_MB * 1024 * 1024) {
+                showNotification(`Arquivo "${arquivo.name}" muito grande (máx. ${CONTRATO_LIMITE_MB}MB).`, 'warning');
+                return;
+            }
+        }
+
         const orcamento = orcamentos.find(o => o.id === orcamentoId);
         if (!orcamento) return;
-        // support legacy single attachment
-        if (!Array.isArray(orcamento.contratos) && orcamento.contratoAnexo) {
-            const a = document.createElement('a');
-            a.href = orcamento.contratoAnexo.dados;
-            a.download = orcamento.contratoAnexo.nome || 'contrato';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            return;
+
+        showNotification('Enviando documento(s)...', 'info');
+        const anexados = [];
+        for (const f of arquivos) {
+            try {
+                const doc = { nome: f.name, tipo: f.type, tamanho: f.size, dataUpload: new Date().toISOString() };
+                const docId = await documentoEnviarServidor(orcamentoId, { ...doc, dados: await lerArquivoComoDataUrl(f) });
+                anexados.push({ docId, ...doc });
+            } catch (e) {
+                showNotification(`Não foi possível anexar "${f.name}": ${e.message}`, 'error');
+            }
         }
-        const lista = orcamento.contratos || [];
-        const item = lista[index];
+        if (!anexados.length) return;
+
+        clienteContratosDe(orcamento).push(...anexados);
+        localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+        showNotification(`Anexado(s) ${anexados.length} arquivo(s) com sucesso!`, 'success');
+        clienteRenderGrid();
+        clienteReabrirDetalheAtual();
+    }
+
+    async function clienteBaixarContrato(orcamentoId, index = 0) {
+        const orcamento = orcamentos.find(o => o.id === orcamentoId);
+        if (!orcamento) return;
+        const item = clienteContratosDe(orcamento)[index];
         if (!item) return;
+        let dados = item.dados; // anexos antigos, ainda não enviados ao servidor
+        if (!dados) {
+            if (!documentosServidorDisponivel()) return;
+            try {
+                const resp = await fetch(`${window.__ddrinksApiBase}/documentos/${item.docId}`);
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                dados = (await resp.json()).dados;
+            } catch (e) {
+                showNotification('Não foi possível baixar o documento: ' + e.message, 'error');
+                return;
+            }
+        }
         const a = document.createElement('a');
-        a.href = item.dados;
+        a.href = dados;
         a.download = item.nome || 'contrato';
         document.body.appendChild(a);
         a.click();
         a.remove();
     }
 
-    function clienteRemoverContrato(orcamentoId, index = 0) {
+    async function clienteRemoverContrato(orcamentoId, index = 0) {
         const orcamento = orcamentos.find(o => o.id === orcamentoId);
         if (!orcamento) return;
-        // legacy single
-        if (!Array.isArray(orcamento.contratos) && orcamento.contratoAnexo) {
-            if (!confirm(`Remover o contrato "${orcamento.contratoAnexo.nome}"? Essa ação não pode ser desfeita.`)) return;
-            delete orcamento.contratoAnexo;
-            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
-            showNotification('Contrato removido.', 'warning');
-            clienteRenderGrid();
-            clienteReabrirDetalheAtual();
-            return;
-        }
-        const lista = orcamento.contratos || [];
+        const lista = clienteContratosDe(orcamento);
         const item = lista[index];
         if (!item) return;
-        if (!confirm(`Remover o contrato "${item.nome}"? Essa ação não pode ser desfeita.`)) return;
+        if (!confirm(`Remover o documento "${item.nome}"? Essa ação não pode ser desfeita.`)) return;
+        if (item.docId) {
+            if (!documentosServidorDisponivel()) return;
+            try {
+                const resp = await fetch(`${window.__ddrinksApiBase}/documentos/${item.docId}`, { method: 'DELETE' });
+                if (!resp.ok && resp.status !== 404) throw new Error('HTTP ' + resp.status);
+            } catch (e) {
+                showNotification('Não foi possível remover o documento: ' + e.message, 'error');
+                return;
+            }
+        }
         lista.splice(index, 1);
         if (lista.length === 0) delete orcamento.contratos;
         localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
-        showNotification('Contrato removido.', 'warning');
+        showNotification('Documento removido.', 'warning');
         clienteRenderGrid();
         clienteReabrirDetalheAtual();
     }
+
+    // Anexos antigos (base64 dentro do orçamento) vão pro servidor e viram só referência,
+    // liberando espaço no navegador. Roda sozinho ao abrir o sistema, se o servidor responder.
+    async function documentosMigrarParaServidor() {
+        if (!window.__ddrinksDbOnline || !window.__ddrinksApiBase) return;
+        let lista;
+        try { lista = JSON.parse(localStorage.getItem('orcamentos') || '[]'); } catch (e) { return; }
+        const pendentes = [];
+        lista.forEach(o => clienteContratosDe(o).forEach(c => { if (c.dados && !c.docId) pendentes.push({ orcId: o.id, c }); }));
+        if (!pendentes.length) return;
+
+        const enviados = new Map(); // `${orcId}|${nome}|${tamanho}` -> docId
+        for (const { orcId, c } of pendentes) {
+            try {
+                const docId = await documentoEnviarServidor(orcId, c);
+                enviados.set(`${orcId}|${c.nome}|${c.tamanho}`, docId);
+            } catch (e) {
+                console.warn('DDrinks: não consegui enviar o anexo antigo ao servidor:', c.nome, e.message);
+            }
+        }
+        if (!enviados.size) return;
+
+        // Relê o que está salvo agora (o usuário pode ter mexido durante o envio) e troca só os enviados
+        const atual = JSON.parse(localStorage.getItem('orcamentos') || '[]');
+        atual.forEach(o => {
+            o.contratos = clienteContratosDe(o).map(c => {
+                const docId = !c.docId && enviados.get(`${o.id}|${c.nome}|${c.tamanho}`);
+                if (!docId) return c;
+                const { dados, ...semDados } = c;
+                return { ...semDados, docId };
+            });
+            if (!o.contratos.length) delete o.contratos;
+        });
+        localStorage.setItem('orcamentos', JSON.stringify(atual));
+        orcamentos = atual;
+        console.log(`DDrinks: ${enviados.size} anexo(s) antigo(s) movido(s) para o servidor.`);
+    }
+    setTimeout(documentosMigrarParaServidor, 1500);
 
     function clienteSalvarPagamento(orcamentoId) {
         const orcamento = orcamentos.find(o => o.id === orcamentoId);

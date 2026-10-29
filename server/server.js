@@ -122,6 +122,9 @@ app.use(express.json({ limit: '25mb' }));
 // endereço e protocolo (http://<ip-da-rede>:3300/). Importante pra quem acessa por um link
 // https (ex: GitHub Pages): o navegador bloqueia uma página https tentando falar com uma API
 // http ("conteúdo misto") — servindo tudo daqui, não tem mistura de protocolo.
+// A pasta server/ fica de fora: tem a chave privada do certificado HTTPS (certs/key.pem),
+// logs e o schema, que não podem ser baixados por qualquer um na rede.
+app.use('/server', (req, res) => res.status(404).end());
 app.use(express.static(path.join(__dirname, '..')));
 
 app.get('/api/health', async (req, res) => {
@@ -207,6 +210,58 @@ app.post('/api/cardapio/foto-drink', (req, res) => {
     }
 });
 
+// ---- Documentos anexados aos eventos (tabela orcamento_documentos) ----
+
+// Mesmo documento = mesmo orçamento + nome + tamanho (evita duplicar ao migrar anexos antigos)
+async function inserirDocumentoSeNaoExistir(conn, orcamentoId, d) {
+    const [existe] = await conn.query(
+        'SELECT id FROM orcamento_documentos WHERE orcamento_id = ? AND nome <=> ? AND tamanho <=> ? LIMIT 1',
+        [orcamentoId, d.nome || null, d.tamanho || null]
+    );
+    if (existe.length) return existe[0].id;
+    const [r] = await conn.query(
+        'INSERT INTO orcamento_documentos (orcamento_id, nome, tipo, tamanho, dados, data_upload) VALUES (?,?,?,?,?,?)',
+        [orcamentoId, d.nome || null, d.tipo || null, d.tamanho || null, d.dados, d.dataUpload ? new Date(d.dataUpload) : new Date()]
+    );
+    return r.insertId;
+}
+
+app.post('/api/orcamentos/:id/documentos', async (req, res) => {
+    const d = req.body || {};
+    if (typeof d.dados !== 'string' || !d.dados.startsWith('data:')) {
+        return res.status(400).json({ error: 'Arquivo inválido.' });
+    }
+    try {
+        const docId = await inserirDocumentoSeNaoExistir(pool, req.params.id, d);
+        res.json({ ok: true, docId });
+    } catch (e) {
+        if (e.code === 'ER_NO_REFERENCED_ROW_2') {
+            return res.status(409).json({ error: 'o evento ainda não foi salvo no banco; aguarde alguns segundos e tente de novo.' });
+        }
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/documentos/:docId', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT nome, tipo, dados FROM orcamento_documentos WHERE id = ?', [req.params.docId]);
+        if (!rows.length) return res.status(404).json({ error: 'Documento não encontrado.' });
+        res.json(rows[0]);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/documentos/:docId', async (req, res) => {
+    try {
+        const [r] = await pool.query('DELETE FROM orcamento_documentos WHERE id = ?', [req.params.docId]);
+        if (!r.affectedRows) return res.status(404).json({ error: 'Documento não encontrado.' });
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // ---- Coleções (orçamentos, fornecedores, vouchers, etc.) ----
 
 app.get('/api/collections/:name', async (req, res) => {
@@ -263,15 +318,16 @@ app.put('/api/collections/:name', async (req, res) => {
                     );
                 }
 
-                await conn.query('DELETE FROM orcamento_documentos WHERE orcamento_id = ?', [item.id]);
+                // Documentos: os novos já entram direto pelo POST /api/orcamentos/:id/documentos
+                // (o orçamento só guarda a referência docId) e saem pelo DELETE /api/documentos/:id.
+                // Aqui não apaga nada (um aparelho com dados desatualizados apagaria anexos de
+                // outro); só grava anexos antigos ainda em base64, se ainda não estiverem no banco.
                 const documentos = Array.isArray(item.contratos)
                     ? item.contratos
                     : (item.contratoAnexo ? [item.contratoAnexo] : []);
                 for (const d of documentos) {
-                    await conn.query(
-                        'INSERT INTO orcamento_documentos (orcamento_id, nome, tipo, tamanho, dados, data_upload) VALUES (?,?,?,?,?,?)',
-                        [item.id, d.nome || null, d.tipo || null, d.tamanho || null, d.dados || null, d.dataUpload ? new Date(d.dataUpload) : null]
-                    );
+                    if (!d || d.docId || !d.dados) continue;
+                    await inserirDocumentoSeNaoExistir(conn, item.id, d);
                 }
             }
         }
