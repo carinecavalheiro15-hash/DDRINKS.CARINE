@@ -144,3 +144,26 @@ CREATE TABLE IF NOT EXISTS app_config (
     valor           LONGTEXT,
     atualizado_em   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Visão com todos os drinks em uso no sistema (padrão + personalizados), já sem os
+-- excluídos, com o preço vigente de cada pacote e se está ativo na tela de Criar Orçamento.
+-- Só leitura: o preço é alterado pela tela de Drinks do app. Lê os preços do JSON "dados"
+-- (gravado pelo app em cada ficha), então funciona mesmo sem as colunas bronze/prata/ouro.
+CREATE OR REPLACE VIEW drinks AS
+SELECT
+    f.id,
+    f.nome,
+    f.categoria,
+    CAST(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(f.dados, '$.bronze')), 'null') AS DECIMAL(10,2)) AS bronze,
+    CAST(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(f.dados, '$.prata')), 'null') AS DECIMAL(10,2)) AS prata,
+    CAST(NULLIF(JSON_UNQUOTE(JSON_EXTRACT(f.dados, '$.ouro')), 'null') AS DECIMAL(10,2)) AS ouro,
+    IF(JSON_CONTAINS(
+        COALESCE((SELECT valor FROM app_config WHERE chave = 'ddrinksDrinksInativos'), '[]'),
+        JSON_QUOTE(f.id)), 'Não', 'Sim') AS ativo,
+    IF(d.id IS NULL, 'Padrão', 'Personalizado') AS tipo,
+    f.atualizado_em
+FROM fichas_tecnicas f
+LEFT JOIN drinks_customizados d ON d.id = f.id
+WHERE NOT JSON_CONTAINS(
+    COALESCE((SELECT valor FROM app_config WHERE chave = 'ddrinksDrinksExcluidos'), '[]'),
+    JSON_QUOTE(f.id));
