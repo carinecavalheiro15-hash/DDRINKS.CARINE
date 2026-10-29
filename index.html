@@ -3291,7 +3291,7 @@
                         const ativo = !inativos.has(d.id);
                         return `
                         <div data-drink-id="${d.id}" style="display:grid;grid-template-columns:${COLUNAS};gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--gray-100);${ativo ? '' : 'opacity:.5;'}">
-                            <div style="color:var(--gray-900);font-weight:600;overflow-wrap:anywhere;">${d.nome}${d.tipo === 'personalizado' ? ' <span style="font-size:.66rem;font-weight:500;color:var(--gray-400);">(personalizado)</span>' : ''}</div>
+                            <div style="color:var(--gray-900);font-weight:600;overflow-wrap:anywhere;">${d.nome}${d.tipo === 'personalizado' ? ` <span style="font-size:.66rem;font-weight:500;color:var(--gray-400);">(personalizado)</span> <button type="button" title="Renomear drink" onclick="drinksGerenciarRenomear('${d.id}')" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:0 2px;">✏️</button>` : ''}</div>
                             <input type="number" class="form-input dg-preco" data-pacote="bronze" min="0" step="0.01" value="${precoB}" onchange="drinksGerenciarSalvar(true)" style="text-align:right;padding:6px 8px;" />
                             <input type="number" class="form-input dg-preco" data-pacote="prata" min="0" step="0.01" value="${precoP}" onchange="drinksGerenciarSalvar(true)" style="text-align:right;padding:6px 8px;" />
                             <input type="number" class="form-input dg-preco" data-pacote="ouro" min="0" step="0.01" value="${precoO}" onchange="drinksGerenciarSalvar(true)" style="text-align:right;padding:6px 8px;" />
@@ -3338,6 +3338,25 @@
             drinksGerenciarRender();
             if (document.getElementById('ftSearch')) ftRender(document.getElementById('ftSearch').value);
             showNotification(`Drink "${drink.nome}" excluído.`, 'success');
+        }
+
+        // Renomeia um drink personalizado no cadastro de preço e na ficha técnica juntos
+        function drinksGerenciarRenomear(id){
+            const customizados = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+            const drink = customizados.find(d => d.id === id);
+            if (!drink) return;
+            const novoNome = (prompt('Novo nome do drink:', drink.nome) || '').trim();
+            if (!novoNome || novoNome === drink.nome) return;
+            drink.nome = novoNome;
+            localStorage.setItem('drinksCustomizados', JSON.stringify(customizados));
+            const fichas = ftLoad();
+            const ficha = fichas.find(f => f.id === id);
+            if (ficha) { ficha.nome = novoNome; ftSave(fichas); }
+            carregarDrinksCustomizados();
+            aplicarDrinksAtivos();
+            drinksGerenciarRender();
+            if (document.getElementById('ftSearch')) ftRender(document.getElementById('ftSearch').value);
+            showNotification(`Drink renomeado para "${novoNome}".`, 'success');
         }
 
         function drinksGerenciarRestaurarExcluidos(){
@@ -6474,6 +6493,15 @@ html += htmlPacotes;
         const idx=editId?fichas.findIndex(f=>f.id===editId):-1;
         if(idx!==-1){
             fichas[idx]={...fichas[idx],nome,categoria:cat,ingredientes:ings,foto};
+            // Renomear a ficha renomeia também o drink personalizado (tabela de preços e orçamento)
+            const customizados=JSON.parse(localStorage.getItem('drinksCustomizados')||'[]');
+            const dc=customizados.find(d=>d.id===editId);
+            if(dc&&dc.nome!==nome){
+                dc.nome=nome;
+                localStorage.setItem('drinksCustomizados',JSON.stringify(customizados));
+                if(typeof carregarDrinksCustomizados==='function')carregarDrinksCustomizados();
+                if(typeof drinksGerenciarRender==='function')drinksGerenciarRender();
+            }
         } else {
             // editId pode já vir preenchido se uma foto foi anexada antes de salvar
             const nid=editId||(nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now());
