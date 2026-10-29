@@ -119,6 +119,9 @@ CREATE TABLE IF NOT EXISTS fichas_tecnicas (
     id              VARCHAR(100) PRIMARY KEY,
     nome            VARCHAR(255),
     categoria       VARCHAR(100),
+    bronze          DECIMAL(10,2),
+    prata           DECIMAL(10,2),
+    ouro            DECIMAL(10,2),
     dados           JSON NOT NULL,
     criado_em       DATETIME DEFAULT CURRENT_TIMESTAMP,
     atualizado_em   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

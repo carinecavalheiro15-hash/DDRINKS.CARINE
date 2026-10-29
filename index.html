@@ -6314,7 +6314,17 @@ html += htmlPacotes;
         if(mudou) ftSave(lista);
         return lista;
     }
-    function ftSave(d){localStorage.setItem('ddrinks_fichas',JSON.stringify(d));}
+    // Grava junto o preço vigente de cada pacote (catálogo + editado), pra ficar visível nas
+    // colunas bronze/prata/ouro da tabela fichas_tecnicas no banco
+    function ftComPrecos(f){
+        const r={...f};
+        ['bronze','prata','ouro'].forEach(p=>{
+            const v=precosPacotes[p]&&precosPacotes[p][f.id];
+            r[p]=v!=null?Number(v):null;
+        });
+        return r;
+    }
+    function ftSave(d){localStorage.setItem('ddrinks_fichas',JSON.stringify(d.map(ftComPrecos)));}
 
     function ftEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -6552,7 +6562,6 @@ html += htmlPacotes;
             id=editId||(nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now());
             fichas.push({id,nome,categoria:cat,ingredientes:ings,foto});
         }
-        ftSave(fichas);
 
         // Preço: vale o editado aqui (mesmo mecanismo da antiga tabela "Todos os Drinks")
         const override=drinksCarregarOverridePrecos();
@@ -6568,6 +6577,7 @@ html += htmlPacotes;
         }
         carregarDrinksCustomizados();
         aplicarDrinksAtivos();
+        ftSave(fichas); // depois de atualizar precosPacotes, pra ficha ir pro banco com o preço novo
 
         ftFecharModal();
         ftRender(document.getElementById('ftSearch').value);
@@ -6607,6 +6617,19 @@ html += htmlPacotes;
                 mudouFichas = true;
             }
         });
+
+        // Drink do catálogo de preços sem ficha (ex: Caipirinha de Cachaça) ganha ficha sem
+        // ingredientes, pra todo drink ter linha (com preço) na tabela fichas_tecnicas
+        padroesIds.forEach(id => {
+            if (fichasPorId.has(id)) return;
+            const nome = CARDAPIO_NOMES_DRINK_PADRAO[id] || id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            fichas.push({ id, nome, categoria: id.includes('sem_alcool') ? 'Não Alcoólicos' : 'Alcoólicos', ingredientes: [], foto: null });
+            fichasPorId.add(id);
+            mudouFichas = true;
+        });
+
+        // Preço gravado na ficha desatualizado (ou ainda não gravado) -> regrava
+        if (fichas.some(f => ['bronze', 'prata', 'ouro'].some(p => f[p] !== ftComPrecos(f)[p]))) mudouFichas = true;
 
         fichas.forEach(f => {
             if (padroesIds.has(f.id)) return; // já é do catálogo padrão, o preço vem de outro lugar

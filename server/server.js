@@ -88,7 +88,13 @@ const COLLECTIONS = {
     },
     'fichas-tecnicas': {
         table: 'fichas_tecnicas', idField: 'id',
-        columns: (item) => ({ nome: item.nome || null, categoria: item.categoria || null })
+        columns: (item) => ({
+            nome: item.nome || null,
+            categoria: item.categoria || null,
+            bronze: item.bronze != null && item.bronze !== '' ? item.bronze : null,
+            prata: item.prata != null && item.prata !== '' ? item.prata : null,
+            ouro: item.ouro != null && item.ouro !== '' ? item.ouro : null
+        })
     },
     'estoque-itens': {
         table: 'estoque_itens', idField: 'id',
