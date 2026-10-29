@@ -2876,6 +2876,13 @@
             try { return JSON.parse(localStorage.getItem(DRINKS_INATIVOS_CHAVE) || '[]'); }
             catch(e){ return []; }
         }
+        // Drinks do catálogo padrão excluídos pela tela de Drinks (não dá pra apagar do
+        // catálogo embutido, então ficam escondidos em todo lugar; podem ser restaurados).
+        const DRINKS_EXCLUIDOS_CHAVE = 'ddrinksDrinksExcluidos';
+        function drinksCarregarExcluidos(){
+            try { return JSON.parse(localStorage.getItem(DRINKS_EXCLUIDOS_CHAVE) || '[]'); }
+            catch(e){ return []; }
+        }
         function aplicarPrecosOverride(){
             const override = drinksCarregarOverridePrecos();
             ['bronze','prata','ouro'].forEach(p => {
@@ -2889,7 +2896,7 @@
         // marcado como inativo na tela de Drinks. Chamado depois que os drinks padrão e os
         // personalizados já estão no DOM.
         function aplicarDrinksAtivos(){
-            const inativos = new Set(drinksCarregarInativos());
+            const inativos = new Set([...drinksCarregarInativos(), ...drinksCarregarExcluidos()]);
             const ids = new Set(Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}));
             (JSON.parse(localStorage.getItem('drinksCustomizados') || '[]')).forEach(d => ids.add(d.id));
             ids.forEach(id => {
@@ -3237,7 +3244,8 @@
         // ==================== TODOS OS DRINKS (preço editável + ativar/inativar) ====================
         function drinksGerenciarListaCompleta(){
             const customizados = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
-            const padroes = Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}).map(id => ({
+            const excluidos = new Set(drinksCarregarExcluidos());
+            const padroes = Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}).filter(id => !excluidos.has(id)).map(id => ({
                 id,
                 nome: CARDAPIO_NOMES_DRINK_PADRAO[id] || id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
                 tipo: 'padrao'
@@ -3254,21 +3262,27 @@
             let lista = drinksGerenciarListaCompleta();
             if (filtro) lista = lista.filter(d => d.nome.toLowerCase().includes(filtro));
 
+            const qtdExcluidos = drinksCarregarExcluidos().length;
+            const restaurarHtml = qtdExcluidos
+                ? `<div style="margin-top:10px;font-size:.8rem;color:var(--gray-500);">${qtdExcluidos} drink(s) do catálogo padrão excluído(s). <a href="#" onclick="drinksGerenciarRestaurarExcluidos();return false;">Restaurar</a></div>`
+                : '';
+
             if (!lista.length) {
-                cont.innerHTML = '<div class="cliente-empty">Nenhum drink encontrado.</div>';
+                cont.innerHTML = '<div class="cliente-empty">Nenhum drink encontrado.</div>' + restaurarHtml;
                 return;
             }
 
-            const COLUNAS = '2fr 100px 100px 100px 64px';
+            const COLUNAS = '2fr 100px 100px 100px 64px 40px';
             cont.innerHTML = `
                 <div style="overflow-x:auto;">
-                <div style="min-width:600px;">
+                <div style="min-width:640px;">
                     <div style="display:grid;grid-template-columns:${COLUNAS};gap:8px;align-items:center;padding:0 10px 8px;border-bottom:2px solid var(--gray-200);">
                         <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);font-weight:700;">Drink</div>
                         <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);font-weight:700;text-align:right;">🥉 Bronze</div>
                         <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);font-weight:700;text-align:right;">🥈 Prata</div>
                         <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);font-weight:700;text-align:right;">🥇 Ouro</div>
                         <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);font-weight:700;text-align:center;">Ativo</div>
+                        <div></div>
                     </div>
                     ${lista.map(d => {
                         const precoB = (precosPacotes.bronze && precosPacotes.bronze[d.id]) || 0;
@@ -3282,11 +3296,57 @@
                             <input type="number" class="form-input dg-preco" data-pacote="prata" min="0" step="0.01" value="${precoP}" onchange="drinksGerenciarSalvar(true)" style="text-align:right;padding:6px 8px;" />
                             <input type="number" class="form-input dg-preco" data-pacote="ouro" min="0" step="0.01" value="${precoO}" onchange="drinksGerenciarSalvar(true)" style="text-align:right;padding:6px 8px;" />
                             <input type="checkbox" class="dg-ativo" ${ativo ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer;justify-self:center;" onchange="this.closest('[data-drink-id]').style.opacity=this.checked?'1':'.5';drinksGerenciarSalvar(true);" />
+                            <button type="button" title="Excluir drink" onclick="drinksGerenciarExcluir('${d.id}')" style="justify-self:center;background:none;border:none;cursor:pointer;font-size:1rem;padding:4px;">🗑</button>
                         </div>`;
                     }).join('')}
                 </div>
                 </div>
+                ${restaurarHtml}
             `;
+        }
+
+        function drinksGerenciarExcluir(id){
+            const drink = drinksGerenciarListaCompleta().find(d => d.id === id);
+            if (!drink) return;
+            if (!confirm(`Excluir o drink "${drink.nome}"? Ele some desta lista, da tela de Criar Orçamento e (se for personalizado) também da ficha técnica.`)) return;
+
+            // Tira das listas de preço editado e de inativos
+            const override = drinksCarregarOverridePrecos();
+            ['bronze', 'prata', 'ouro'].forEach(p => { if (override[p]) delete override[p][id]; });
+            localStorage.setItem(DRINKS_PRECOS_OVERRIDE_CHAVE, JSON.stringify(override));
+            localStorage.setItem(DRINKS_INATIVOS_CHAVE, JSON.stringify(drinksCarregarInativos().filter(x => x !== id)));
+
+            if (drink.tipo === 'personalizado') {
+                // Remove preço e ficha técnica juntos; se sobrasse a ficha, drinksSincronizarComFichas
+                // recriaria o drink com preço zerado na próxima abertura da tela.
+                const customizados = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
+                localStorage.setItem('drinksCustomizados', JSON.stringify(customizados.filter(d => d.id !== id)));
+                const fichas = ftLoad();
+                const semEssa = fichas.filter(f => f.id !== id);
+                if (semEssa.length !== fichas.length) ftSave(semEssa);
+                ['bronze', 'prata', 'ouro'].forEach(p => { if (precosPacotes[p]) delete precosPacotes[p][id]; });
+                carregarDrinksCustomizados();
+            } else {
+                // Catálogo padrão é embutido no app: só esconde (pode ser restaurado depois).
+                // Mantém o preço em precosPacotes pra orçamentos antigos com esse drink.
+                const excluidos = new Set(drinksCarregarExcluidos());
+                excluidos.add(id);
+                localStorage.setItem(DRINKS_EXCLUIDOS_CHAVE, JSON.stringify([...excluidos]));
+            }
+
+            aplicarDrinksAtivos();
+            drinksGerenciarRender();
+            if (document.getElementById('ftSearch')) ftRender(document.getElementById('ftSearch').value);
+            showNotification(`Drink "${drink.nome}" excluído.`, 'success');
+        }
+
+        function drinksGerenciarRestaurarExcluidos(){
+            if (!confirm('Restaurar todos os drinks do catálogo padrão que foram excluídos?')) return;
+            localStorage.removeItem(DRINKS_EXCLUIDOS_CHAVE);
+            aplicarDrinksAtivos();
+            drinksGerenciarRender();
+            if (document.getElementById('ftSearch')) ftRender(document.getElementById('ftSearch').value);
+            showNotification('Drinks restaurados.', 'success');
         }
 
         // silencioso = true quando chamado pelo salvamento automático (ao sair de cada campo)
@@ -5131,7 +5191,8 @@ html += htmlPacotes;
             const estoque = JSON.parse(localStorage.getItem('ddrinks_estoque') || '[]');
 
             const inativos = new Set(drinksCarregarInativos());
-            const totalDrinksPadrao = Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}).length;
+            const excluidos = new Set(drinksCarregarExcluidos());
+            const totalDrinksPadrao = Object.keys(DEFAULT_PRECOS_PACOTES.bronze || {}).filter(id => !excluidos.has(id)).length;
             const totalDrinks = totalDrinksPadrao + drinksCustom.length;
 
             const vouchersUsados = vouchers.filter(v => v.status === 'usado');
@@ -6262,7 +6323,8 @@ html += htmlPacotes;
     }
 
     function ftRender(filtro){
-        const lista=ftLoad();
+        const excluidos=new Set(drinksCarregarExcluidos());
+        const lista=ftLoad().filter(f=>!excluidos.has(f.id));
         const grid=document.getElementById('ftGrid');
         if(!grid)return;
         const t=(filtro||'').toLowerCase().trim();
