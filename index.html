@@ -6364,7 +6364,7 @@ html += htmlPacotes;
         const precoO=(precosPacotes.ouro && precosPacotes.ouro[f.id]) || 0;
         const semPreco=!(precoB||precoP||precoO);
         const precosHtml=`
-            <div style="display:flex;gap:10px;padding:0 14px 10px;font-size:.74rem;color:${semPreco?'var(--warning-color)':'var(--gray-600)'};">
+            <div style="display:flex;gap:10px;padding:10px 14px 6px;font-size:.74rem;color:${semPreco?'var(--warning-color)':'var(--gray-600)'};">
                 ${semPreco ? '⚠️ Sem preço cadastrado ainda' : `
                     <span>🥉 R$ ${precoB.toFixed(2)}</span>
                     <span>🥈 R$ ${precoP.toFixed(2)}</span>
