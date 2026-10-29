@@ -1839,6 +1839,10 @@
                 .ft-btn-edit:hover { background:var(--gray-200); }
                 .ft-btn-del { background:#fee2e2;color:#b91c1c; }
                 .ft-btn-del:hover { background:#fecaca; }
+                .ft-btn-toggle { background:#fef3c7;color:#92400e; }
+                .ft-btn-toggle:hover { background:#fde68a; }
+                .ft-card-inativo { opacity:.55; }
+                .ft-ing-vazio { font-size:.75rem;color:var(--gray-400);font-style:italic; }
                 .ft-empty { text-align:center;color:var(--gray-400);padding:2.5rem 1rem;grid-column:1/-1;font-size:.875rem; }
 
                 /* Modal fichas */
@@ -2053,21 +2057,10 @@
                     <!-- Lista de drinks cadastrados removida: os preços já aparecem em "Todos os Drinks" e a exclusão fica no card da ficha técnica -->
                 </div>
 
-                <!-- Card: Todos os Drinks (preços e ativo/inativo) -->
+                <!-- Card: Drinks (preço por pacote, ativo/inativo, ingredientes e foto) -->
                 <div class="card">
-                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:4px;">Todos os Drinks</h3>
-                    <p class="card-subtitle" style="margin-bottom:14px;">Edite o preço de cada pacote e marque se o drink deve aparecer na tela de Criar Orçamento</p>
-                    <input type="text" id="drinksGerenciarFiltro" class="form-input" placeholder="🔍 Buscar drink..." oninput="drinksGerenciarRender()" style="margin-bottom:12px;max-width:320px;" />
-                    <div id="drinksGerenciarLista"></div>
-                    <div style="margin-top:14px;">
-                        <button type="button" class="btn btn-primary" onclick="drinksGerenciarSalvar()">💾 Salvar Alterações</button>
-                    </div>
-                </div>
-
-                <!-- Card: Fichas Técnicas -->
-                <div class="card">
-                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:4px;">Fichas Técnicas</h3>
-                    <p class="card-subtitle" style="margin-bottom:14px;">Ingredientes e foto de cada drink — usados no controle de estoque e no cardápio digital</p>
+                    <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:4px;">Drinks</h3>
+                    <p class="card-subtitle" style="margin-bottom:14px;">Preço de cada pacote, ingredientes e foto de cada drink. Drinks inativos não aparecem na tela de Criar Orçamento.</p>
                     <div class="ft-toolbar">
                         <input type="text" class="ft-search" id="ftSearch" placeholder="🔍 Buscar drink ou ingrediente..." oninput="ftFiltrar(this.value)" />
                         <button class="est-btn-add" style="flex:0;padding:8px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;font-size:.82rem;" onclick="ftAbrirModal()">
@@ -2076,6 +2069,7 @@
                         </button>
                     </div>
                     <div id="ftGrid"></div>
+                    <div id="ftRestaurar"></div>
                 </div>
             </div>
 
@@ -2100,6 +2094,23 @@
                                 <option value="Especiais">Especiais</option>
                                 <option value="Autorais">Autorais</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Preço por pacote (R$)</label>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+                                <div>
+                                    <span style="font-size:.72rem;color:var(--gray-500);">🥉 Bronze</span>
+                                    <input type="number" class="form-input" id="ftPrecoBronze" min="0" step="0.01" placeholder="0,00" />
+                                </div>
+                                <div>
+                                    <span style="font-size:.72rem;color:var(--gray-500);">🥈 Prata</span>
+                                    <input type="number" class="form-input" id="ftPrecoPrata" min="0" step="0.01" placeholder="0,00" />
+                                </div>
+                                <div>
+                                    <span style="font-size:.72rem;color:var(--gray-500);">🥇 Ouro</span>
+                                    <input type="number" class="form-input" id="ftPrecoOuro" min="0" step="0.01" placeholder="0,00" />
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Foto do drink (opcional)</label>
@@ -6309,11 +6320,34 @@ html += htmlPacotes;
 
     const FT_ORDEM_CATEGORIAS = ['Alcoólicos', 'Não Alcoólicos', 'Especiais', 'Autorais'];
 
+    // Fichas + drinks do catálogo de preços que ainda não têm ficha (ex: Caipirinha de Cachaça),
+    // pra todo drink ter um card aqui (preço, ativo e exclusão ficam todos nesse card).
+    function ftListaComPrecos(){
+        const excluidos=new Set(drinksCarregarExcluidos());
+        const fichas=ftLoad().filter(f=>!excluidos.has(f.id));
+        const comFicha=new Set(fichas.map(f=>f.id));
+        const semFicha=drinksGerenciarListaCompleta().filter(d=>!comFicha.has(d.id)).map(d=>({
+            id:d.id, nome:d.nome, categoria:d.id.includes('sem_alcool')?'Não Alcoólicos':'Alcoólicos', ingredientes:[], foto:null
+        }));
+        return [...fichas,...semFicha];
+    }
+
+    function ftAlternarAtivo(id){
+        const inativos=new Set(drinksCarregarInativos());
+        if(inativos.has(id))inativos.delete(id);else inativos.add(id);
+        localStorage.setItem(DRINKS_INATIVOS_CHAVE,JSON.stringify([...inativos]));
+        aplicarDrinksAtivos();
+        ftRender(document.getElementById('ftSearch').value);
+        estToast(inativos.has(id)?'Drink inativado (não aparece no orçamento)':'Drink ativado','success');
+    }
+
     function ftMontarCard(f){
         const cor=FT_CORES[f.categoria]||'#ef4444';
+        const ativo=!drinksCarregarInativos().includes(f.id);
         const ings=f.ingredientes.filter(i=>i.nome).map(i=>
             `<li class="ft-ing-item"><span class="ft-ing-name">${ftEsc(i.nome)}</span>${i.qty?`<span class="ft-ing-qty">${ftEsc(i.qty)}</span>`:''}</li>`
-        ).join('');
+        ).join('') || '<li class="ft-ing-vazio">Sem ingredientes cadastrados</li>';
+        const toggleBtn=`<button class="ft-btn ft-btn-toggle" onclick="ftAlternarAtivo('${ftEsc(f.id)}')">${ativo?'⏸ Inativar':'▶ Ativar'}</button>`;
         const delBtn=`<button class="ft-btn ft-btn-del" onclick="ftExcluir('${ftEsc(f.id)}')">🗑 Excluir</button>`;
         const precoB=(precosPacotes.bronze && precosPacotes.bronze[f.id]) || 0;
         const precoP=(precosPacotes.prata && precosPacotes.prata[f.id]) || 0;
@@ -6328,11 +6362,11 @@ html += htmlPacotes;
                 `}
             </div>
         `;
-        return `<div class="ft-card">
+        return `<div class="ft-card${ativo?'':' ft-card-inativo'}">
             <div class="ft-card-head" style="background:linear-gradient(135deg,${cor},${cor}bb);">
                 <div>
                     <div class="ft-card-name">${ftEsc(f.nome)}</div>
-                    <span class="ft-card-badge">${ftEsc(f.categoria)}</span>
+                    <span class="ft-card-badge">${ftEsc(f.categoria)}</span>${ativo?'':' <span class="ft-card-badge">Inativo</span>'}
                 </div>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="opacity:.65;flex-shrink:0;margin-top:2px;"><path d="M4 3h16" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M7 6l5 6 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12v6" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M9 18h6" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
             </div>
@@ -6340,16 +6374,21 @@ html += htmlPacotes;
             <div class="ft-card-body"><ul class="ft-ing-list">${ings}</ul></div>
             <div class="ft-card-foot">
                 <button class="ft-btn ft-btn-edit" onclick="ftEditar('${ftEsc(f.id)}')">✏️ Editar</button>
+                ${toggleBtn}
                 ${delBtn}
             </div>
         </div>`;
     }
 
     function ftRender(filtro){
-        const excluidos=new Set(drinksCarregarExcluidos());
-        const lista=ftLoad().filter(f=>!excluidos.has(f.id));
+        const lista=ftListaComPrecos();
         const grid=document.getElementById('ftGrid');
         if(!grid)return;
+        const restaurar=document.getElementById('ftRestaurar');
+        const qtdExcluidos=drinksCarregarExcluidos().length;
+        if(restaurar)restaurar.innerHTML=qtdExcluidos
+            ?`<div style="margin-top:12px;font-size:.8rem;color:var(--gray-500);">${qtdExcluidos} drink(s) do catálogo padrão excluído(s). <a href="#" onclick="drinksGerenciarRestaurarExcluidos();return false;">Restaurar</a></div>`
+            :'';
         const t=(filtro||'').toLowerCase().trim();
         const vis=t?lista.filter(f=>f.nome.toLowerCase().includes(t)||f.categoria.toLowerCase().includes(t)||f.ingredientes.some(i=>i.nome.toLowerCase().includes(t))):lista;
         if(!vis.length){grid.innerHTML='<div class="ft-empty">Nenhum drink encontrado.</div>';return;}
@@ -6386,9 +6425,13 @@ html += htmlPacotes;
         document.getElementById('ftCategoria').value='Alcoólicos';
         document.getElementById('ftIngEditor').innerHTML='';
         document.getElementById('ftFotoPath').value='';
+        ['bronze','prata','ouro'].forEach(p=>{
+            const v=id&&precosPacotes[p]?precosPacotes[p][id]:undefined;
+            document.getElementById('ftPreco'+p.charAt(0).toUpperCase()+p.slice(1)).value=(v!=null&&v!==0)?v:'';
+        });
         let fotoAtual='';
         if(id){
-            const f=ftLoad().find(x=>x.id===id);
+            const f=ftListaComPrecos().find(x=>x.id===id);
             if(f){
                 document.getElementById('ftNome').value=f.nome;
                 document.getElementById('ftCategoria').value=f.categoria;
@@ -6491,27 +6534,41 @@ html += htmlPacotes;
         const rows=document.querySelectorAll('#ftIngEditor .ft-ing-row');
         const ings=[];
         rows.forEach(r=>{const n=r.querySelector('.fting-nome').value.trim(),q=r.querySelector('.fting-qty').value.trim();if(n)ings.push({nome:n,qty:q});});
-        if(!ings.length){estToast('Adicione ao menos um ingrediente','error');return;}
-        const fichas=ftLoad();
         const editId=document.getElementById('ftEditId').value;
+        // Drinks já existentes (ex: só com preço, sem ficha ainda) podem ser salvos sem ingrediente
+        if(!ings.length&&!editId){estToast('Adicione ao menos um ingrediente','error');return;}
+        const precos={};
+        ['bronze','prata','ouro'].forEach(p=>{
+            precos[p]=parseFloat(document.getElementById('ftPreco'+p.charAt(0).toUpperCase()+p.slice(1)).value)||0;
+        });
+        const fichas=ftLoad();
         const idx=editId?fichas.findIndex(f=>f.id===editId):-1;
+        let id=editId;
         if(idx!==-1){
             fichas[idx]={...fichas[idx],nome,categoria:cat,ingredientes:ings,foto};
-            // Renomear a ficha renomeia também o drink personalizado (tabela de preços e orçamento)
-            const customizados=JSON.parse(localStorage.getItem('drinksCustomizados')||'[]');
-            const dc=customizados.find(d=>d.id===editId);
-            if(dc&&dc.nome!==nome){
-                dc.nome=nome;
-                localStorage.setItem('drinksCustomizados',JSON.stringify(customizados));
-                if(typeof carregarDrinksCustomizados==='function')carregarDrinksCustomizados();
-                if(typeof drinksGerenciarRender==='function')drinksGerenciarRender();
-            }
         } else {
-            // editId pode já vir preenchido se uma foto foi anexada antes de salvar
-            const nid=editId||(nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now());
-            fichas.push({id:nid,nome,categoria:cat,ingredientes:ings,foto});
+            // editId pode já vir preenchido se uma foto foi anexada antes de salvar, ou ser um
+            // drink do catálogo de preços que ainda não tinha ficha
+            id=editId||(nome.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_')+'_'+Date.now());
+            fichas.push({id,nome,categoria:cat,ingredientes:ings,foto});
         }
         ftSave(fichas);
+
+        // Preço: vale o editado aqui (mesmo mecanismo da antiga tabela "Todos os Drinks")
+        const override=drinksCarregarOverridePrecos();
+        ['bronze','prata','ouro'].forEach(p=>{ (override[p]=override[p]||{})[id]=precos[p]; });
+        localStorage.setItem(DRINKS_PRECOS_OVERRIDE_CHAVE,JSON.stringify(override));
+        // Drink fora do catálogo padrão: mantém o cadastro de preço (nome + valores) junto da ficha
+        if(!DEFAULT_PRECOS_PACOTES.bronze.hasOwnProperty(id)){
+            const customizados=JSON.parse(localStorage.getItem('drinksCustomizados')||'[]');
+            let dc=customizados.find(d=>d.id===id);
+            if(!dc){dc={id,sabor:''};customizados.push(dc);}
+            Object.assign(dc,{nome},precos);
+            localStorage.setItem('drinksCustomizados',JSON.stringify(customizados));
+        }
+        carregarDrinksCustomizados();
+        aplicarDrinksAtivos();
+
         ftFecharModal();
         ftRender(document.getElementById('ftSearch').value);
         estToast('✅ Drink salvo!','success');
