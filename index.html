@@ -3250,7 +3250,7 @@
                 nome: CARDAPIO_NOMES_DRINK_PADRAO[id] || id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
                 tipo: 'padrao'
             }));
-            const customs = customizados.map(d => ({ id: d.id, nome: d.nome, tipo: 'personalizado' }));
+            const customs = customizados.filter(d => !excluidos.has(d.id)).map(d => ({ id: d.id, nome: d.nome, tipo: 'personalizado' }));
             return [...padroes, ...customs].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
         }
 
@@ -3306,9 +3306,14 @@
         }
 
         function drinksGerenciarExcluir(id){
-            const drink = drinksGerenciarListaCompleta().find(d => d.id === id);
+            // Ficha sem preço (ainda não sincronizada) não está na lista completa: usa o nome da ficha
+            const ficha = ftLoad().find(f => f.id === id);
+            const drink = drinksGerenciarListaCompleta().find(d => d.id === id) || (ficha && { id, nome: ficha.nome, tipo: 'personalizado' });
             if (!drink) return;
-            if (!confirm(`Excluir o drink "${drink.nome}"? Ele some desta lista, da tela de Criar Orçamento e (se for personalizado) também da ficha técnica.`)) return;
+            // Fichas do catálogo padrão (FT_PADRAO) também só ficam ocultas, mesmo quando o preço
+            // delas está em drinksCustomizados (ex: Cotton Fairy Sem Álcool), pra poderem ser restauradas.
+            if (FT_PADRAO.some(f => f.id === id)) drink.tipo = 'padrao';
+            if (!confirm(`Excluir o drink "${drink.nome}"? Ele some da tela de Drinks, das fichas técnicas e da tela de Criar Orçamento.${drink.tipo === 'padrao' ? ' Pode ser restaurado depois.' : ''}`)) return;
 
             // Tira das listas de preço editado e de inativos
             const override = drinksCarregarOverridePrecos();
@@ -6306,11 +6311,10 @@ html += htmlPacotes;
 
     function ftMontarCard(f){
         const cor=FT_CORES[f.categoria]||'#ef4444';
-        const isPadrao=id=>FT_PADRAO.some(p=>p.id===id);
         const ings=f.ingredientes.filter(i=>i.nome).map(i=>
             `<li class="ft-ing-item"><span class="ft-ing-name">${ftEsc(i.nome)}</span>${i.qty?`<span class="ft-ing-qty">${ftEsc(i.qty)}</span>`:''}</li>`
         ).join('');
-        const delBtn=!isPadrao(f.id)?`<button class="ft-btn ft-btn-del" onclick="ftExcluir('${ftEsc(f.id)}')">🗑 Excluir</button>`:'';
+        const delBtn=`<button class="ft-btn ft-btn-del" onclick="ftExcluir('${ftEsc(f.id)}')">🗑 Excluir</button>`;
         const precoB=(precosPacotes.bronze && precosPacotes.bronze[f.id]) || 0;
         const precoP=(precosPacotes.prata && precosPacotes.prata[f.id]) || 0;
         const precoO=(precosPacotes.ouro && precosPacotes.ouro[f.id]) || 0;
@@ -6513,21 +6517,10 @@ html += htmlPacotes;
         estToast('✅ Drink salvo!','success');
     }
 
+    // Mesma exclusão da tabela "Todos os Drinks" (padrão fica oculto e pode ser restaurado;
+    // personalizado é apagado com preço e ficha juntos)
     function ftExcluir(id){
-        if(!confirm('Excluir este drink?'))return;
-        ftSave(ftLoad().filter(f=>f.id!==id));
-        // Remove também o preço correspondente, se for um drink personalizado (não do
-        // catálogo padrão) — pra não sobrar um preço sem ficha técnica.
-        const drinks = JSON.parse(localStorage.getItem('drinksCustomizados') || '[]');
-        const semEsse = drinks.filter(d => d.id !== id);
-        if (semEsse.length !== drinks.length) {
-            localStorage.setItem('drinksCustomizados', JSON.stringify(semEsse));
-            if (typeof drinksGerenciarRender === 'function') drinksGerenciarRender();
-            if (typeof carregarDrinksCustomizados === 'function') carregarDrinksCustomizados();
-            if (typeof renderizarListaDrinksConfig === 'function') renderizarListaDrinksConfig();
-        }
-        ftRender(document.getElementById('ftSearch').value);
-        estToast('Drink excluído','warning');
+        drinksGerenciarExcluir(id);
     }
 
     // Reconcilia os dois cadastros de drink (preço e ficha técnica), criando do lado que
