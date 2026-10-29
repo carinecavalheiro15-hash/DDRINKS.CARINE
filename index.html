@@ -36,6 +36,16 @@
                 outro.value = '';
             }
         }
+
+        function toggleAnfitriao(forcarExibir) {
+            const campo = document.getElementById('clienteAnfitriao');
+            const btn = document.getElementById('btnAnfitriao');
+            if (!campo || !btn) return;
+            const exibir = typeof forcarExibir === 'boolean' ? forcarExibir : campo.style.display === 'none';
+            campo.style.display = exibir ? 'block' : 'none';
+            btn.textContent = exibir ? '− Remover anfitrião' : '+ Adicionar anfitrião';
+            if (!exibir) campo.value = '';
+        }
         
         // Log para verificação
         window.addEventListener('load', () => {
@@ -371,6 +381,13 @@
         .justify-center { justify-content: center; }
         .justify-between { justify-content: space-between; }
         .gap-4 { gap: 1rem; }
+
+        /* Formulário de Informações do Cliente: grade única e compacta */
+        .form-cliente-grid { row-gap: 1.25rem; align-items: start; margin-bottom: 1rem; }
+        .form-cliente-grid .form-group { margin-bottom: 0; }
+        @media (min-width: 769px) and (max-width: 1100px) {
+            .form-cliente-grid { grid-template-columns: repeat(2, 1fr); }
+        }
 
         .page {
             display: none;
@@ -1016,22 +1033,40 @@
                 </div>
 
                 <form>
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-3 gap-4 form-cliente-grid">
                         <div class="form-group">
                             <label for="clienteNome" class="form-label">Nome do Cliente *</label>
                             <input type="text" id="clienteNome" class="form-input" placeholder="Nome completo do cliente" required />
                         </div>
                         <div class="form-group">
+                            <label for="clienteTipoContato" class="form-label">Perfil do Contato *</label>
+                            <select id="clienteTipoContato" class="form-input" required>
+                                <option value="">Selecione...</option>
+                                <option value="Cerimonialista">Cerimonialista</option>
+                                <option value="Noivos">Noivos</option>
+                                <option value="Debutante">Debutante</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Anfitrião (opcional)</label>
+                            <button type="button" id="btnAnfitriao" class="btn btn-secondary" onclick="toggleAnfitriao()" style="width:100%;">+ Adicionar anfitrião</button>
+                            <input type="text" id="clienteAnfitriao" class="form-input" placeholder="Nome do anfitrião" style="margin-top:8px; display:none;" />
+                        </div>
+
+                        <div class="form-group">
                             <label for="clienteTelefone" class="form-label">Telefone *</label>
                             <input type="tel" id="clienteTelefone" class="form-input" placeholder="(11) 99999-9999" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteEndereco" class="form-label">Local</label>
+                            <input type="text" id="clienteEndereco" class="form-input" placeholder="Nome do local (ex: Espaço Villa Verde)" />
                         </div>
                         <div class="form-group">
                             <label for="clienteCidade" class="form-label">Cidade *</label>
                             <input type="text" id="clienteCidade" class="form-input" placeholder="Cidade do evento" required />
                         </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-4">
+
                         <div class="form-group">
                             <label for="dataEvento" class="form-label">Data do Evento *</label>
                             <input type="date" id="dataEvento" class="form-input" required oninput="document.getElementById('dataEventoISO').value = this.value;">
@@ -1039,7 +1074,7 @@
                         </div>
                         <div class="form-group">
                             <label for="dataDegustacaoForm" class="form-label">Agendar Degustação</label>
-                            <input type="date" id="dataDegustacaoForm" class="form-input" style="max-width:220px;" />
+                            <input type="date" id="dataDegustacaoForm" class="form-input" />
                             <small style="display:block;margin-top:4px;font-size:.75rem;color:var(--gray-500);">Opcional — alerta 2 dias antes</small>
                         </div>
                         <div class="form-group">
@@ -1058,13 +1093,6 @@
                                 <option value="Outros">Outros</option>
                             </select>
                             <input type="text" id="descricaoOutro" class="form-input" placeholder="Descreva (quando Outros)" style="margin-top:8px; display:none;" />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="form-group">
-                            <label for="clienteEndereco" class="form-label">Endereço do Evento (opcional)</label>
-                            <input type="text" id="clienteEndereco" class="form-input" placeholder="Rua, número, bairro..." />
                         </div>
                         <div class="form-group">
                             <label for="clienteVoucherCodigo" class="form-label">Código de Indicação (opcional)</label>
@@ -3499,6 +3527,8 @@
             const clienteTelefone = document.getElementById('clienteTelefone').value.trim();
             const clienteCidade = document.getElementById('clienteCidade').value.trim();
             const clienteEndereco = document.getElementById('clienteEndereco').value.trim();
+            const clienteTipoContato = document.getElementById('clienteTipoContato').value;
+            const clienteAnfitriao = document.getElementById('clienteAnfitriao').value.trim();
             const dataEvento = document.getElementById('dataEventoISO').value;
             const quantidadeConvidados = document.getElementById('quantidadeConvidados').value;
             const rawCustomDrinkName = document.getElementById('customDrinkName').value.trim();
@@ -3510,7 +3540,7 @@
             const pacote = document.getElementById('pacoteSelecionado').value;
             const voucherCodigoIndicacao = (document.getElementById('clienteVoucherCodigo')?.value || '').trim().toUpperCase();
 
-            if (!clienteNome || !clienteTelefone || !clienteCidade || !dataEvento || !quantidadeConvidados || !descricaoEvento) {
+            if (!clienteNome || !clienteTelefone || !clienteCidade || !clienteTipoContato || !dataEvento || !quantidadeConvidados || !descricaoEvento) {
                 showNotification("Por favor, preencha todas as informações do cliente!", "warning");
                 return;
             }
@@ -3666,6 +3696,8 @@
             orcamentoParaSalvar.telefone = clienteTelefone;
             orcamentoParaSalvar.cidade = clienteCidade;
             orcamentoParaSalvar.endereco = clienteEndereco;
+            orcamentoParaSalvar.tipoContato = clienteTipoContato;
+            orcamentoParaSalvar.anfitriao = clienteAnfitriao;
             orcamentoParaSalvar.data = dataEvento;
             orcamentoParaSalvar.quantidadeConvidados = parseInt(quantidadeConvidados, 10);
             orcamentoParaSalvar.descricao = descricaoEvento;
@@ -3753,6 +3785,8 @@
                         </svg>
                     </span>Informações do Cliente</h3>
                 <p><strong>Nome:</strong> ${clienteNome}</p>
+                <p><strong>Contato:</strong> ${clienteTipoContato}</p>
+                ${clienteAnfitriao ? `<p><strong>Anfitrião:</strong> ${clienteAnfitriao}</p>` : ''}
                 <p><strong>Telefone:</strong> ${clienteTelefone}</p>
                 <p><strong>Cidade:</strong> ${clienteCidade}</p>
                 <p><strong>Data do Evento:</strong> ${formatarData(dataEvento)}</p>
@@ -3783,6 +3817,8 @@ html += htmlPacotes;
             document.getElementById('clienteTelefone').value = '';
             document.getElementById('clienteCidade').value = '';
             document.getElementById('clienteEndereco').value = '';
+            document.getElementById('clienteTipoContato').value = '';
+            toggleAnfitriao(false);
             document.getElementById('dataEvento').value = '';
             document.getElementById('dataEventoISO').value = '';
             document.getElementById('quantidadeConvidados').value = '';
@@ -5008,10 +5044,18 @@ html += htmlPacotes;
 
             showPage('home');
 
+            // Limpa o resultado e os dados de PDF do último orçamento calculado
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('btnPDF').style.display = 'none';
+            orcamentoAtual = null;
+
             document.getElementById('clienteNome').value = orcamento.cliente || '';
             document.getElementById('clienteTelefone').value = orcamento.telefone || '';
             document.getElementById('clienteCidade').value = orcamento.cidade || '';
             document.getElementById('clienteEndereco').value = orcamento.endereco || '';
+            document.getElementById('clienteTipoContato').value = orcamento.tipoContato || '';
+            toggleAnfitriao(!!orcamento.anfitriao);
+            document.getElementById('clienteAnfitriao').value = orcamento.anfitriao || '';
             document.getElementById('dataEvento').value = orcamento.data || '';
             document.getElementById('dataEventoISO').value = orcamento.data || '';
             document.getElementById('quantidadeConvidados').value = orcamento.quantidadeConvidados || '';
@@ -9638,7 +9682,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             <div class="cliente-ver-grid">
                 <div><div class="cliente-ver-label">Telefone</div><div class="cliente-ver-valor">📞 ${orc.telefone || '—'}</div></div>
                 <div><div class="cliente-ver-label">Cidade</div><div class="cliente-ver-valor">🏙️ ${orc.cidade || '—'}</div></div>
-                <div><div class="cliente-ver-label">Endereço do Evento</div><div class="cliente-ver-valor">📍 ${orc.endereco || '—'}</div></div>
+                <div><div class="cliente-ver-label">Local</div><div class="cliente-ver-valor">📍 ${orc.endereco || '—'}</div></div>
                 <div><div class="cliente-ver-label">Data do Evento</div><div class="cliente-ver-valor">📅 ${orc.dataFormatada || formatarData(orc.data)}</div></div>
                 <div><div class="cliente-ver-label">Convidados</div><div class="cliente-ver-valor">👥 ${orc.quantidadeConvidados || 0}</div></div>
                 <div><div class="cliente-ver-label">Tipo de Evento</div><div class="cliente-ver-valor">📝 ${orc.descricao || '—'}</div></div>
