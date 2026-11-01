@@ -1003,6 +1003,38 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Card: Marcas por Pacote (exibidas no PDF) -->
+            <div class="card" style="max-width:700px; margin: 0 auto 2rem;">
+                <div class="card-header" style="display:flex;flex-direction:column;align-items:center;">
+                    <h2 class="card-title">
+                        <span style="vertical-align:middle;margin-right:8px;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>
+                        </span>Marcas por Pacote
+                    </h2>
+                    <p class="card-subtitle">Opções de marcas exibidas no PDF do orçamento. Separe as marcas por vírgula.</p>
+                </div>
+
+                <div style="padding:1rem 1.2rem 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="cfg-marcas-bronze">🥉 Pacote Bronze</label>
+                        <textarea id="cfg-marcas-bronze" class="form-input" rows="3" style="resize:vertical;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="cfg-marcas-prata">🥈 Pacote Prata</label>
+                        <textarea id="cfg-marcas-prata" class="form-input" rows="3" style="resize:vertical;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="cfg-marcas-ouro">🥇 Pacote Ouro</label>
+                        <textarea id="cfg-marcas-ouro" class="form-input" rows="3" style="resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="salvarMarcasPacotes()" style="flex:1;">Salvar Marcas</button>
+                        <button class="btn btn-secondary" onclick="restaurarMarcasPadrao()" style="flex:1;">Restaurar Padrão</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Página Principal (Orçamentos) -->
@@ -2998,6 +3030,7 @@
                 aplicarDrinksAtivos();
             } else if (pageId === 'config') {
                 atualizarConfigPreview();
+                renderizarMarcasPacotesConfig();
             } else if (pageId === 'drinks') {
                 drinksSincronizarComFichas();
                 renderizarListaDrinksConfig();
@@ -3451,6 +3484,61 @@
             aplicarDrinksAtivos();
             if (typeof atualizarPrecos === 'function') atualizarPrecos();
             if (!silencioso) showNotification('💾 Preços e disponibilidade dos drinks salvos!', 'success');
+        }
+
+        // ===== MARCAS POR PACOTE (exibidas no PDF) =====
+
+        const MARCAS_PACOTES_PADRAO = {
+            bronze: 'Vodka Smirnoff, Gin Seagers, Whisky Passport, Espumante Salton Series, Rum Bacardi, Campari, Martini Vermouth, Stock Triple Sec, Tequila Tequileiros, Aperol',
+            prata: 'Vodka Absolut, Gin Gordons, Whisky Ballantines, Stock Triple Sec, Campari, Martini Vermouth, Tequila Jose Cuervo, Cointreau, Espumante Freixenet, Aperol',
+            ouro: 'Vodka Grey Goose, Gin Tanqueray, Espumante Chandon, Whisky Jack Daniels, Rum Bacardi, Martini Vermouth, Campari, Aperol, Cointreau, Tequila Jose Cuervo'
+        };
+
+        function getMarcasPacotes() {
+            let salvas = {};
+            try {
+                salvas = JSON.parse(localStorage.getItem('ddrinks_marcas_pacotes') || '{}') || {};
+            } catch (e) {
+                salvas = {};
+            }
+            return { ...MARCAS_PACOTES_PADRAO, ...salvas };
+        }
+
+        function renderizarMarcasPacotesConfig() {
+            const marcas = getMarcasPacotes();
+            ['bronze', 'prata', 'ouro'].forEach(p => {
+                const campo = document.getElementById('cfg-marcas-' + p);
+                if (campo) campo.value = marcas[p];
+            });
+        }
+
+        function salvarMarcasPacotes() {
+            const marcas = {};
+            for (const p of ['bronze', 'prata', 'ouro']) {
+                const valor = document.getElementById('cfg-marcas-' + p).value.trim();
+                if (!valor) {
+                    showNotification('Informe ao menos uma marca para cada pacote!', 'warning');
+                    return;
+                }
+                marcas[p] = valor;
+            }
+            localStorage.setItem('ddrinks_marcas_pacotes', JSON.stringify(marcas));
+            showNotification('Marcas salvas! Os próximos PDFs já usarão as novas marcas.', 'success');
+        }
+
+        function restaurarMarcasPadrao() {
+            if (!confirm('Restaurar as marcas padrão de todos os pacotes?')) return;
+            localStorage.removeItem('ddrinks_marcas_pacotes');
+            renderizarMarcasPacotesConfig();
+            showNotification('Marcas padrão restauradas.', 'success');
+        }
+
+        function escaparHtml(texto) {
+            return String(texto)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         function atualizarConfigPreview() {
@@ -3939,11 +4027,8 @@ html += htmlPacotes;
             `;
 
             const pacoteTotals = {};
-            const bebidasPorPacote = {
-                bronze: 'Vodka Smirnoff, Gin Seagers, Whisky Passport, Espumante Salton Series, Rum Bacardi, Campari, Martini Vermouth, Stock Triple Sec, Tequila Tequileiros, Aperol',
-                prata: 'Vodka Absolut, Gin Gordons, Whisky Ballantines, Stock Triple Sec, Campari, Martini Vermouth, Tequila Jose Cuervo, Cointreau, Espumante Freixenet, Aperol',
-                ouro: 'Vodka Grey Goose, Gin Tanqueray, Espumante Chandon, Whisky Jack Daniels, Rum Bacardi, Martini Vermouth, Campari, Aperol, Cointreau, Tequila Jose Cuervo'
-            };
+            // Marcas editáveis em Configurações > Marcas por Pacote
+            const bebidasPorPacote = getMarcasPacotes();
 
             const ordemPacotes = ['bronze', 'prata', 'ouro'];
             ordemPacotes.forEach(pacoteNome => {
@@ -3985,7 +4070,7 @@ html += htmlPacotes;
                             <strong style="font-size: 13px;">Total: R$ ${pacoteTotals[pacoteNome].totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong>
                         </div>
                         <div style="margin-top: 10px; color: #f3f4f6; font-size: 11px; line-height: 1.4; text-align: left;">
-                            Opções de marcas: ${bebidasPorPacote[pacoteNome]}
+                            Opções de marcas: ${escaparHtml(bebidasPorPacote[pacoteNome])}
                         </div>
                     </div>
                 `;
