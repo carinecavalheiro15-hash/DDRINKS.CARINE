@@ -116,7 +116,8 @@
         width:72px;height:72px;border-radius:12px;flex-shrink:0;
         border:1px solid rgba(245,196,81,.35);background:#1a1a1a;
     }
-    .drink-foto{ object-fit:cover; display:block; }
+    /* Foto inteira, sem cortar: mantém a proporção original (altura acompanha a largura). */
+    .drink-foto{ height:auto; max-height:110px; object-fit:contain; display:block; }
     .drink-sem-foto{ display:flex;align-items:center;justify-content:center;font-size:28px; }
     .drink-texto{ flex:1; min-width:0; }
     .drink-nome{ font-size:15.5px;font-weight:600;color:#f8f8f8;line-height:1.3; }
