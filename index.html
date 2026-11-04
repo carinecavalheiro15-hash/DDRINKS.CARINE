@@ -2645,6 +2645,7 @@
                             <input type="text" id="fornecedorTelefone" class="form-input" placeholder="Telefone" style="max-width:160px;" />
                             <input type="email" id="fornecedorEmail" class="form-input" placeholder="Email" style="max-width:200px;" />
                             <input type="text" id="fornecedorEndereco" class="form-input" placeholder="Endereço" style="min-width:260px;" />
+                            <input type="text" id="fornecedorCidade" class="form-input" placeholder="Cidade - UF (ex: Blumenau - SC)" style="max-width:260px;" />
                             <select id="fornecedorServico" class="form-input" style="max-width:200px;" onchange="fornecedorToggleOutro()">
                                 <option value="Bebidas">Bebidas</option>
                                 <option value="Gelo">Gelo</option>
@@ -2669,7 +2670,7 @@
                 <div class="card">
                     <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📋 Fornecedores</h3>
                     <div style="display:flex;gap:8px;align-items:center;">
-                        <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome ou serviço (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
+                        <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome, serviço ou cidade (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
                         <button class="btn btn-secondary" type="button" onclick="document.getElementById('fornecedorSearch').value=''; fornecedorRenderGrid();">Limpar</button>
                     </div>
                     <div id="fornecedorGrid" style="margin-top:0.75rem;"></div>
@@ -8984,7 +8985,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         if(!cont) return;
         // aplicar filtro de busca (nome ou serviço)
         const q = (document.getElementById('fornecedorSearch')?.value || '').trim().toLowerCase();
-        const listaFiltrada = q ? fornecedores.filter(f => ((f.nome||'').toLowerCase().includes(q) || (f.servico||'').toLowerCase().includes(q))) : fornecedores;
+        const listaFiltrada = q ? fornecedores.filter(f => ((f.nome||'').toLowerCase().includes(q) || (f.servico||'').toLowerCase().includes(q) || (f.cidade||'').toLowerCase().includes(q))) : fornecedores;
         if(!listaFiltrada.length){ cont.innerHTML = '<div class="cliente-empty">Nenhum fornecedor encontrado.</div>'; return; }
         cont.innerHTML = '<div class="cliente-grid">' + listaFiltrada.map((f)=>{
             const iniciais = (f.nome || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
@@ -9002,6 +9003,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                         <span>📞 ${f.telefone||'—'}</span>
                         <span>✉️ ${f.email||'—'}</span>
                         <span>📍 ${f.endereco||'—'}</span>
+                        <span>🏙️ ${f.cidade||'—'}</span>
                     </div>
                 </div>
                 <div class="cliente-card-actions">
@@ -9054,13 +9056,14 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const telefone = (document.getElementById('fornecedorTelefone')?.value||'').trim();
         const email = (document.getElementById('fornecedorEmail')?.value||'').trim();
         const endereco = (document.getElementById('fornecedorEndereco')?.value||'').trim();
+        const cidade = (document.getElementById('fornecedorCidade')?.value||'').trim();
         const servicoTipo = (document.getElementById('fornecedorServico')?.value||'').trim();
         const servicoDetalhe = (document.getElementById('fornecedorServicoOutro')?.value||'').trim();
         if(!nome) return alert('Nome é obrigatório');
         if(servicoTipo === 'Outros' && !servicoDetalhe) return alert('Descreva o serviço no campo de observação');
         const servico = servicoTipo === 'Outros' ? servicoDetalhe : servicoTipo;
         fornecedores = fornecedorLoad();
-        const item = { nome, telefone, email, endereco, servico, servicoTipo, servicoDetalhe, criadoEm: new Date().toISOString() };
+        const item = { nome, telefone, email, endereco, cidade, servico, servicoTipo, servicoDetalhe, criadoEm: new Date().toISOString() };
         if(fornecedorEditingId !== null){
             const idx = fornecedores.findIndex(f => f.id === fornecedorEditingId);
             if (idx >= 0) fornecedores[idx] = Object.assign({}, fornecedores[idx], item);
@@ -9085,6 +9088,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         document.getElementById('fornecedorTelefone').value = f.telefone || '';
         document.getElementById('fornecedorEmail').value = f.email || '';
         document.getElementById('fornecedorEndereco').value = f.endereco || '';
+        document.getElementById('fornecedorCidade').value = f.cidade || '';
         // Reconstrói tipo/observação: usa servicoTipo salvo, ou tenta migrar cadastros
         // antigos (campo livre) para uma das opções fixas / "Outros".
         let tipo = f.servicoTipo;
@@ -9181,7 +9185,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
     function fornecedorLimparForm(){
         fornecedorEditingId = null;
-        ['fornecedorNome','fornecedorTelefone','fornecedorEmail','fornecedorServicoOutro'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+        ['fornecedorNome','fornecedorTelefone','fornecedorEmail','fornecedorEndereco','fornecedorCidade','fornecedorServicoOutro'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
         const select = document.getElementById('fornecedorServico');
         if(select) select.selectedIndex = 0;
         fornecedorToggleOutro();
