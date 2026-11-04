@@ -236,7 +236,7 @@
         const whats = escapeHtml(dados.whats || '');
         const desconto = Number(dados.desconto) || 5;
 
-        const mensagemWhats = `Olá! Vi o cardápio do evento de ${dados.nome || ''} pelo QR Code da D'Drinks e quero saber mais sobre o desconto de ${desconto}%.`;
+        const mensagemWhats = `Olá! Sou convidado(a) do evento de ${dados.nome || ''} e vi o cardápio da D'Drinks pelo QR Code. Quero saber mais sobre o desconto de ${desconto}% para convidados.`;
         const linkWhats = whats ? `https://wa.me/${whats}?text=${encodeURIComponent(mensagemWhats)}` : '#';
 
         const listaHtml = drinks.length
@@ -267,9 +267,9 @@
             </div>
 
             <div class="desconto-box">
-                <div class="selo-topo">Benefício Exclusivo</div>
+                <div class="selo-topo">🎁 Presente para os convidados</div>
                 <div class="pct">${desconto}% OFF</div>
-                <p>Fale com a gente pelo WhatsApp e ganhe ${desconto}% de desconto na contratação do seu evento.</p>
+                <p>Você é convidado(a) de <strong>${nome}</strong> e, por isso, ganhou um desconto especial de <strong>${desconto}%</strong> para contratar a D'Drinks no <strong>seu</strong> evento. Fale com a gente pelo WhatsApp!</p>
                 <a class="btn btn-whats" href="${linkWhats}" target="_blank" rel="noopener">${ICONE_WHATS} Falar no WhatsApp</a>
                 ${instagram ? `<a class="btn btn-insta" href="${instagram}" target="_blank" rel="noopener">${ICONE_INSTA} Seguir no Instagram</a>` : ''}
             </div>
