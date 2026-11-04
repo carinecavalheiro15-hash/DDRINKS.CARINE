@@ -8,7 +8,7 @@
 <link rel="icon" href="logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root{
         --accent:#ef4444;
@@ -96,6 +96,17 @@
         margin:0 0 16px;
         text-align:center;
     }
+    .card h2.menu-titulo{
+        display:flex; align-items:center; justify-content:center; gap:14px;
+        font-family:'Cinzel',Georgia,serif;
+        font-size:26px;
+        font-weight:600;
+        letter-spacing:.32em;
+        color:var(--gold);
+        margin:0 0 18px;
+        padding-left:.32em; /* compensa o espaçamento da última letra pra centralizar */
+    }
+    .menu-titulo .linha{ height:1px; width:40px; background:linear-gradient(90deg,transparent,currentColor,transparent); opacity:.6; }
     .drink-item{ padding:13px 2px; border-bottom:1px solid rgba(255,255,255,.07); }
     .drink-item:last-child{ border-bottom:none; padding-bottom:2px; }
     .drink-item:first-child{ padding-top:2px; }
@@ -251,7 +262,7 @@
             ${data ? `<div class="data">${data}</div>` : ''}
 
             <div class="card">
-                <h2>Cardápio de Drinks do Seu Evento</h2>
+                <h2 class="menu-titulo"><span class="linha"></span>Menu<span class="linha"></span></h2>
                 ${listaHtml}
             </div>
 
