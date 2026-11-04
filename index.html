@@ -2669,9 +2669,15 @@
                 </div>
                 <div class="card">
                     <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📋 Fornecedores</h3>
-                    <div style="display:flex;gap:8px;align-items:center;">
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <select id="fornecedorFiltroCidade" class="form-input" style="flex:0 1 220px;min-width:160px;" onchange="fornecedorRenderGrid()">
+                            <option value="">🏙️ Todas as cidades</option>
+                        </select>
+                        <select id="fornecedorFiltroServico" class="form-input" style="flex:0 1 220px;min-width:160px;" onchange="fornecedorRenderGrid()">
+                            <option value="">🛠 Todos os produtos</option>
+                        </select>
                         <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome, serviço ou cidade (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
-                        <button class="btn btn-secondary" type="button" onclick="document.getElementById('fornecedorSearch').value=''; fornecedorRenderGrid();">Limpar</button>
+                        <button class="btn btn-secondary" type="button" onclick="['fornecedorSearch','fornecedorFiltroCidade','fornecedorFiltroServico'].forEach(id => document.getElementById(id).value=''); fornecedorRenderGrid();">Limpar</button>
                     </div>
                     <div id="fornecedorGrid" style="margin-top:0.75rem;"></div>
                 </div>
@@ -8979,13 +8985,36 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
     }
     let fornecedores = fornecedorLoad();
 
+    // Monta as opções do filtro (cidade ou produto) a partir do que está cadastrado, sem
+    // repetir (ignora maiúsculas/espaços), e mantém a opção escolhida. Retorna o valor
+    // selecionado já normalizado ('' = todos).
+    function fornecedorPreencherFiltro(selectId, valores, rotuloTodos){
+        const select = document.getElementById(selectId);
+        if(!select) return '';
+        const atual = select.value;
+        const unicos = new Map();
+        valores.forEach(v => { const t = (v || '').trim(); if(t && !unicos.has(t.toLowerCase())) unicos.set(t.toLowerCase(), t); });
+        const ordenados = [...unicos.entries()].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
+        const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+        select.innerHTML = `<option value="">${rotuloTodos}</option>` + ordenados.map(([k, t]) => `<option value="${esc(k)}">${esc(t)}</option>`).join('');
+        select.value = unicos.has(atual) ? atual : '';
+        return select.value;
+    }
+
     function fornecedorRenderGrid(){
         fornecedores = fornecedorLoad();
         const cont = document.getElementById('fornecedorGrid');
         if(!cont) return;
         // aplicar filtro de busca (nome ou serviço)
         const q = (document.getElementById('fornecedorSearch')?.value || '').trim().toLowerCase();
-        const listaFiltrada = q ? fornecedores.filter(f => ((f.nome||'').toLowerCase().includes(q) || (f.servico||'').toLowerCase().includes(q) || (f.cidade||'').toLowerCase().includes(q))) : fornecedores;
+        const chave = v => (v || '').trim().toLowerCase();
+        const cidadeSel = fornecedorPreencherFiltro('fornecedorFiltroCidade', fornecedores.map(f => f.cidade), '🏙️ Todas as cidades');
+        const servicoSel = fornecedorPreencherFiltro('fornecedorFiltroServico', fornecedores.map(f => f.servico), '🛠 Todos os produtos');
+        const listaFiltrada = fornecedores.filter(f =>
+            (!cidadeSel || chave(f.cidade) === cidadeSel) &&
+            (!servicoSel || chave(f.servico) === servicoSel) &&
+            (!q || chave(f.nome).includes(q) || chave(f.servico).includes(q) || chave(f.cidade).includes(q))
+        );
         if(!listaFiltrada.length){ cont.innerHTML = '<div class="cliente-empty">Nenhum fornecedor encontrado.</div>'; return; }
         cont.innerHTML = '<div class="cliente-grid">' + listaFiltrada.map((f)=>{
             const iniciais = (f.nome || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
