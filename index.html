@@ -2670,13 +2670,13 @@
                 <div class="card">
                     <h3 style="font-size:1rem;font-weight:700;color:var(--gray-800);margin-top:0;margin-bottom:14px;">📋 Fornecedores</h3>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome, serviço ou cidade (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
                         <select id="fornecedorFiltroCidade" class="form-input" style="flex:0 1 220px;min-width:160px;" onchange="fornecedorRenderGrid()">
                             <option value="">🏙️ Todas as cidades</option>
                         </select>
                         <select id="fornecedorFiltroServico" class="form-input" style="flex:0 1 220px;min-width:160px;" onchange="fornecedorRenderGrid()">
                             <option value="">🛠 Todos os produtos</option>
                         </select>
-                        <input type="search" id="fornecedorSearch" class="form-input" placeholder="Pesquisar por nome, serviço ou cidade (ex: bebidas)" style="flex:1;min-width:220px;" oninput="fornecedorRenderGrid()" />
                         <button class="btn btn-secondary" type="button" onclick="['fornecedorSearch','fornecedorFiltroCidade','fornecedorFiltroServico'].forEach(id => document.getElementById(id).value=''); fornecedorRenderGrid();">Limpar</button>
                     </div>
                     <div id="fornecedorGrid" style="margin-top:0.75rem;"></div>
