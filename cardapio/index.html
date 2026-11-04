@@ -215,6 +215,9 @@
         const nome = escapeHtml(dados.nome || 'Casal');
         const data = escapeHtml(dados.data || '');
         const foto = dados.foto ? escapeHtml(dados.foto) : 'logo.jpg';
+        // Enquadramento escolhido no app ("x y" em %); só aceita números pra não injetar CSS.
+        const fpMatch = dados.foto && /^(\d{1,3}) (\d{1,3})$/.exec(String(dados.fp || ''));
+        const fotoPosStyle = fpMatch ? ` style="object-position:${Math.min(100, +fpMatch[1])}% ${Math.min(100, +fpMatch[2])}%"` : '';
         const drinksBrutos = Array.isArray(dados.drinks) ? dados.drinks : [];
         // Compatível com formato antigo (array de strings) e novo (array de {nome, insumos}).
         const drinks = drinksBrutos.map(d => typeof d === 'string' ? { nome: d, insumos: [] } : d);
@@ -242,7 +245,7 @@
             <div class="ornamento"><span class="linha"></span><span class="diamante"></span><span class="linha"></span></div>
 
             <div class="foto-wrap">
-                <img class="foto" src="${foto}" alt="${nome}" onerror="this.src='logo.jpg'"/>
+                <img class="foto" src="${foto}" alt="${nome}"${fotoPosStyle} onerror="this.removeAttribute('style');this.src='logo.jpg'"/>
             </div>
             <div class="nome">${nome}</div>
             ${data ? `<div class="data">${data}</div>` : ''}

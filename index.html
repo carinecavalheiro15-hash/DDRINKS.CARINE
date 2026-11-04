@@ -2581,7 +2581,6 @@
                         <label class="form-label">Foto do casal (opcional)</label>
                         <input type="hidden" id="cardapioFotoUrl" />
                         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                            <img id="cardapioFotoPreviewImg" src="" alt="" style="display:none;width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid var(--gray-200);" />
                             <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
                                 📎 Anexar foto
                                 <input type="file" id="cardapioFotoArquivo" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="cardapioAnexarFoto(event)" />
@@ -2589,6 +2588,15 @@
                             <button type="button" class="btn btn-secondary btn-sm" id="cardapioFotoRemoverBtn" style="display:none;" onclick="cardapioRemoverFoto()">🗑️ Remover</button>
                         </div>
                         <p style="font-size:.72rem;color:var(--gray-500);margin-top:6px;" id="cardapioFotoStatus">Nenhuma foto anexada — a página vai usar a logo da D'Drinks.</p>
+                        <div id="cardapioFotoAjuste" style="display:none;margin-top:10px;">
+                            <p style="font-size:.75rem;color:var(--gray-600);margin-bottom:6px;">✋ Arraste a foto para escolher o enquadramento que vai aparecer no cardápio:</p>
+                            <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+                                <div id="cardapioFotoFrame" style="width:176px;aspect-ratio:4/5;border-radius:12px;overflow:hidden;border:3px solid #f5c451;background:#111;cursor:grab;touch-action:none;user-select:none;">
+                                    <img id="cardapioFotoPreviewImg" src="" alt="" draggable="false" style="width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block;pointer-events:none;" />
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="cardapioCentralizarFoto()">🎯 Centralizar</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">🍹 Drinks que vão aparecer no cardápio</label>
@@ -8666,6 +8674,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             : 'Nenhum drink selecionado neste orçamento ainda.';
 
         document.getElementById('cardapioFotoUrl').value = orc.cardapioFotoUrl || '';
+        _cardapioFotoPos = cardapioNormalizarFotoPos(orc.cardapioFotoPos);
         cardapioAtualizarStatusFoto(orc.cardapioFotoUrl || '');
         document.getElementById('cardapioModal').classList.add('open');
         cardapioAtualizarPreview();
@@ -8681,18 +8690,94 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         return baseUrl.replace(/\/$/, '') + '/' + valor.replace(/^\//, '');
     }
 
+    // Enquadramento da foto do casal: posição (object-position, em %) escolhida arrastando a
+    // foto no quadro do modal. Vai junto no link do QR Code (campo "fp") e fica salva no
+    // evento (orc.cardapioFotoPos).
+    let _cardapioFotoPos = { x: 50, y: 50 };
+
+    function cardapioNormalizarFotoPos(pos) {
+        const lim = v => Math.min(100, Math.max(0, Math.round(Number(v))));
+        if (!pos || !Number.isFinite(Number(pos.x)) || !Number.isFinite(Number(pos.y))) return { x: 50, y: 50 };
+        return { x: lim(pos.x), y: lim(pos.y) };
+    }
+
+    function cardapioAplicarFotoPos() {
+        const imgEl = document.getElementById('cardapioFotoPreviewImg');
+        if (imgEl) imgEl.style.objectPosition = `${_cardapioFotoPos.x}% ${_cardapioFotoPos.y}%`;
+    }
+
+    function cardapioCentralizarFoto() {
+        _cardapioFotoPos = { x: 50, y: 50 };
+        cardapioAplicarFotoPos();
+        cardapioAtualizarPreview();
+    }
+
+    // A miniatura carrega primeiro do servidor local (a foto acabou de ser salva lá) e só cai
+    // pro GitHub Pages se o servidor estiver fora — o Pages leva 1-2 min pra publicar.
+    function cardapioFotoSrcLocal(valor) {
+        if (!valor || /^https?:\/\//i.test(valor) || !window.__ddrinksDbOnline || !window.__ddrinksApiBase) return '';
+        return window.__ddrinksApiBase.replace(/\/api\/?$/, '') + '/cardapio/' + valor.replace(/^\//, '');
+    }
+
+    (function cardapioIniciarArrasteFoto() {
+        const iniciar = () => {
+            const frame = document.getElementById('cardapioFotoFrame');
+            const imgEl = document.getElementById('cardapioFotoPreviewImg');
+            if (!frame || !imgEl) return;
+            let arraste = null;
+            frame.addEventListener('pointerdown', e => {
+                if (!imgEl.naturalWidth) return;
+                const fw = frame.clientWidth, fh = frame.clientHeight;
+                const escala = Math.max(fw / imgEl.naturalWidth, fh / imgEl.naturalHeight);
+                arraste = {
+                    x0: e.clientX, y0: e.clientY,
+                    pos0: { ..._cardapioFotoPos },
+                    sobraX: imgEl.naturalWidth * escala - fw,
+                    sobraY: imgEl.naturalHeight * escala - fh
+                };
+                frame.setPointerCapture(e.pointerId);
+                frame.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            frame.addEventListener('pointermove', e => {
+                if (!arraste) return;
+                // Arrastar pra direita mostra mais o lado esquerdo da foto (posição diminui).
+                const x = arraste.sobraX > 0 ? arraste.pos0.x - (e.clientX - arraste.x0) / arraste.sobraX * 100 : 50;
+                const y = arraste.sobraY > 0 ? arraste.pos0.y - (e.clientY - arraste.y0) / arraste.sobraY * 100 : 50;
+                _cardapioFotoPos = cardapioNormalizarFotoPos({ x, y });
+                cardapioAplicarFotoPos();
+            });
+            const soltar = () => {
+                if (!arraste) return;
+                arraste = null;
+                frame.style.cursor = 'grab';
+                cardapioAtualizarPreview();
+            };
+            frame.addEventListener('pointerup', soltar);
+            frame.addEventListener('pointercancel', soltar);
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+        else iniciar();
+    })();
+
     function cardapioAtualizarStatusFoto(valor) {
         const statusEl = document.getElementById('cardapioFotoStatus');
         const imgEl = document.getElementById('cardapioFotoPreviewImg');
+        const ajusteEl = document.getElementById('cardapioFotoAjuste');
         const removerBtn = document.getElementById('cardapioFotoRemoverBtn');
         if (valor) {
             statusEl.textContent = '✅ Foto anexada para este evento.';
-            imgEl.src = cardapioResolverFotoSrc(valor);
-            imgEl.style.display = 'inline-block';
+            const srcPublico = cardapioResolverFotoSrc(valor);
+            const srcLocal = cardapioFotoSrcLocal(valor);
+            imgEl.onerror = srcLocal ? () => { imgEl.onerror = null; imgEl.src = srcPublico; } : null;
+            imgEl.src = srcLocal || srcPublico;
+            cardapioAplicarFotoPos();
+            ajusteEl.style.display = '';
             removerBtn.style.display = '';
         } else {
             statusEl.textContent = "Nenhuma foto anexada — a página vai usar a logo da D'Drinks.";
-            imgEl.style.display = 'none';
+            ajusteEl.style.display = 'none';
+            imgEl.onerror = null;
             imgEl.src = '';
             removerBtn.style.display = 'none';
         }
@@ -8723,6 +8808,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             const data = await resp.json();
             if (!resp.ok) throw new Error(data.error || 'Falha ao enviar a foto.');
             document.getElementById('cardapioFotoUrl').value = data.caminho;
+            _cardapioFotoPos = { x: 50, y: 50 };
             cardapioAtualizarStatusFoto(data.caminho);
             cardapioAtualizarPreview();
             showNotification('📷 Foto anexada!', 'success');
@@ -8736,6 +8822,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
     function cardapioRemoverFoto() {
         document.getElementById('cardapioFotoUrl').value = '';
+        _cardapioFotoPos = { x: 50, y: 50 };
         cardapioAtualizarStatusFoto('');
         cardapioAtualizarPreview();
     }
@@ -8746,6 +8833,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
         const fotoUrl = document.getElementById('cardapioFotoUrl').value.trim();
         orc.cardapioFotoUrl = fotoUrl || null;
+        orc.cardapioFotoPos = fotoUrl ? { ..._cardapioFotoPos } : null;
         localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
 
         const baseUrl = localStorage.getItem('ddrinksCardapioBaseUrl') || CARDAPIO_BASE_URL_PADRAO;
@@ -8757,6 +8845,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             data: orc.dataFormatada || formatarData(orc.data) || '',
             drinks: cardapioMontarCardapio(orc),
             foto: fotoUrl || '',
+            fp: fotoUrl ? `${_cardapioFotoPos.x} ${_cardapioFotoPos.y}` : '',
             instagram: instagramUrl,
             whats: DDRINKS_WHATSAPP_NUMERO,
             desconto
