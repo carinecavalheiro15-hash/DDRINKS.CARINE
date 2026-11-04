@@ -110,14 +110,18 @@
     .drink-item{ padding:13px 2px; border-bottom:1px solid rgba(255,255,255,.07); }
     .drink-item:last-child{ border-bottom:none; padding-bottom:2px; }
     .drink-item:first-child{ padding-top:2px; }
-    .drink-nome{
-        display:flex;align-items:center;gap:12px;
-        font-size:15.5px;font-weight:600;color:#f8f8f8;
+    /* Foto à esquerda ocupando a altura do item; nome e insumos empilhados ao lado. */
+    .drink-item{ display:flex; align-items:center; gap:14px; }
+    .drink-foto, .drink-sem-foto{
+        width:72px;height:72px;border-radius:12px;flex-shrink:0;
+        border:1px solid rgba(245,196,81,.35);background:#1a1a1a;
     }
-    .drink-nome .glass{ font-size:15px; flex-shrink:0; }
-    .drink-foto{ width:46px;height:46px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#1a1a1a; }
+    .drink-foto{ object-fit:cover; display:block; }
+    .drink-sem-foto{ display:flex;align-items:center;justify-content:center;font-size:28px; }
+    .drink-texto{ flex:1; min-width:0; }
+    .drink-nome{ font-size:15.5px;font-weight:600;color:#f8f8f8;line-height:1.3; }
     .drink-insumos{
-        font-size:11.5px;color:#9a9a9a;margin:4px 0 0 24px;
+        font-size:11.5px;color:#9a9a9a;margin-top:4px;
         font-style:italic;line-height:1.45;
     }
     .vazio{ text-align:center;color:#9ca3af;font-size:13px;padding:8px 0; }
@@ -242,8 +246,11 @@
         const listaHtml = drinks.length
             ? drinks.map(d => `
                 <div class="drink-item">
-                    <div class="drink-nome">${d.foto ? `<img class="drink-foto" src="${escapeHtml(d.foto)}" alt="" onerror="this.outerHTML='&lt;span class=&quot;glass&quot;&gt;🍹&lt;/span&gt;';"/>` : '<span class="glass">🍹</span>'} ${escapeHtml(d.nome)}</div>
-                    ${d.insumos && d.insumos.length ? `<div class="drink-insumos">${d.insumos.map(escapeHtml).join(' · ')}</div>` : ''}
+                    ${d.foto ? `<img class="drink-foto" src="${escapeHtml(d.foto)}" alt="" onerror="this.outerHTML='&lt;span class=&quot;drink-sem-foto&quot;&gt;🍹&lt;/span&gt;';"/>` : '<span class="drink-sem-foto">🍹</span>'}
+                    <div class="drink-texto">
+                        <div class="drink-nome">${escapeHtml(d.nome)}</div>
+                        ${d.insumos && d.insumos.length ? `<div class="drink-insumos">${d.insumos.map(escapeHtml).join(' · ')}</div>` : ''}
+                    </div>
                 </div>
             `).join('')
             : '<div class="vazio">O cardápio deste evento ainda está sendo montado.</div>';
