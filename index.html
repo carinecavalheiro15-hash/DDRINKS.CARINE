@@ -2227,11 +2227,15 @@
                 .pf-card { background:#161616; border:1px solid rgba(245,196,81,.25); border-radius:16px; overflow:hidden; cursor:pointer; transition:transform .18s, box-shadow .18s, border-color .18s; display:flex; flex-direction:column; text-align:left; padding:0; color:inherit; font-family:inherit; }
                 .pf-card:hover { transform:translateY(-4px); box-shadow:0 12px 28px rgba(0,0,0,.5); border-color:#f5c451; }
                 /* Foto inteira, sem cortar: largura do card e altura proporcional à foto. */
-                .pf-card-foto { width:100%; height:auto; display:block; background:#0b0b0b; }
+                /* Área da foto ocupa o espaço que sobra no card (cards da mesma linha têm a mesma
+                   altura), com a foto inteira encostada embaixo; assim o texto de todos os cards
+                   começa na mesma linha. O texto tem altura fixa pelo mesmo motivo. */
+                .pf-card-foto-area { flex:1; display:flex; align-items:flex-end; background:#0b0b0b; min-height:0; }
+                .pf-card-foto { width:100%; height:auto; display:block; }
                 .pf-card-sem-foto { width:100%; aspect-ratio:3/5; display:flex; align-items:center; justify-content:center; font-size:56px; background:#0b0b0b; }
-                .pf-card-info { padding:14px 16px 16px; }
-                .pf-card-nome { font-weight:700; font-size:1rem; color:#fff; margin-bottom:6px; line-height:1.3; }
-                .pf-card-ings { font-size:.76rem; color:#a3a3a3; font-style:italic; line-height:1.5; }
+                .pf-card-info { padding:14px 16px 16px; height:132px; box-sizing:border-box; overflow:hidden; flex-shrink:0; }
+                .pf-card-nome { font-weight:700; font-size:1rem; color:#fff; margin-bottom:6px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+                .pf-card-ings { font-size:.76rem; color:#a3a3a3; font-style:italic; line-height:1.5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
                 .pf-vazio { text-align:center; color:#a3a3a3; padding:40px 0; }
                 .pf-modal { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:7000; display:none; align-items:center; justify-content:center; padding:20px; }
                 .pf-modal.open { display:flex; }
@@ -6723,7 +6727,7 @@ html += htmlPacotes;
                 <div class="pf-grid">
                     ${porCat[cat].map(d => `
                         <button type="button" class="pf-card" onclick="pfAbrirDetalhe('${ftEsc(d.id).replace(/'/g, '&#39;')}')">
-                            ${pfFotoHtml(d, 'pf-card-foto')}
+                            <div class="pf-card-foto-area">${pfFotoHtml(d, 'pf-card-foto')}</div>
                             <div class="pf-card-info">
                                 <div class="pf-card-nome">${ftEsc(d.nome)}</div>
                                 ${d.insumos.length ? `<div class="pf-card-ings">${d.insumos.map(ftEsc).join(' · ')}</div>` : ''}
