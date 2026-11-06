@@ -8944,7 +8944,12 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         });
         const qrCanvas = qrContainer.querySelector('canvas');
 
-        canvas.getContext('2d').drawImage(qrCanvas, x, y, w, h);
+        // O html2canvas devolve o canvas com a transformação dele ainda ativa (escala 2x +
+        // deslocamento do left:-9999px), o que jogava o QR pra fora da imagem e deixava o
+        // quadro branco vazio. Zera a transformação antes de desenhar em pixels reais.
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(qrCanvas, x, y, w, h);
         return canvas;
     }
 
