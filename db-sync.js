@@ -58,6 +58,43 @@
         return xhr.responseText ? JSON.parse(xhr.responseText) : null;
     }
 
+    function carimbo(item) { return Number(item && item._atualizadoEm) || 0; }
+    function ordenarPorId(lista) {
+        return lista.slice().sort(function (a, b) { return String(a && a.id).localeCompare(String(b && b.id)); });
+    }
+    function semCarimbo(item) {
+        var copia = {};
+        Object.keys(item).forEach(function (k) { if (k !== '_atualizadoEm') copia[k] = item[k]; });
+        return JSON.stringify(copia);
+    }
+    // Recebe o valor novo de uma coleção (texto JSON) e devolve o mesmo valor com
+    // "_atualizadoEm" = agora nos itens que mudaram em relação ao que estava gravado; os que não
+    // mudaram mantêm o carimbo anterior. É isso que permite saber, entre dois aparelhos, qual
+    // versão de um evento/drink é a mais nova.
+    function carimbarAlteracoes(valorNovo, valorAnterior) {
+        try {
+            var novos = JSON.parse(valorNovo);
+            if (!Array.isArray(novos)) return valorNovo;
+            var anteriores = {};
+            try {
+                (JSON.parse(valorAnterior || '[]') || []).forEach(function (it) { if (it && it.id != null) anteriores[it.id] = it; });
+            } catch (e) { /* valor anterior ilegível: trata tudo como novo */ }
+            var agora = Date.now();
+            novos.forEach(function (it) {
+                if (!it || typeof it !== 'object' || it.id == null) return;
+                var antes = anteriores[it.id];
+                if (antes && semCarimbo(antes) === semCarimbo(it)) {
+                    if (antes._atualizadoEm) it._atualizadoEm = antes._atualizadoEm;
+                } else {
+                    it._atualizadoEm = agora;
+                }
+            });
+            return JSON.stringify(novos);
+        } catch (e) {
+            return valorNovo;
+        }
+    }
+
     var online = false;
     for (var i = 0; i < API_BASE_CANDIDATOS.length; i++) {
         try {
@@ -83,19 +120,34 @@
                     var localRaw = localStorage.getItem(key);
                     var local = localRaw ? JSON.parse(localRaw) : [];
                     if (remoto.length && local.length) {
-                        // Tem dado dos dois lados: ao invés do banco simplesmente mandar por
-                        // cima (o que apaga sem querer itens que só existiam neste aparelho,
-                        // ex: um tablet que ficou um tempo sem conseguir falar com o banco),
-                        // junta tudo por id. Quando o mesmo id existe nos dois lados, fica a
-                        // versão deste aparelho — é a mais recente na prática (ex: acabou de
-                        // editar e deu F5 antes do envio pro banco terminar; se o banco
-                        // "vencesse" aqui, a edição mais nova seria apagada bem na sua frente).
+                        // Tem dado dos dois lados: junta tudo por id (não apaga itens que só
+                        // existem num dos lados). Quando o mesmo id existe nos dois, vence a
+                        // versão ALTERADA POR ÚLTIMO (campo _atualizadoEm, carimbado a cada
+                        // gravação — ver carimbarAlteracoes). Antes vencia sempre a cópia deste
+                        // aparelho: um aparelho com dados velhos sobrescrevia no banco o que
+                        // tinha sido editado em outro, e cada um ficava vendo a sua versão.
+                        //
+                        // Transição: itens gravados antes do carimbo existir não têm data dos
+                        // dois lados; nesse caso fica a cópia deste aparelho (comportamento
+                        // antigo) e ela ganha o carimbo agora.
+                        var agora = Date.now();
                         var porId = {};
                         remoto.forEach(function (item) { if (item && item.id != null) porId[item.id] = item; });
-                        local.forEach(function (item) { if (item && item.id != null) porId[item.id] = item; });
+                        local.forEach(function (item) {
+                            if (!item || item.id == null) return;
+                            var r = porId[item.id];
+                            if (!r) { porId[item.id] = item; return; }
+                            var tl = carimbo(item), tr = carimbo(r);
+                            if (!tl && !tr) { item._atualizadoEm = agora; porId[item.id] = item; }
+                            else if (tl > tr) porId[item.id] = item;
+                            // senão fica a do banco (mais nova)
+                        });
                         var mesclado = Object.keys(porId).map(function (id) { return porId[id]; });
                         localStorage.setItem(key, JSON.stringify(mesclado));
-                        syncRequest('PUT', API_BASE + '/collections/' + cfg.endpoint, mesclado);
+                        // Só regrava no banco se a junção mudou alguma coisa em relação a ele.
+                        if (JSON.stringify(ordenarPorId(mesclado)) !== JSON.stringify(ordenarPorId(remoto))) {
+                            syncRequest('PUT', API_BASE + '/collections/' + cfg.endpoint, mesclado);
+                        }
                     } else if (remoto.length) {
                         // banco tem dado, navegador não tem nada local -> banco manda
                         localStorage.setItem(key, JSON.stringify(remoto));
@@ -163,6 +215,9 @@
     }
 
     localStorage.setItem = function (key, value) {
+        if (SYNC_KEYS[key] && SYNC_KEYS[key].type === 'collection') {
+            value = carimbarAlteracoes(String(value), localStorage.getItem(key));
+        }
         _setItem(key, value);
         if (SYNC_KEYS[key]) agendarEnvio(key);
     };
