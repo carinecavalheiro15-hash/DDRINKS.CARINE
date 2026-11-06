@@ -45,7 +45,8 @@
         ddrinks_ev_proc: { type: 'config', endpoint: 'ddrinks_ev_proc' },
         ddrinksPrecosOverride: { type: 'config', endpoint: 'ddrinksPrecosOverride' },
         ddrinksDrinksInativos: { type: 'config', endpoint: 'ddrinksDrinksInativos' },
-        ddrinksDrinksExcluidos: { type: 'config', endpoint: 'ddrinksDrinksExcluidos' }
+        ddrinksDrinksExcluidos: { type: 'config', endpoint: 'ddrinksDrinksExcluidos' },
+        ddrinks_marcas_pacotes: { type: 'config', endpoint: 'ddrinks_marcas_pacotes' }
     };
 
     function syncRequest(method, url, body) {
