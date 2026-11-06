@@ -229,6 +229,26 @@
         `;
     }
 
+    // Versão atual de cada foto (gerado pelo servidor ao trocar uma foto). O link do QR Code
+    // guarda o caminho da foto da época em que foi gerado; aqui troca pelo caminho mais novo
+    // (com "?v=" pra furar o cache), então trocar a foto vale até pra QR Code já impresso.
+    const VERSOES_FOTOS = {};
+    async function carregarVersoesFotos() {
+        try {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 2500);
+            const r = await fetch('fotos/versoes.json?t=' + Date.now(), { cache: 'no-store', signal: ctrl.signal });
+            clearTimeout(t);
+            if (r.ok) Object.assign(VERSOES_FOTOS, await r.json());
+        } catch (e) { /* sem a lista, usa o caminho que veio no link */ }
+    }
+    function fotoVersaoAtual(caminho) {
+        if (!caminho || /^(https?:|data:)/i.test(caminho)) return caminho;
+        const chave = String(caminho).split('?')[0].replace(/^\.?\//, '').replace(/\.[a-z0-9]+$/i, '');
+        const atual = VERSOES_FOTOS[chave];
+        return (typeof atual === 'string' && /^fotos\/[\w\/.-]+(\?v=\d+)?$/.test(atual)) ? atual : caminho;
+    }
+
     function renderPagina(dados) {
         const nome = escapeHtml(dados.nome || 'Casal');
         const data = escapeHtml(dados.data || '');
@@ -291,15 +311,20 @@
         `;
     }
 
-    try {
-        const params = new URLSearchParams(window.location.search);
-        const d = params.get('d');
-        if (!d) { renderErro(); return; }
-        const dados = decodificarBase64Url(d);
-        renderPagina(dados);
-    } catch (e) {
-        renderErro();
-    }
+    (async () => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const d = params.get('d');
+            if (!d) { renderErro(); return; }
+            const dados = decodificarBase64Url(d);
+            await carregarVersoesFotos();
+            if (dados.foto) dados.foto = fotoVersaoAtual(dados.foto);
+            if (Array.isArray(dados.drinks)) dados.drinks.forEach(dr => { if (dr && typeof dr === 'object' && dr.foto) dr.foto = fotoVersaoAtual(dr.foto); });
+            renderPagina(dados);
+        } catch (e) {
+            renderErro();
+        }
+    })();
 })();
 </script>
 </body>

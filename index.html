@@ -6610,7 +6610,10 @@ html += htmlPacotes;
         const removerBtn=document.getElementById('ftFotoRemoverBtn');
         if(valor){
             statusEl.textContent='✅ Foto anexada.';
-            imgEl.src=cardapioResolverFotoSrc(valor);
+            const srcPublico=cardapioResolverFotoSrc(valor);
+            const srcLocal=cardapioFotoSrcLocal(valor);
+            imgEl.onerror=srcLocal?()=>{imgEl.onerror=null;imgEl.src=srcPublico;}:null;
+            imgEl.src=srcLocal||srcPublico;
             imgEl.style.display='inline-block';
             removerBtn.style.display='';
         } else {
@@ -6657,6 +6660,7 @@ html += htmlPacotes;
             const data=await resp.json();
             if(!resp.ok) throw new Error(data.error||'Falha ao enviar a foto.');
             document.getElementById('ftFotoPath').value=data.caminho;
+            cardapioMarcarFotoTrocada(data.caminho, data.versao);
             ftAtualizarStatusFoto(data.caminho);
             showNotification('📷 Foto anexada!','success');
         }catch(e){
@@ -8721,9 +8725,16 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
     // A miniatura carrega primeiro do servidor local (a foto acabou de ser salva lá) e só cai
     // pro GitHub Pages se o servidor estiver fora — o Pages leva 1-2 min pra publicar.
+    // A foto trocada mantém o mesmo nome de arquivo; o "?v=" faz o navegador buscar a nova
+    // em vez de reaproveitar a antiga que já tinha carregado nesta tela.
+    const _cardapioFotoVersoes = {};
+    function cardapioMarcarFotoTrocada(caminho, versao) {
+        if (caminho) _cardapioFotoVersoes[caminho] = versao || Date.now();
+    }
     function cardapioFotoSrcLocal(valor) {
         if (!valor || /^https?:\/\//i.test(valor) || !window.__ddrinksDbOnline || !window.__ddrinksApiBase) return '';
-        return window.__ddrinksApiBase.replace(/\/api\/?$/, '') + '/cardapio/' + valor.replace(/^\//, '');
+        const v = _cardapioFotoVersoes[valor];
+        return window.__ddrinksApiBase.replace(/\/api\/?$/, '') + '/cardapio/' + valor.replace(/^\//, '') + (v ? '?v=' + v : '');
     }
 
     (function cardapioIniciarArrasteFoto() {
@@ -8815,6 +8826,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             const data = await resp.json();
             if (!resp.ok) throw new Error(data.error || 'Falha ao enviar a foto.');
             document.getElementById('cardapioFotoUrl').value = data.caminho;
+            cardapioMarcarFotoTrocada(data.caminho, data.versao);
             _cardapioFotoPos = { x: 50, y: 50 };
             cardapioAtualizarStatusFoto(data.caminho);
             cardapioAtualizarPreview();

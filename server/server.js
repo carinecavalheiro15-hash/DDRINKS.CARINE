@@ -142,10 +142,54 @@ app.get('/api/health', async (req, res) => {
 // GitHub automaticamente — se não conseguir (sem internet, repo não configurado etc.), a
 // foto continua funcionando normalmente neste computador, só não fica visível pra quem
 // escanear o QR Code longe daqui até alguém publicar manualmente.
+//
+// Trocar a foto mantém o MESMO nome de arquivo (assim os QR Codes já impressos continuam
+// apontando pra ela), mas navegador e GitHub Pages guardam a versão antiga em cache. Por
+// isso cada troca grava em cardapio/fotos/versoes.json o caminho atual + "?v=<timestamp>";
+// a página do cardápio lê esse arquivo (sem cache) e usa sempre a versão mais nova.
+const VERSOES_FOTOS_REL = ['cardapio', 'fotos', 'versoes.json'];
+
+function registrarVersaoFoto(repoDir, chave, caminhoComVersao) {
+    const arquivo = path.join(repoDir, ...VERSOES_FOTOS_REL);
+    let versoes = {};
+    try { versoes = JSON.parse(fs.readFileSync(arquivo, 'utf8')) || {}; } catch (e) { versoes = {}; }
+    versoes[chave] = caminhoComVersao;
+    fs.writeFileSync(arquivo, JSON.stringify(versoes, null, 2));
+}
+
+// Publicações em fila: duas fotos enviadas em seguida disputavam o .git/index.lock e a
+// segunda ficava sem publicar. "add -A cardapio/fotos" também leva qualquer foto que tenha
+// ficado pendente de uma tentativa anterior que falhou (ex: sem internet).
+let filaPublicacao = Promise.resolve();
+function publicarFotosNoGit(repoDir, mensagemCommit, rotulo) {
+    // "-c credential.helper=" (vazio) zera qualquer helper herdado (ex: o "manager" da sua
+    // conta, que tentaria abrir uma janela/navegador e travaria rodando como serviço) antes
+    // de usar só o arquivo de token dedicado, pra essa chamada de push especificamente.
+    // -c user.name/user.email: rodando como LocalSystem não existe gitconfig de usuário com
+    // esses dados preenchidos, e o git recusa o commit sem eles ("Author identity unknown").
+    const comandoAdd = `"${GIT_BIN}" add -A cardapio/fotos`;
+    const comandoCommit = `"${GIT_BIN}" -c user.name="DDrinks Servidor" -c user.email="ddrinks-servidor@local" commit -m "${mensagemCommit}"`;
+    const comandoPush = `"${GIT_BIN}" -c credential.helper= -c credential.helper="store --file=${GIT_CREDENTIALS_FILE}" push origin main`;
+    filaPublicacao = filaPublicacao.then(() => new Promise(resolve => {
+        exec(`${comandoAdd} && ${comandoCommit} && ${comandoPush}`, { cwd: repoDir }, (err, stdout, stderr) => {
+            if (err) console.warn('⚠️  Não consegui publicar a foto automaticamente no GitHub (ela continua funcionando neste computador):', ((stderr || '').trim() || (stdout || '').trim() || err.message).split('\n')[0]);
+            else console.log('✓ Foto publicada no GitHub:', rotulo);
+            resolve();
+        });
+    }));
+}
+
 function salvarFotoEPublicar({ dataUrl, subpasta, nomeBase, mensagemCommit }, res) {
     const match = /^data:image\/(png|jpe?g|webp);base64,(.+)$/i.exec(dataUrl);
     if (!match) {
         res.status(400).json({ error: 'Formato de imagem não suportado (use JPG, PNG ou WEBP).' });
+        return;
+    }
+    // nomeBase vem do navegador e vira nome de arquivo e parte de um comando de shell:
+    // só letras, números, "_" e "-" (evita sair da pasta ou injetar comando).
+    const base = String(nomeBase).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
+    if (!base) {
+        res.status(400).json({ error: 'Identificador inválido.' });
         return;
     }
     const ext = match[1].toLowerCase() === 'jpeg' ? 'jpg' : match[1].toLowerCase();
@@ -155,25 +199,23 @@ function salvarFotoEPublicar({ dataUrl, subpasta, nomeBase, mensagemCommit }, re
     const destDir = path.join(repoDir, 'cardapio', ...subpasta);
     fs.mkdirSync(destDir, { recursive: true });
 
-    const filename = `${nomeBase}.${ext}`;
+    // Se a foto anterior tinha outra extensão (ex: .jpg e agora .png), apaga a antiga pra
+    // não ficarem duas versões do mesmo drink/evento.
+    for (const outraExt of ['png', 'jpg', 'webp']) {
+        if (outraExt === ext) continue;
+        const antiga = path.join(destDir, `${base}.${outraExt}`);
+        if (fs.existsSync(antiga)) fs.unlinkSync(antiga);
+    }
+
+    const filename = `${base}.${ext}`;
     fs.writeFileSync(path.join(destDir, filename), buffer);
     const caminhoRelativo = [...subpasta, filename].join('/');
+    const versao = Date.now();
+    registrarVersaoFoto(repoDir, [...subpasta, base].join('/'), `${caminhoRelativo}?v=${versao}`);
 
-    res.json({ ok: true, caminho: caminhoRelativo });
+    res.json({ ok: true, caminho: caminhoRelativo, versao });
 
-    const relPathGit = ['cardapio', ...subpasta, filename].join('/');
-    // "-c credential.helper=" (vazio) zera qualquer helper herdado (ex: o "manager" da sua
-    // conta, que tentaria abrir uma janela/navegador e travaria rodando como serviço) antes
-    // de usar só o arquivo de token dedicado, pra essa chamada de push especificamente.
-    // -c user.name/user.email: rodando como LocalSystem não existe gitconfig de usuário com
-    // esses dados preenchidos, e o git recusa o commit sem eles ("Author identity unknown").
-    const comandoAdd = `"${GIT_BIN}" add "${relPathGit}"`;
-    const comandoCommit = `"${GIT_BIN}" -c user.name="DDrinks Servidor" -c user.email="ddrinks-servidor@local" commit -m "${mensagemCommit}"`;
-    const comandoPush = `"${GIT_BIN}" -c credential.helper= -c credential.helper="store --file=${GIT_CREDENTIALS_FILE}" push origin main`;
-    exec(`${comandoAdd} && ${comandoCommit} && ${comandoPush}`, { cwd: repoDir }, (err, stdout, stderr) => {
-        if (err) console.warn('⚠️  Não consegui publicar a foto automaticamente no GitHub (ela continua funcionando neste computador):', (stderr || err.message).split('\n')[0]);
-        else console.log('✓ Foto publicada no GitHub:', filename);
-    });
+    publicarFotosNoGit(repoDir, mensagemCommit.replace(/[^\w\s().-]/g, '_'), filename);
 }
 
 app.post('/api/cardapio/foto', (req, res) => {
