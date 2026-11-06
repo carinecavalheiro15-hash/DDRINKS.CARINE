@@ -113,11 +113,13 @@
     /* Foto à esquerda ocupando a altura do item; nome e insumos empilhados ao lado. */
     .drink-item{ display:flex; align-items:center; gap:14px; }
     .drink-foto, .drink-sem-foto{
-        width:72px;height:72px;border-radius:12px;flex-shrink:0;
+        width:66px;height:118px;border-radius:12px;flex-shrink:0;
         border:1px solid rgba(245,196,81,.35);background:#1a1a1a;
     }
-    /* Foto inteira, sem cortar: mantém a proporção original (altura acompanha a largura). */
-    .drink-foto{ width:auto; height:auto; max-width:72px; max-height:110px; display:block; }
+    /* Todas as fotos no mesmo tamanho (formato em pé, como as fotos dos drinks). Se a foto
+       tiver outra proporção, corta só o mínimo das bordas e preserva a parte de baixo, onde
+       fica o nome do drink escrito na imagem. */
+    .drink-foto{ object-fit:cover; object-position:center bottom; display:block; }
     .drink-sem-foto{ display:flex;align-items:center;justify-content:center;font-size:28px; }
     .drink-texto{ flex:1; min-width:0; }
     .drink-nome{ font-size:15.5px;font-weight:600;color:#f8f8f8;line-height:1.3; }
