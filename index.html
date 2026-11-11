@@ -2572,6 +2572,12 @@
                 .cliente-fin-linha strong { color:var(--gray-900); font-weight:700; }
                 .cliente-fin-barra { height:5px; border-radius:10px; background:var(--gray-200); overflow:hidden; }
                 .cliente-fin-barra-preenchida { height:100%; border-radius:10px; background:linear-gradient(90deg,#f5c451,#ef4444); }
+                .cliente-fin-gastos { margin-top:10px; }
+                .cliente-fin-gastos strong { color:#dc2626; }
+                .cliente-fin-lucro { margin-bottom:0; padding-top:7px; border-top:1px dashed var(--gray-200); font-size:.82rem; }
+                .cliente-fin-lucro span { font-weight:700; color:var(--gray-700); }
+                .cliente-fin-lucro.positivo strong { color:#059669; font-size:.92rem; }
+                .cliente-fin-lucro.negativo strong { color:#dc2626; font-size:.92rem; }
                 .cliente-card-actions { padding:12px 18px 16px; display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--gray-100); margin-top:auto; }
                 .cliente-card-actions .btn { flex:1; min-width:120px; font-size:.74rem; padding:8px 10px; white-space:nowrap; }
                 .cliente-btn-cardapio { background:#fff; border:1.5px solid #ef4444; color:#ef4444; font-weight:700; }
@@ -8641,12 +8647,14 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
     }
 
     function clienteTotaisFinanceiros(grupo) {
-        let totalAceito = 0, totalPago = 0;
+        let totalAceito = 0, totalPago = 0, totalGastos = 0;
         grupo.orcamentos.filter(orcamentoFoiAceito).forEach(o => {
             totalAceito += Number(o.valor) || 0;
             totalPago += calcularTotalPago(o);
+            totalGastos += calcularTotalGastos(o);
         });
-        return { totalAceito, totalPago, totalPendente: totalAceito - totalPago };
+        // Lucro do evento = valor fechado com o cliente menos tudo que já foi gasto nele.
+        return { totalAceito, totalPago, totalPendente: totalAceito - totalPago, totalGastos, lucro: totalAceito - totalGastos };
     }
 
     function clienteRenderGrid() {
@@ -8766,6 +8774,8 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                                 <div class="cliente-fin-linha"><span>Total aceito</span><strong>${formatarValorBR(totais.totalAceito)}</strong></div>
                                 <div class="cliente-fin-linha"><span>Pago (${pctPago}%)</span><strong>${formatarValorBR(totais.totalPago)}</strong></div>
                                 <div class="cliente-fin-barra"><div class="cliente-fin-barra-preenchida" style="width:${pctPago}%;"></div></div>
+                                <div class="cliente-fin-linha cliente-fin-gastos"><span>Gastos</span><strong>− ${formatarValorBR(totais.totalGastos)}</strong></div>
+                                <div class="cliente-fin-linha cliente-fin-lucro ${totais.lucro >= 0 ? 'positivo' : 'negativo'}"><span>Lucro</span><strong>${formatarValorBR(totais.lucro)}</strong></div>
                             </div>
                         ` : ''}
                     </div>
