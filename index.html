@@ -118,6 +118,10 @@
         .ph-stat-card.is-aceito .ph-stat-num { color:var(--success-color); }
         .ph-stat-card.is-pago .ph-stat-num, .ph-stat-card.is-pendente .ph-stat-num { color:var(--warning-color); }
         .ph-stat-card.is-recebido .ph-stat-num { color:var(--primary-color); }
+        .ph-stat-card.is-lucro { border-left-color:#2563eb; }
+        .ph-stat-card.is-lucro .ph-stat-num { color:#2563eb; }
+        .ph-stat-card.is-lucro.negativo { border-left-color:var(--error-color); }
+        .ph-stat-card.is-lucro.negativo .ph-stat-num { color:var(--error-color); }
         .ph-search-row { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
         .ph-search-row input, .ph-search-row select { flex:1; min-width:220px; }
 
@@ -8682,16 +8686,18 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const statsEl = document.getElementById('clienteHeaderStats');
         if (statsEl) {
             const totalEventos = clienteGruposAtual.length;
-            let valorAceitoTotal = 0, valorPagoTotal = 0;
+            let valorAceitoTotal = 0, valorPagoTotal = 0, lucroTotal = 0;
             clienteGruposAtual.forEach(g => {
                 const t = clienteTotaisFinanceiros(g);
                 valorAceitoTotal += t.totalAceito;
                 valorPagoTotal += t.totalPago;
+                lucroTotal += t.lucro;
             });
             statsEl.innerHTML = `
                 <div class="ph-stat-card"><div class="ph-stat-label">Evento${totalEventos !== 1 ? 's' : ''}</div><div class="ph-stat-num">${totalEventos}</div></div>
                 <div class="ph-stat-card is-aceito"><div class="ph-stat-label">Total Aceito</div><div class="ph-stat-num">${formatarValorBR(valorAceitoTotal)}</div></div>
                 <div class="ph-stat-card is-pago"><div class="ph-stat-label">Total Pago</div><div class="ph-stat-num">${formatarValorBR(valorPagoTotal)}</div></div>
+                <div class="ph-stat-card is-lucro${lucroTotal < 0 ? ' negativo' : ''}" title="Soma do lucro de cada evento: valor total do pacote menos os gastos"><div class="ph-stat-label">Lucro Geral</div><div class="ph-stat-num">${formatarValorBR(lucroTotal)}</div></div>
             `;
         }
 
