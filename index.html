@@ -8981,6 +8981,47 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         return window.__ddrinksApiBase.replace(/\/api\/?$/, '') + '/cardapio/' + valor.replace(/^\//, '') + (v ? '?v=' + v : '');
     }
 
+    // Toda foto de drink enviada fica gravada como cardapio/fotos/drinks/<id do drink>.<ext> e
+    // registrada em cardapio/fotos/versoes.json. Se a ficha deste aparelho não sabe da foto (ex:
+    // a ficha foi editada em outro aparelho e a gravação no banco falhou), religa a foto pela
+    // lista de versões e salva, pra que todos os aparelhos passem a mostrá-la. Também corrige a
+    // extensão quando a foto foi trocada de .jpg pra .png (ou o contrário).
+    (async function ftReligarFotosPelasVersoes() {
+        let versoes;
+        try {
+            const resp = await fetch('cardapio/fotos/versoes.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!resp.ok) return;
+            versoes = await resp.json();
+        } catch (e) { return; }
+        if (!versoes || typeof versoes !== 'object') return;
+        const caminhoPorChave = {};
+        Object.keys(versoes).forEach(chave => {
+            const m = /^(fotos\/[\w\/.-]+?)\?v=(\d+)$/.exec(String(versoes[chave]));
+            if (!m) return;
+            caminhoPorChave[chave] = m[1];
+            if (!_cardapioFotoVersoes[m[1]]) _cardapioFotoVersoes[m[1]] = m[2];
+        });
+        if (typeof ftLoad !== 'function' || typeof ftSave !== 'function') return;
+        const fichas = ftLoad();
+        let mudou = false;
+        fichas.forEach(f => {
+            if (!f || f.id == null) return;
+            const chave = 'fotos/drinks/' + String(f.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+            const caminho = caminhoPorChave[chave];
+            if (!caminho) return;
+            const atual = f.foto ? String(f.foto).replace(/\?.*$/, '') : '';
+            if (/^https?:\/\//i.test(atual)) return;
+            if (!atual || (atual !== caminho && atual.replace(/\.[^./]+$/, '') === chave)) {
+                f.foto = caminho;
+                mudou = true;
+            }
+        });
+        if (mudou) ftSave(fichas);
+        const visivel = id => { const el = document.getElementById(id); return !!(el && el.offsetParent !== null); };
+        if (visivel('portfolio-page') && typeof pfRender === 'function') pfRender();
+        if (mudou && visivel('drinks-page') && typeof ftRender === 'function') ftRender((document.getElementById('ftSearch') || {}).value || '');
+    })();
+
     (function cardapioIniciarArrasteFoto() {
         const iniciar = () => {
             const frame = document.getElementById('cardapioFotoFrame');

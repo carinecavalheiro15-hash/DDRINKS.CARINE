@@ -440,8 +440,38 @@ async function obterCertificadoHttps() {
     return { cert: pems.cert, key: pems.private };
 }
 
-app.listen(PORT, () => {
-    console.log(`\n  DDrinks + MySQL rodando em http://localhost:${PORT}`);
+// Bancos criados antes de uma coluna nova entrar no schema.sql não a recebem sozinhos
+// ("CREATE TABLE IF NOT EXISTS" não altera tabela existente). Sem a coluna, TODA gravação da
+// coleção falha (ex: fichas técnicas com bronze/prata/ouro -> "Unknown column 'bronze'"), e as
+// fotos/edições de drinks nunca chegavam ao banco nem aos outros aparelhos. Aqui só ADICIONA
+// o que falta; nunca apaga nem altera coluna existente.
+const COLUNAS_OBRIGATORIAS = {
+    fichas_tecnicas: { bronze: 'DECIMAL(10,2) NULL', prata: 'DECIMAL(10,2) NULL', ouro: 'DECIMAL(10,2) NULL' }
+};
+async function garantirColunas() {
+    for (const [tabela, colunas] of Object.entries(COLUNAS_OBRIGATORIAS)) {
+        try {
+            const [rows] = await pool.query(
+                'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+                [tabela]
+            );
+            if (!rows.length) continue; // tabela ainda não existe: o schema.sql cria completa
+            const existentes = new Set(rows.map(r => r.COLUMN_NAME));
+            for (const [coluna, tipo] of Object.entries(colunas)) {
+                if (existentes.has(coluna)) continue;
+                await pool.query(`ALTER TABLE ${tabela} ADD COLUMN ${coluna} ${tipo}`);
+                console.log(`✓ Coluna ${tabela}.${coluna} adicionada ao banco.`);
+            }
+        } catch (e) {
+            console.error(`⚠️  Não consegui conferir/ajustar as colunas de ${tabela}:`, e.message);
+        }
+    }
+}
+
+garantirColunas().finally(() => {
+    app.listen(PORT, () => {
+        console.log(`\n  DDrinks + MySQL rodando em http://localhost:${PORT}`);
+    });
 });
 
 obterCertificadoHttps()

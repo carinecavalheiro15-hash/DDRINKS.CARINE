@@ -185,6 +185,18 @@
     var _removeItem = localStorage.removeItem.bind(localStorage);
     var timers = {};
 
+    // fetch só rejeita em falha de rede; uma recusa do servidor (ex: erro 500 do banco) passava
+    // em silêncio e o dado nunca chegava aos outros aparelhos. Agora aparece no console.
+    function avisarSeRecusado(key) {
+        return function (resp) {
+            if (resp && !resp.ok) {
+                resp.text().then(function (t) {
+                    console.error('DDrinks: o banco recusou a gravação de "' + key + '" (HTTP ' + resp.status + '): ' + t);
+                });
+            }
+        };
+    }
+
     function agendarEnvio(key) {
         if (!window.__ddrinksDbOnline) return;
         var cfg = SYNC_KEYS[key];
@@ -199,14 +211,14 @@
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(lista)
-                    }).catch(function (e) { console.warn('DDrinks: erro ao salvar "' + key + '" no banco:', e); });
+                    }).then(avisarSeRecusado(key)).catch(function (e) { console.warn('DDrinks: erro ao salvar "' + key + '" no banco:', e); });
                 } else {
                     var valor = localStorage.getItem(key);
                     fetch(API_BASE + '/config/' + cfg.endpoint, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ valor: valor })
-                    }).catch(function (e) { console.warn('DDrinks: erro ao salvar "' + key + '" no banco:', e); });
+                    }).then(avisarSeRecusado(key)).catch(function (e) { console.warn('DDrinks: erro ao salvar "' + key + '" no banco:', e); });
                 }
             } catch (e) {
                 console.warn('DDrinks: erro ao preparar sincronização de "' + key + '":', e);
