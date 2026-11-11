@@ -4516,6 +4516,20 @@ html += htmlPacotes;
             return `${year}-${month}-${day}`;
         }
 
+        // Converte o que foi digitado num campo de valor pra número, aceitando o jeito
+        // brasileiro ("1.250,50", "R$ 45,90") e também o americano ("1250.50").
+        function converterValorDigitado(texto) {
+            let s = String(texto || '').replace(/R\$|\s/gi, '');
+            if (!s) return 0;
+            if (s.includes(',')) {
+                s = s.replace(/\./g, '').replace(',', '.');       // 1.250,50 -> 1250.50
+            } else if ((s.match(/\./g) || []).length > 1 || /^\d{1,3}\.\d{3}$/.test(s)) {
+                s = s.replace(/\./g, '');                              // 1.250 ou 1.250.000 -> milhar
+            }
+            const n = Number(s);
+            return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
+        }
+
         function formatarValorBR(valor) {
             return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
@@ -9637,7 +9651,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                         </div>
                         <div class="form-group">
                             <label class="form-label">Valor Pago (R$)</label>
-                            <input type="number" id="cliValorPago-${orc.id}" class="form-input" step="0.01" placeholder="0.00" />
+                            <input type="text" inputmode="decimal" id="cliValorPago-${orc.id}" class="form-input" placeholder="0,00" />
                         </div>
                         <div class="form-group">
                             <label class="form-label">Observações</label>
@@ -9662,7 +9676,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Valor do Gasto (R$)</label>
-                                <input type="number" id="cliValorGasto-${orc.id}" class="form-input" step="0.01" placeholder="0.00" />
+                                <input type="text" inputmode="decimal" id="cliValorGasto-${orc.id}" class="form-input" placeholder="0,00" />
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Descrição</label>
@@ -9927,7 +9941,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
             return;
         }
         const forma = document.getElementById(`cliForma-${orcamentoId}`).value;
-        const valor = parseFloat(document.getElementById(`cliValorPago-${orcamentoId}`).value) || 0;
+        const valor = converterValorDigitado(document.getElementById(`cliValorPago-${orcamentoId}`).value);
         const dataInput = document.getElementById(`cliDataPagamento-${orcamentoId}`).value;
         const observacoes = document.getElementById(`cliObs-${orcamentoId}`).value.trim();
 
@@ -9942,8 +9956,10 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
 
         const pagamentos = obterListaPagamentos(orcamento);
         const totalJaPago = pagamentos.reduce((soma, p) => soma + (Number(p.valor) || 0), 0);
-        if (totalJaPago + valor > Number(orcamento.valor) + 0.01) {
-            showNotification(`Esse pagamento deixaria o total pago (${formatarValorBR(totalJaPago + valor)}) maior que o valor do orçamento (${formatarValorBR(Number(orcamento.valor))})!`, 'warning');
+        // Não bloqueia mais (pode haver acréscimos, taxas, gorjeta etc.): só confirma quando o
+        // total pago vai passar do valor do orçamento, pra evitar erro de digitação.
+        if (totalJaPago + valor > Number(orcamento.valor) + 0.01 &&
+            !confirm(`Com esse pagamento o total pago (${formatarValorBR(totalJaPago + valor)}) fica maior que o valor do orçamento (${formatarValorBR(Number(orcamento.valor))}). Deseja lançar mesmo assim?`)) {
             return;
         }
 
@@ -9979,7 +9995,7 @@ Agradecemos pela confiança e por escolher a DDrinks. ✨`;
         const orcamento = orcamentos.find(o => o.id === orcamentoId);
         if (!orcamento) return;
         const categoria = document.getElementById(`cliCategoriaGasto-${orcamentoId}`).value;
-        const valor = parseFloat(document.getElementById(`cliValorGasto-${orcamentoId}`).value) || 0;
+        const valor = converterValorDigitado(document.getElementById(`cliValorGasto-${orcamentoId}`).value);
         const dataInput = document.getElementById(`cliDataGasto-${orcamentoId}`).value;
         const descricao = document.getElementById(`cliObsGasto-${orcamentoId}`).value.trim();
 
